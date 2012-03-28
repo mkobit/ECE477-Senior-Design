@@ -1,4 +1,4 @@
-#include lcd_16x2.h
+#include "lcd_16x2.h"
 #include <p32xxxx.h>
 #include <plib.h>
 

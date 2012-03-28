@@ -1,0 +1,55 @@
+/* SOFTWARE DOCMENTATION HEADERS */
+/*
+* These are taken from slide 12 of presentation 1. Put them in your programs, 
+* and supply the information that it asks for. A description for each item is
+* shown beneath the comment headers. Make sure to at fill it out and give some
+* detail, because we have to turn in our code.
+*/
+
+// BEGINNING OF A PROGRAM - PUT THIS PART IN PROGRAMS AND FILL IT OUT
+/*
+* Title: 
+* Version: 
+* Filename: 
+* Author(s): 
+* Purpose of Program: 
+* How to build: 
+* Update History: 
+*/
+
+// EXPLANATION OF THE BEGINNING IF A PROGRAM DETAILS
+/*
+* Title: (descriptive title)
+* Version: m.n (version number, following specified guidelines)
+* Filename: (name of file)
+* Author(s): (person who wrote code)
+* Purpose of Program: (describe what is going on)
+* How to build:  (any specifics about compilation)
+* Update History: (list of changes made since first written, date of each change
+*/
+
+
+
+// EACH FUNCTION - PUT THIS PART BY FUNCTIONS AND FILL IT OUT
+/* FUNCTION_NAME_HERE
+* Parameters: 
+* Author(s): 
+* Called by: 
+* Purpose/Function Performed: 
+* Calling Convention: 
+* Conditions at Exit: 
+* Data Started: 
+* Update History: 
+*/
+
+// EXPLANATION OF EACH FUNCTION DETAILS
+/* FUNCTION_NAME_HERE
+* Parameters: (name, description of each parameter)
+* Author(s): (person who wrote code)
+* Called by: (list of programs/routines that use this)
+* Purpose/Function Performed: (operation performed by this function)
+* Calling Convention: (example)
+* Conditions at Exit: (include flags modified/other conditions)
+* Data Started: (when this function was started)
+* Update History: (list of changes made since first written)
+*/

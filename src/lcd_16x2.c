@@ -2,11 +2,18 @@
 #include <p32xxxx.h>
 #include <plib.h>
 
-static int _rs, _rw, _en;
-static int _d0, _d1, _d2, _d3, _d4, _d5, _d6, _d7;
-static int _d0_port, _d1_port, _d2_port, _d3_port, _d4_port, _d5_port, _d6_port, _d7_port;
+static int _rs, _rw, _en;	// pin numbers
+static int _rs_port, _rw_port, _en_port;	// port numbers
+static int _d0, _d1, _d2, _d3, _d4, _d5, _d6, _d7;		// pin numbers
+static int _d0_port, _d1_port, _d2_port, _d3_port, _d4_port, _d5_port, _d6_port, _d7_port;	// port numbers
 
-void LCDInit(int rs, int rs_port,
+static void LcdSetOutputs(int rs, int rw, char c);
+static inline void LcdConfigAllAsOutputs();
+static inline void LcdEnableOn();
+static inline void LcdEnableOff();
+static void LcdSetDataOutputs(char data);
+
+void LCDInitPins(int rs, int rs_port,
              int rw, int rw_port,
              int en, int en_port,
              int d0, int d0_port,
@@ -40,73 +47,132 @@ void LCDInit(int rs, int rs_port,
   _d5_port = d5_port;
   _d6_port = d6_port;
   _d7_port = d7_port;
-  LcdConfigAsOutputs();
+  LcdConfigAllAsOutputs();
   LcdSetDDRAMAddress(LINE_1);
 }
 
 void LcdClearDisplay() {
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, 0x01);
-  // TODO enable and delay
+	LcdEnableOn();
+	DelayMs(2);	// 1.52 ms on datasheet
+	LcdEnableOff();
 }
 
 void LcdReturnHome() {
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, (0x01<<1));
-  // TODO enable and delay
+	LcdEnableOn();
+	DelayMs(2);	// 1.52 ms on datasheet
+	LcdEnableOff();
 }
 
 void LcdSetEntryMode(int ddram_address_gain, int shift_display) {
   char disp_out;
   disp_out = 0x04 | ddram_address_gain | shift_display;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
-  // TODO enable and delay
+	LcdEnableOn();
+	DelayUs(50);	// 37 us on datasheet
+	LcdEnableOff();
 }
 
 void LcdSetDisplayMode(int display_control, int cursor_control, int cursor_blink_control) {
   char disp_out;
   disp_out = 0x08 | display_control | cursor_control | cursor_blink_control;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
-  // TODO enable and delay
+	LcdEnableOn();
+	DelayUs(50);	// 37 us on datasheet
+	LcdEnableOff();
 }
 
 void LcdSetShiftCursorOrDisplay(int shift_select, int shift_direction) {
   char disp_out;
   disp_out = 0x10 | shift_select << 3 | shift_direction;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
-  // TODO enable and delay
+	LcdEnableOn();
+	DelayUs(50);	// 37 us on datasheet
+	LcdEnableOff();
 }
 
 void LcdSetFunction(int interface_length_control, int line_number_control, int dots_display_control) {
   char disp_out;
   disp_out = 0x20 | interface_length_control | line_number_control | dots_display_control;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
-  // TODO enable and delay
+	LcdEnableOn();
+	DelayUs(50);	// 37 us on datasheet
+	LcdEnableOff();
 }
+
 void LcdSetCGRAMAddress(int address) {
+	char disp_out;
+	disp_out = address & LCD_CGRAM_MASK;
+	LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
+	LcdEnableOn();
+	DelayUs(50);	// 37 us on datasheet
+	LcdEnableOff();
 }
+
 void LcdSetDDRAMAddress(int address) {
+	char disp_out;
+	disp_out = address & LCD_DDRAM_MASK;
+	LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
+	LcdEnableOn();
+	DelayUs(50);	// 37 us on datasheet
+	LcdEnableOff();
 }
-int LcdReadBusyFlagAndAddress(int address) {
+
+static void LcdSetDataOutputs(char data) {
+	// set each output pin or clear it
+	data & 0x80 ? PORTSetBits(_d7_port, _d7) : PORTClearBits(_d7_port, _d7);
+	data & 0x40 ? PORTSetBits(_d6_port, _d6) : PORTClearBits(_d6_port, _d6);
+	data & 0x20 ? PORTSetBits(_d5_port, _d5) : PORTClearBits(_d5_port, _d5);
+	data & 0x10 ? PORTSetBits(_d4_port, _d4) : PORTClearBits(_d4_port, _d4);
+	data & 0x08 ? PORTSetBits(_d3_port, _d3) : PORTClearBits(_d3_port, _d3);
+	data & 0x04 ? PORTSetBits(_d2_port, _d2) : PORTClearBits(_d2_port, _d2);
+	data & 0x02 ? PORTSetBits(_d1_port, _d1) : PORTClearBits(_d1_port, _d1);
+	data & 0x01 ? PORTSetBits(_d0_port, _d0) : PORTClearBits(_d0_port, _d0);
 }
-void LcdWriteRAM(char data) {
-}
-int LcdReadRAM(char address) {
-}
+
 void LcdDisplayData(char *data) {
+// TODO fix this whole function, this is from somebody else's code but does not accomplish what we need, completely
+	while(*data) {
+        switch (*data)
+        {
+        case '\n':          // move to second line
+            LcdSetDDRAMAddress(LINE_2);
+            break;
+        case '\r':          // home, point to first line
+            LcdSetDDRAMAddress(LINE_1);	// may use return home here?
+            break;
+        default:            // print character
+            LcdSetOutputs(LCD_DATA, LCD_WRITE, *data);
+            break;
+        }
+        data++;
+    }
 }
 static void LcdSetOutputs(int rs, int rw, char c) {
+	rs ? PORTSetBits(_rs_port, _rs) : PORTClearBits(_rs_port, _rs);
+	rw ? PORTSetBits(_rw_port, _rw) : PORTClearBits(_rw_port, _rw);
+	LcdSetDataOutputs(c);
 }
-static void LcdConfigAllAsOutputs() {
-  PORTSetPinsDigitalOut()(_rs_port, _rs);
-  PORTSetPinsDigitalOut()(_rw_port, _rw);
-  PORTSetPinsDigitalOut()(_en_port, _en);
-  PORTSetPinsDigitalOut()(_d0_port, _d0);
-  PORTSetPinsDigitalOut()(_d1_port, _d1);
-  PORTSetPinsDigitalOut()(_d2_port, _d2);
-  PORTSetPinsDigitalOut()(_d3_port, _d3);
-  PORTSetPinsDigitalOut()(_d4_port, _d4);
-  PORTSetPinsDigitalOut()(_d5_port, _d5);
-  PORTSetPinsDigitalOut()(_d6_port, _d6);
-  PORTSetPinsDigitalOut()(_d7_port, _d7);
+
+static inline void LcdConfigAllAsOutputs() {
+  PORTSetPinsDigitalOut(_rs_port, _rs);
+  PORTSetPinsDigitalOut(_rw_port, _rw);
+  PORTSetPinsDigitalOut(_en_port, _en);
+  PORTSetPinsDigitalOut(_d0_port, _d0);
+  PORTSetPinsDigitalOut(_d1_port, _d1);
+  PORTSetPinsDigitalOut(_d2_port, _d2);
+  PORTSetPinsDigitalOut(_d3_port, _d3);
+  PORTSetPinsDigitalOut(_d4_port, _d4);
+  PORTSetPinsDigitalOut(_d5_port, _d5);
+  PORTSetPinsDigitalOut(_d6_port, _d6);
+  PORTSetPinsDigitalOut(_d7_port, _d7);
 }
-static void LcdConfigAsInputs() {
+
+static inline void LcdEnableOn() {
+	PORTSetBits(_en_port, _en);
+}
+
+static inline void LcdEnableOff() {
+	PORTClearBits(_en_port, _en);
 }

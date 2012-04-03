@@ -3,7 +3,7 @@
 
 // constants taken from https://github.com/a1ronzo/6DOF-Digital/
 /* Register map for the ITG3200 */
-#define ITG_READ	0xD0
+#define ITG_READ	0xD1
 #define ITG_WRITE	0xD0
 
 #define WHO_AM_I	0x00

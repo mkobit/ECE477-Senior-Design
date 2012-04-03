@@ -3,8 +3,8 @@
 
 // constants taken from https://github.com/a1ronzo/6DOF-Digital/
 /* Register map for the ADXL345 */
-#define ADXL_READ	0xA6
-#define ADXL_WRITE	0xA7
+#define ADXL_READ	0xA7
+#define ADXL_WRITE	0xA6
 
 //ADXL Register Map
 #define	DEVID			0x00	//Device ID Register
@@ -13,8 +13,8 @@
 #define	OFSY			0x1F	//Y-axis offset
 #define	OFSZ			0x20	//Z-axis offset
 #define	DUR				0x21	//Tap Duration
-#define	Latent			0x22	//Tap latency
-#define	Window			0x23	//Tap window
+#define	LATENT			0x22	//Tap latency
+#define	WINDOW			0x23	//Tap window
 #define	THRESH_ACT		0x24	//Activity Threshold
 #define	THRESH_INACT	0x25	//Inactivity Threshold
 #define	TIME_INACT		0x26	//Inactivity Time

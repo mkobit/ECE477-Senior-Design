@@ -13,7 +13,7 @@ static inline void LcdEnableOn();
 static inline void LcdEnableOff();
 static void LcdSetDataOutputs(char data);
 
-void LCDInitPins(int rs, int rs_port,
+void LcdInitPins(int rs, int rs_port,
              int rw, int rw_port,
              int en, int en_port,
              int d0, int d0_port,
@@ -65,7 +65,7 @@ void LcdReturnHome() {
 	LcdEnableOff();
 }
 
-void LcdSetEntryMode(int ddram_address_gain, int shift_display) {
+void LcdSetEntryMode(char ddram_address_gain, char shift_display) {
   char disp_out;
   disp_out = 0x04 | ddram_address_gain | shift_display;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
@@ -74,7 +74,7 @@ void LcdSetEntryMode(int ddram_address_gain, int shift_display) {
 	LcdEnableOff();
 }
 
-void LcdSetDisplayMode(int display_control, int cursor_control, int cursor_blink_control) {
+void LcdSetDisplayMode(char display_control, char cursor_control, char cursor_blink_control) {
   char disp_out;
   disp_out = 0x08 | display_control | cursor_control | cursor_blink_control;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
@@ -83,7 +83,7 @@ void LcdSetDisplayMode(int display_control, int cursor_control, int cursor_blink
 	LcdEnableOff();
 }
 
-void LcdSetShiftCursorOrDisplay(int shift_select, int shift_direction) {
+void LcdShiftCursorOrDisplay(char shift_select, char shift_direction) {
   char disp_out;
   disp_out = 0x10 | shift_select << 3 | shift_direction;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
@@ -92,7 +92,7 @@ void LcdSetShiftCursorOrDisplay(int shift_select, int shift_direction) {
 	LcdEnableOff();
 }
 
-void LcdSetFunction(int interface_length_control, int line_number_control, int dots_display_control) {
+void LcdSetFunction(char interface_length_control, char line_number_control, char dots_display_control) {
   char disp_out;
   disp_out = 0x20 | interface_length_control | line_number_control | dots_display_control;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
@@ -101,7 +101,7 @@ void LcdSetFunction(int interface_length_control, int line_number_control, int d
 	LcdEnableOff();
 }
 
-void LcdSetCGRAMAddress(int address) {
+void LcdSetCGRAMAddress(char address) {
 	char disp_out;
 	disp_out = address & LCD_CGRAM_MASK;
 	LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
@@ -110,7 +110,7 @@ void LcdSetCGRAMAddress(int address) {
 	LcdEnableOff();
 }
 
-void LcdSetDDRAMAddress(int address) {
+void LcdSetDDRAMAddress(char address) {
 	char disp_out;
 	disp_out = address & LCD_DDRAM_MASK;
 	LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
@@ -143,7 +143,10 @@ void LcdDisplayData(char *data) {
             LcdSetDDRAMAddress(LINE_1);	// may use return home here?
             break;
         default:            // print character
-            LcdSetOutputs(LCD_DATA, LCD_WRITE, *data);
+            LcdSetOutputs(LCD_DATA, LCD_WRITE, *data);  // this requires delay
+            LcdEnableOn();
+            DelayUs(1); // datasheet says 400 ns = .4 us
+            LcdEnableOff();
             break;
         }
         data++;

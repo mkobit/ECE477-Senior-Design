@@ -1,5 +1,5 @@
-#ifndef LCD_16X2BIT_H
-#define LCD_16X2BIT_H
+#ifndef LCD_16X2_H
+#define LCD_16X2_H
 
 /* Display character address code:
 Display position:  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16
@@ -53,7 +53,7 @@ DDRAM Address:     40 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F ... 67
 #define LINE_2 0x40
 
 
-void LCDInitPins(int rs, int rs_port,
+void LcdInitPins(int rs, int rs_port,
              int rw, int rw_port,
              int en, int en_port,
              int d0, int d0_port,
@@ -66,11 +66,12 @@ void LCDInitPins(int rs, int rs_port,
              int d7, int d7_port);
 void LcdClearDisplay();
 void LcdReturnHome();
-void LcdSetEntryMode(int ddram_address_gain, int shift_display); // TODO comeback to this
-void LcdSetDisplayMode(int display_control, int cursor_control, int cursor_blink_control);
-void LcdSetShiftCursorOrDisplay(int shift_select, int shift_direction);
-void LcdSetFunction(int interface_length_control, int line_number_control, int dots_display_control);
-void LcdSetCGRAMAddress(int address);
-void LcdSetDDRAMAddress(int address);
+void LcdSetEntryMode(char ddram_address_gain, char shift_display); // TODO comeback to this
+void LcdSetDisplayMode(char display_control, char cursor_control, char cursor_blink_control);
+void LcdShiftCursorOrDisplay(char shift_select, char shift_direction);
+void LcdSetFunction(char interface_length_control, char line_number_control, char dots_display_control);
+void LcdSetCGRAMAddress(char address);
+void LcdSetDDRAMAddress(char address);
 void LcdDisplayData(char *data);
+
 #endif

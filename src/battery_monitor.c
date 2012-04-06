@@ -3,8 +3,8 @@
 #include "battery_monitor.h"
 #include "delay.h"
 
-static inline void OW_drive_low;();
-static inline void OW_drive_high();
-static inline char OW_read_bit();
-static inline void OW_write_bit(char);
+static inline void BatteryMonitor_drive_low;();
+static inline void BatteryMonitor_drive_high();
+static inline char BatteryMonitor_read_bit();
+static inline void BatteryMonitor_write_bit(char addr);
 

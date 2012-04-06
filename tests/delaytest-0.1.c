@@ -18,6 +18,15 @@
 #define NEW_LINE_MODE "\033[20h"
 //void itoa(char *b, int n);
 
+/*
+* Title: Delay Test
+* Version: 0.1
+* Filename: delaytest-0.1.c
+* Author(s): mkobit
+* Purpose of Program: Testing the delay library
+* How to build: build delay, build tdelaytest-0.1.c
+* Update History: 
+*/
 
 // Notes: works for SYSTEM_FREQUENCYs that are high, like 72-80 MHz, but I do not believe the
 // UART settings work when I drop the SYSTEM_FREQUENCY down a lot. It is worth looking into though.

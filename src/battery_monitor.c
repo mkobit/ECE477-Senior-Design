@@ -20,13 +20,13 @@ static void BatteryMonitor_write_bit(char addr);
 	other battery monitor usage.
 * Purpose/Function Performed: Configures pin as open drain and stores the parameters in here for future use.
 * Calling Convention: BatteryMonitorInit(IOPORT_F, BIT_2)
-* Conditions at Exit: pin is configured as an open drain pin and configured as an output
+* Conditions at Exit: pin is configured as an open drain pin and configured as an output and should have released the bus. Resets the bus to check and see if device is connected.
 	return int, if 1-wire device detected, returns 1, if not, returns 0
 * Date Started: 
 * Update History: 
 */
 unsigned char BatteryMonitorInit(int batt_mon_pin, int batt_mon_port) {
-	unsigned char presence_detect;
+	unsigned char presence_detected;
 	_bmon_port = batt_mon_port;
 	_bmon_pin = batt_mon_pin;
 	switch(_bmon_port) {
@@ -39,8 +39,8 @@ unsigned char BatteryMonitorInit(int batt_mon_pin, int batt_mon_port) {
 		case IOPORT_G: mPORTGOpenDrainOpen(_bmon_pin); break;
 	}
 	// TODO detection of device
-	presence_detect = BatteryMonitorReset();
-	return presence_detect;
+	presence_detected = BatteryMonitorReset();
+	return presence_detected;
 }
 
 /* BatteryMonitorReset
@@ -53,14 +53,17 @@ unsigned char BatteryMonitorInit(int batt_mon_pin, int batt_mon_port) {
 * Update History: 
 */
 static unsigned char BatteryMonitorReset() {
-	// TODO
-	unsigned char presence_detect;
+	unsigned char presence_detected;
 	
 	BatteryMonitor_drive_low();
 	DelayUs(480);
-	BatteryMonitor_drive_high();
+	BatteryMonitor_drive_high();	// release bus
 	// TODO
-	DelayUs(
+	DelayUs(100);
+	presence_detected = !BatteryMonitor_read_bit();	// read presence bit, 0 if present 1 if not present so value is inverted for logical clarity
+	DelayUs(380);
+	BatteryMonitor_drive_high();	// release bus
+	return presence_detected;
 }
 
 /* BatteryMonitorReadByte

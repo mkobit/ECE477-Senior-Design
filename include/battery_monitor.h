@@ -1,7 +1,21 @@
 #ifndef BATTERY_MONITOR_H
 #define BATTERY_MONITOR_H
 
-// 
+// Net Address Commands
+#define BATTERY_MONITOR_READ_NET_ADDR	0x33	// allows the bus master to read the DS2781’s 1-Wire net address
+#define BATTERY_MONITOR_MATCH_NET_ADDR	0x55	// allows the bus master to specifically address one DS2781 on the 1-Wire bus
+#define BATTERY_MONITOR_SKIP_NET_ADDR	0xCC	// command saves time when there is only one DS2781 on the bus by allowing the bus master to issue a function command without specifying the address of the slave
+#define BATTERY_MONITOR_SEARCH_NET_ADDR	0xF0	// command allows the bus master to use a process of elimination to identify the 1-Wire net addresses of all slave devices on the bus
+#define BATTERY_MONITOR_RESUME			0xA5	// command increases data throughput in multidrop environments where the DS2781 needs to be accessed several times
+
+// Function Commands
+#define BATTERY_MONITOR_READ_DATA		0x69	// Read Data [69h, XX]. This command reads data from the DS2781 starting at memory address XX. The Read Data command can be terminated by the bus master with a reset pulse at any bit boundary.
+#define BATTERY_MONITOR_WRITE_DATA		0x6C	// Write Data [6Ch, XX]. This command writes data to the DS2781 starting at memory address XX. The LSb of the data to be stored at address XX can be written immediately after the MSb of address has been entered.
+#define BATTERY_MONITOR_COPY_DATA		0x48
+#define BATTERY_MONITOR_RECALL_DATA		0xB8	// Recall Data [B8h, XX]. This command recalls the contents of the EEPROM cells to the EEPROM shadow memory for the EEPROM block containing address XX.
+#define BATTERY_MONITOR_LOCK			0x6A
+
+// Battery monitor registers
 #define BATTERY_MONITOR_STATUS 		0x01	// Status Register
 #define BATTERY_MONITOR_RAAC_MSB	0x02	// Remaining Active Absolute Capacity MSB
 #define BATTERY_MONITOR_RAAC_LSB	0x03	// Remaining Active Absolute Capacity LSB
@@ -55,16 +69,9 @@
 #define BATTERY_MONITOR_PARAM_TBP12			0x7E
 
 
-typedef struct batt_monitor {
-	int port;
-	int pin;
-	char data;
-	int isDataReady;
-} batt_monitor;
-
-void BatteryMonitorInit(batt_monitor *bmonit);
-void BatteryMonitorReset();
-char BatteryMonitorReadByte(batt_monitor *bmonit, char addr);
-void BatteryMonitorWriteByte(batt_monitor *bmonit, char addr, char c);
+unsigned char BatteryMonitorInit(int batt_mon_pin, int batt_mon_port);
+unsigned char BatteryMonitorReadByte(char addr);
+void BatteryMonitorWriteByte(char addr, char c);
+int BatteryMonitorReset();
 
 #endif

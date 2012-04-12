@@ -68,10 +68,18 @@
 #define BATTERY_MONITOR_PARAM_TBP23			0x7D
 #define BATTERY_MONITOR_PARAM_TBP12			0x7E
 
+// Masks
+#define MSBIT_MASK 	0x80
+#define LSBIT_MASK	0x01
 
-unsigned char BatteryMonitorInit(int batt_mon_pin, int batt_mon_port);
-unsigned char BatteryMonitorReadByte(char addr);
-void BatteryMonitorWriteByte(char addr, char c);
-int BatteryMonitorReset();
+void BatteryMonitorInit(int batt_mon_pin, int batt_mon_port);
+unsigned char BatteryMonitorReadBytes(unsigned char net_address, 
+										unsigned char start_addr, 
+										char *data, 
+										int nitems);
+unsigned char BatteryMonitorWriteBytes(unsigned char net_address, 
+										unsigned char start_addr, 
+										char *data, 
+										int nitems);
 
 #endif

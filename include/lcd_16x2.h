@@ -7,6 +7,8 @@ DDRAM Address:     00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F ... 27	-- shi
 DDRAM Address:     40 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F ... 67
 */
 
+#define LCD_BOOT (0x30)
+
 // Entry Mode Set 
 #define LCD_DDRAM_ADDRESS_INCR (1 << 1)
 #define LCD_DDRAM_ADDRESS_DECR 0
@@ -46,32 +48,36 @@ DDRAM Address:     40 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F ... 67
 #define LCD_INSTR 0
 #define LCD_READ 1
 #define LCD_WRITE 0
+#ifndef BYTE_MASK
 #define BYTE_MASK 0xFF
+#endif
 
+#define LCD_INSTR_CLEAR (0x01)
+#define LCD_INSTR_RETHOME (0x02)
 
 #define LINE_1 0x00
 #define LINE_2 0x40
 
 
-void LcdInitPins(int rs, int rs_port,
-             int rw, int rw_port,
-             int en, int en_port,
-             int d0, int d0_port,
-             int d1, int d1_port,
-             int d2, int d2_port,
-             int d3, int d3_port,
-             int d4, int d4_port,
-             int d5, int d5_port,
-             int d6, int d6_port,
-             int d7, int d7_port);
+void LcdInitPins(unsigned int rs, IoPortId rs_port,
+            unsigned int rw, IoPortId rw_port,
+            unsigned int en, IoPortId en_port,
+            unsigned int d0, IoPortId d0_port,
+            unsigned int d1, IoPortId d1_port,
+            unsigned int d2, IoPortId d2_port,
+            unsigned int d3, IoPortId d3_port,
+            unsigned int d4, IoPortId d4_port,
+            unsigned int d5, IoPortId d5_port,
+            unsigned int d6, IoPortId d6_port,
+            unsigned int d7, IoPortId d7_port);
 void LcdClearDisplay();
 void LcdReturnHome();
-void LcdSetEntryMode(char ddram_address_gain, char shift_display); // TODO comeback to this
-void LcdSetDisplayMode(char display_control, char cursor_control, char cursor_blink_control);
-void LcdShiftCursorOrDisplay(char shift_select, char shift_direction);
-void LcdSetFunction(char interface_length_control, char line_number_control, char dots_display_control);
-void LcdSetCGRAMAddress(char address);
-void LcdSetDDRAMAddress(char address);
-void LcdDisplayData(char *data);
+void LcdSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_display); // TODO comeback to this
+void LcdSetDisplayMode(unsigned char display_control, unsigned char cursor_control, unsigned char cursor_blink_control);
+void LcdShiftCursorOrDisplay(unsigned char shift_select, unsigned char shift_direction);
+void LcdSetFunction(unsigned char interface_length_control, unsigned char line_number_control, unsigned char dots_display_control);
+void LcdSetCGRAMAddress(unsigned char address);
+void LcdSetDDRAMAddress(unsigned char address);
+void LcdDisplayData(unsigned char *data);
 
 #endif

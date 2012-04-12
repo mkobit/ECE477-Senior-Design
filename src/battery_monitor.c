@@ -3,11 +3,13 @@
 #include "battery_monitor.h"
 #include "delay.h"
 
-static int _bmon_pin, _bmon_port;
+static unsigned int _bmon_pin;
+static IoPortId _bmon_port;
 
 static unsigned char BatteryMonitorReset();
 static void BatteryMonitor_drive_low();
 static void BatteryMonitor_drive_high();
+static unsigned char BatteryMonitor_read_onewire();
 static unsigned char BatteryMonitor_read_bit();
 static void BatteryMonitor_write_bit(unsigned char bit);
 static unsigned char BatteryMonitorReset();
@@ -28,7 +30,7 @@ static void BatteryMonitorWriteByte(unsigned char c);
 * Date Started: 
 * Update History: 
 */
-void BatteryMonitorInit(int batt_mon_pin, int batt_mon_port) {
+void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port) {
 	_bmon_port = batt_mon_port;
 	_bmon_pin = batt_mon_pin;
 	switch(_bmon_port) {
@@ -59,23 +61,23 @@ void BatteryMonitorInit(int batt_mon_pin, int batt_mon_port) {
 */
 unsigned char BatteryMonitorReadBytes(unsigned char net_address_command, 
 										unsigned char start_addr, 
-										char *data, 
+										unsigned char *data, 
 										int nitems) {
 	int i;
 	unsigned char presence_detect;
 	unsigned char data_read;
-	if (net_address_command == BATTERY_MONITOR_SKIP_NET_ADDR) {
+	if (net_address_command == BATTERY_MONITOR_NET_SKIP_ADDR) {
 		// saves time by not using net_address, assuming only 1 one-wire device on the bus
 		presence_detect = BatteryMonitorReset();
 		if (!presence_detect) return presence_detect;	// not detected, return a failure
 		BatteryMonitorWriteByte(net_address_command);
-		BatteryMonitorWriteByte(BATTERY_MONITOR_READ_DATA);
+		BatteryMonitorWriteByte(BATTERY_MONITOR_FUNC_READ_DATA);
 		BatteryMonitorWriteByte(start_addr);
 	}
-	//else if (net_address_command == BATTERY_MONITOR_RESUME {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_MATCH_NET_ADDR) {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_SEARCH_NET_ADDR) {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_READ_NET_ADDR) {} *NOT IMPLEMENTED*
+	//else if (net_address_command == BATTERY_MONITOR_NET_RESUME {} *NOT IMPLEMENTED*
+	//else if (net_address_command == BATTERY_MONITOR_NET_MATCH_ADDR) {} *NOT IMPLEMENTED*
+	//else if (net_address_command == BATTERY_MONITOR_NET_SEARCH_ADDR) {} *NOT IMPLEMENTED*
+	//else if (net_address_command == BATTERY_MONITOR_NET_READ_ADDR) {} *NOT IMPLEMENTED*
 	else {
 		return 0;	// not a valid net_address_command
 	}
@@ -105,24 +107,24 @@ unsigned char BatteryMonitorReadBytes(unsigned char net_address_command,
 * Date Started: 
 * Update History: 
 */
-unsigned char BatteryMonitorWriteBytes(unsigned char net_address, 
+unsigned char BatteryMonitorWriteBytes(unsigned char net_address_command, 
 										unsigned char start_addr, 
-										char *data, 
+										unsigned char *data, 
 										int nitems) {
 	int i;
 	unsigned char presence_detect;
-	if (net_address_command == BATTERY_MONITOR_SKIP_NET_ADDR) {
+	if (net_address_command == BATTERY_MONITOR_NET_SKIP_ADDR) {
 		// saves time by not using net_address, assuming only 1 one-wire device on the bus
 		presence_detect = BatteryMonitorReset();
 		if (!presence_detect) return presence_detect;	// not detected, return a failure
 		BatteryMonitorWriteByte(net_address_command);
-		BatteryMonitorWriteByte(BATTERY_MONITOR_WRITE_DATA);
+		BatteryMonitorWriteByte(BATTERY_MONITOR_FUNC_WRITE_DATA);
 		BatteryMonitorWriteByte(start_addr);
 	}
-	//else if (net_address_command == BATTERY_MONITOR_RESUME {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_MATCH_NET_ADDR) {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_SEARCH_NET_ADDR) {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_READ_NET_ADDR) {} *NOT IMPLEMENTED*
+	//else if (net_address_command == BATTERY_MONITOR_NET_RESUME {} *NOT IMPLEMENTED*
+	//else if (net_address_command == BATTERY_MONITOR_NET_MATCH_ADDR) {} *NOT IMPLEMENTED*
+	//else if (net_address_command == BATTERY_MONITOR_NET_SEARCH_ADDR) {} *NOT IMPLEMENTED*
+	//else if (net_address_command == BATTERY_MONITOR_NET_READ_ADDR) {} *NOT IMPLEMENTED*
 	else {
 		return 0;	// not a valid net_address_command
 	}

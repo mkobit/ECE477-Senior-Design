@@ -2,18 +2,18 @@
 #define BATTERY_MONITOR_H
 
 // Net Address Commands
-#define BATTERY_MONITOR_READ_NET_ADDR	0x33	// allows the bus master to read the DS2781’s 1-Wire net address
-#define BATTERY_MONITOR_MATCH_NET_ADDR	0x55	// allows the bus master to specifically address one DS2781 on the 1-Wire bus
-#define BATTERY_MONITOR_SKIP_NET_ADDR	0xCC	// command saves time when there is only one DS2781 on the bus by allowing the bus master to issue a function command without specifying the address of the slave
-#define BATTERY_MONITOR_SEARCH_NET_ADDR	0xF0	// command allows the bus master to use a process of elimination to identify the 1-Wire net addresses of all slave devices on the bus
-#define BATTERY_MONITOR_RESUME			0xA5	// command increases data throughput in multidrop environments where the DS2781 needs to be accessed several times
+#define BATTERY_MONITOR_NET_READ_ADDR	0x33	// allows the bus master to read the DS2781’s 1-Wire net address
+#define BATTERY_MONITOR_NET_MATCH_ADDR	0x55	// allows the bus master to specifically address one DS2781 on the 1-Wire bus
+#define BATTERY_MONITOR_NET_SKIP_ADDR	0xCC	// command saves time when there is only one DS2781 on the bus by allowing the bus master to issue a function command without specifying the address of the slave
+#define BATTERY_MONITOR_NET_SEARCH_ADDR	0xF0	// command allows the bus master to use a process of elimination to identify the 1-Wire net addresses of all slave devices on the bus
+#define BATTERY_MONITOR_NET_RESUME			0xA5	// command increases data throughput in multidrop environments where the DS2781 needs to be accessed several times
 
 // Function Commands
-#define BATTERY_MONITOR_READ_DATA		0x69	// Read Data [69h, XX]. This command reads data from the DS2781 starting at memory address XX. The Read Data command can be terminated by the bus master with a reset pulse at any bit boundary.
-#define BATTERY_MONITOR_WRITE_DATA		0x6C	// Write Data [6Ch, XX]. This command writes data to the DS2781 starting at memory address XX. The LSb of the data to be stored at address XX can be written immediately after the MSb of address has been entered.
-#define BATTERY_MONITOR_COPY_DATA		0x48
-#define BATTERY_MONITOR_RECALL_DATA		0xB8	// Recall Data [B8h, XX]. This command recalls the contents of the EEPROM cells to the EEPROM shadow memory for the EEPROM block containing address XX.
-#define BATTERY_MONITOR_LOCK			0x6A
+#define BATTERY_MONITOR_FUNC_READ_DATA		0x69	// Read Data [69h, XX]. This command reads data from the DS2781 starting at memory address XX. The Read Data command can be terminated by the bus master with a reset pulse at any bit boundary.
+#define BATTERY_MONITOR_FUNC_WRITE_DATA		0x6C	// Write Data [6Ch, XX]. This command writes data to the DS2781 starting at memory address XX. The LSb of the data to be stored at address XX can be written immediately after the MSb of address has been entered.
+#define BATTERY_MONITOR_FUNC_COPY_DATA		0x48
+#define BATTERY_MONITOR_FUNC_RECALL_DATA		0xB8	// Recall Data [B8h, XX]. This command recalls the contents of the EEPROM cells to the EEPROM shadow memory for the EEPROM block containing address XX.
+#define BATTERY_MONITOR_FUNC_LOCK			0x6A
 
 // Battery monitor registers
 #define BATTERY_MONITOR_STATUS 		0x01	// Status Register
@@ -51,8 +51,8 @@
 // Application operating parameter addresses
 #define BATTERY_MONITOR_PARAM_CONTROL	0x60	// Control Register
 #define BATTERY_MONITOR_PARAM_AB		0x61	// Accumulation Bias
-#define BATTERY_MONITOR_PARAM_AC		0x62	// Aging Capacity MSB
-#define BATTERY_MONITOR_PARAM_AC		0x63	// Aging Capacity LSB
+#define BATTERY_MONITOR_PARAM_AC_MSB		0x62	// Aging Capacity MSB
+#define BATTERY_MONITOR_PARAM_AC_LSB		0x63	// Aging Capacity LSB
 #define BATTERY_MONITOR_PARAM_VCHG		0x64	// Charge Voltage
 #define BATTERY_MONITOR_PARAM_IMIN		0x65	// Minimum Charge Current
 #define BATTERY_MONITOR_PARAM_VAE		0x66	// Active Empty Voltage
@@ -72,14 +72,14 @@
 #define MSBIT_MASK 	0x80
 #define LSBIT_MASK	0x01
 
-void BatteryMonitorInit(int batt_mon_pin, int batt_mon_port);
-unsigned char BatteryMonitorReadBytes(unsigned char net_address, 
+void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port);
+unsigned char BatteryMonitorReadBytes(unsigned char net_address_command, 
 										unsigned char start_addr, 
-										char *data, 
+										unsigned char *data, 
 										int nitems);
-unsigned char BatteryMonitorWriteBytes(unsigned char net_address, 
+unsigned char BatteryMonitorWriteBytes(unsigned char net_address_command, 
 										unsigned char start_addr, 
-										char *data, 
+										unsigned char *data, 
 										int nitems);
 
 #endif

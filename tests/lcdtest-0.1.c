@@ -29,19 +29,19 @@ int main(void)
         BIT_0, IOPORT_F,
         BIT_1, IOPORT_F,
         BIT_4, IOPORT_F);   // Using a custom header in lab with these ports connected
-  LcdSetFunction(LCD_INTERFACE_LENGTH_8BIT, LCD_LINES_2, LCD_DOTS_5x8);
-  LcdSetDisplayMode(LCD_DISPLAY_OFF, LCD_CURSOR_OFF, LCD_CURSOR_BLINK_OFF);
-  LcdClearDisplay();
-  LcdSetEntryMode(LCD_DDRAM_ADDRESS_INCR, LCD_SHIFT_DISPLAY_OFF);
-  LcdSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_ON, LCD_CURSOR_BLINK_ON);
+  LcdInstrSetFunction(LCD_INTERFACE_LENGTH_8BIT, LCD_LINES_2, LCD_DOTS_5x8);
+  LcdInstrSetDisplayMode(LCD_DISPLAY_OFF, LCD_CURSOR_OFF, LCD_CURSOR_BLINK_OFF);
+  LcdInstrClearDisplay();
+  LcdInstrSetEntryMode(LCD_DDRAM_ADDRESS_INCR, LCD_SHIFT_DISPLAY_OFF);
+  LcdInstrSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_ON, LCD_CURSOR_BLINK_ON);
   
   
   while(1) {
+    LcdReturnHome();
     LcdDisplayData("Hello\nThere!");
     DelayS(3);
     LcdReturnHome();
-    LcdDisplayData("Hi again!\n Testing LCD");
-    LcdReturnHome();
+    LcdDisplayData("Hi again!\nTesting LCD");
     DelayS(3);
   }
 

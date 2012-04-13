@@ -70,14 +70,14 @@ void LcdInitPins(unsigned int rs, IoPortId rs_port,
             unsigned int d5, IoPortId d5_port,
             unsigned int d6, IoPortId d6_port,
             unsigned int d7, IoPortId d7_port);
-void LcdClearDisplay();
-void LcdReturnHome();
-void LcdSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_display); // TODO comeback to this
-void LcdSetDisplayMode(unsigned char display_control, unsigned char cursor_control, unsigned char cursor_blink_control);
-void LcdShiftCursorOrDisplay(unsigned char shift_select, unsigned char shift_direction);
-void LcdSetFunction(unsigned char interface_length_control, unsigned char line_number_control, unsigned char dots_display_control);
-void LcdSetCGRAMAddress(unsigned char address);
-void LcdSetDDRAMAddress(unsigned char address);
+void LcdInstrClearDisplay();
+void LcdInstrReturnHome();
+void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_display); // TODO comeback to this
+void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_control, unsigned char cursor_blink_control);
+void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shift_direction);
+void LcdInstrSetFunction(unsigned char interface_length_control, unsigned char line_number_control, unsigned char dots_display_control);
+void LcdInstrSetCGRAMAddress(unsigned char address);
+void LcdInstrSetDDRAMAddress(unsigned char address);
 void LcdDisplayData(unsigned char *data);
 
 #endif

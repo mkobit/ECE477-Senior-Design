@@ -47,9 +47,9 @@ void LcdInitPins(unsigned int rs, IoPortId rs_port,
   _d4_port = d4_port;
   _d5_port = d5_port;
   _d6_port = d6_port;
-  _d7_port = d7_port;
+  _d7_port = d7_port; // TODO fix this stuff and change it around
   LcdConfigAllAsOutputs();
-  LcdSetOutputs(LCD_INSTR, LCD_WRITE, LCD_BOOT);
+  LcdInstrSetOutputs(LCD_INSTR, LCD_WRITE, LCD_BOOT);
   LcdEnableOn();
   DelayUs(1);
   LcdEnableOff();
@@ -64,72 +64,80 @@ void LcdInitPins(unsigned int rs, IoPortId rs_port,
   DelayUs(200);
 }
 
-void LcdClearDisplay() {
+void LcdInstrClearDisplay() {
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, LCD_INSTR_CLEAR);
   LcdEnableOn();
-  DelayMs(2);	// 1.52 ms on datasheet
+  DelayUs(1);
   LcdEnableOff();
+  DelayMs(2);	// 1.52 ms on datasheet
 }
 
-void LcdReturnHome() {
+void LcdInstrReturnHome() {
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, LCD_INSTR_RETHOME);
   LcdEnableOn();
-  DelayMs(2);	// 1.52 ms on datasheet
+  DelayUs(1);
   LcdEnableOff();
+  DelayMs(2);	// 1.52 ms on datasheet
 }
 
-void LcdSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_display) {
+void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_display) {
   unsigned char disp_out;
   disp_out = 0x04 | ddram_address_gain | shift_display;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdEnableOn();
-  DelayUs(50);	// 37 us on datasheet
+  DelayUs(1);
   LcdEnableOff();
+  DelayUs(45);	// 37 us on datasheet
 }
 
-void LcdSetDisplayMode(unsigned char display_control, unsigned char cursor_control, unsigned char cursor_blink_control) {
+void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_control, unsigned char cursor_blink_control) {
   unsigned char disp_out;
   disp_out = 0x08 | display_control | cursor_control | cursor_blink_control;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdEnableOn();
-  DelayUs(50);	// 37 us on datasheet
+  DelayUs(1);
   LcdEnableOff();
+  DelayUs(45);	// 37 us on datasheet
 }
 
-void LcdShiftCursorOrDisplay(unsigned char shift_select, unsigned char shift_direction) {
+void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shift_direction) {
   unsigned char disp_out;
   disp_out = 0x10 | shift_select << 3 | shift_direction;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdEnableOn();
-  DelayUs(50);	// 37 us on datasheet
+  DelayUs(1);
   LcdEnableOff();
+  DelayUs(45);	// 37 us on datasheet
 }
 
-void LcdSetFunction(unsigned char interface_length_control, unsigned char line_number_control, unsigned char dots_display_control) {
+void LcdInstrSetFunction(unsigned char interface_length_control, unsigned char line_number_control, unsigned char dots_display_control) {
   unsigned char disp_out;
   disp_out = 0x20 | interface_length_control | line_number_control | dots_display_control;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdEnableOn();
-  DelayUs(50);	// 37 us on datasheet
+  DelayUs(1);
   LcdEnableOff();
+  DelayUs(45);	// 37 us on datasheet
 }
 
-void LcdSetCGRAMAddress(unsigned char address) {
+void LcdInstrSetCGRAMAddress(unsigned char address) {
   unsigned char disp_out;
   disp_out = address & LCD_CGRAM_MASK;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdEnableOn();
-  DelayUs(50);  // 37 us on datasheet
+  DelayUs(1);
   LcdEnableOff();
+  DelayUs(45);	// 37 us on datasheet
 }
 
-void LcdSetDDRAMAddress(unsigned char address) {
+void LcdInstrSetDDRAMAddress(unsigned char address) {
   unsigned char disp_out;
   disp_out = address & LCD_DDRAM_MASK;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdEnableOn();
-  DelayUs(50);	// 37 us on datasheet
+  DelayUs(1);
   LcdEnableOff();
+  DelayUs(45);	// 37 us on datasheet
 }
 
 static void LcdSetDataOutputs(unsigned char data) {
@@ -146,23 +154,24 @@ static void LcdSetDataOutputs(unsigned char data) {
 
 void LcdDisplayData(unsigned char *data) {
   while(*data) {
-        switch (*data)
-        {
-        case '\n':          // move to second line
-            LcdSetDDRAMAddress(LINE_2);
-            break;
-        case '\r':          // home, point to first line
-            LcdSetDDRAMAddress(LINE_1);	// may use return home here?
-            break;
-        default:            // print character
-            LcdSetOutputs(LCD_DATA, LCD_WRITE, *data);  // this requires delay
-            LcdEnableOn();
-            DelayUs(1); // datasheet says 400 ns = .4 us
-            LcdEnableOff();
-            break;
-        }
-        data++;
+    switch (*data)
+    {
+      case '\n':          // move to second line
+        LcdSetDDRAMAddress(LINE_2);
+        break;
+      case '\r':          // home, point to first line
+        LcdSetDDRAMAddress(LINE_1);	// may use return home here?
+        break;
+      default:            // print character
+        LcdSetOutputs(LCD_DATA, LCD_WRITE, *data);  // this requires delay
+        LcdEnableOn();
+        DelayUs(1); // datasheet says 400 ns = .4 us
+        LcdEnableOff();
+        DelayUs(1);// TODO fix this stuff and change it around, delay is supposed to be 43 us (?) i believe
+        break;
     }
+    data++;
+  }
 }
 static void LcdSetOutputs(int rs, int rw, unsigned char c) {
   rs ? PORTSetBits(_rs_port, _rs) : PORTClearBits(_rs_port, _rs);

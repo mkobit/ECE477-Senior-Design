@@ -39,9 +39,10 @@
 
 //Power Management Register Bits
 //Recommended to set CLK_SEL to 1,2 or 3 at startup for more stable clock
-#define GYRO_PWR_MGM_CLK_SEL_0	(1 << 0)
-#define GYRO_PWR_MGM_CLK_SEL_1	(1 << 1)
-#define GYRO_PWR_MGM_CLK_SEL_2	(1 << 2)
+#define GYRO_PWR_MGM_CLK_SEL_INT (0)
+#define GYRO_PWR_MGM_CLK_SEL_X	(1)
+#define GYRO_PWR_MGM_CLK_SEL_Y	(2)
+#define GYRO_PWR_MGM_CLK_SEL_Z	(3)
 #define GYRO_PWR_MGM_STBY_Z	(1 << 3)
 #define GYRO_PWR_MGM_STBY_Y	(1 << 4)
 #define GYRO_PWR_MGM_STBY_X	(1 << 5)
@@ -59,6 +60,11 @@
 #define GYRO_FAIL -1
 #define GYRO_SUCCESS 1
 
+#define GYRO_CONV_TO_DEGREES 14.375
+#define GYRO_TEMP_CONV_TO_DEGREES 280
+#define GYRO_TEMP_OFFSET -13200
+#define GYRO_TEMP_OFFSET_DEGS 35
+
 typedef enum {
   GYRO_SUCCESS = 0,
   GYRO_FAIL
@@ -69,13 +75,9 @@ typedef gyro_raw_t {
   short int y;
   short int z;
   short int temp;
-  int scale_ind;
 } gyro_raw_t;
 
-GYRO_RESULT GyroInitI2C(I2C_MODULE i2c, 
-						char resolution, 
-						char bandwidth, 
-						accel_raw_readings *raw);
+GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, char sample_rate_div, char power_mgmt_sel);
 GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data);
 GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer);
 GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp);

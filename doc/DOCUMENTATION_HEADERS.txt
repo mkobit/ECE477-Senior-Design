@@ -7,49 +7,56 @@
 */
 
 // BEGINNING OF A PROGRAM - PUT THIS PART IN PROGRAMS AND FILL IT OUT
-/*
-* Title: 
-* Version: 
-* Filename: 
-* Author(s): 
-* Purpose of Program: 
-* How to build: 
-* Update History: 
-*/
+/**************************************************************************************************
+  Title: 
+  Version: 
+  Filename: 
+  Author(s): 
+  Purpose of Program: 
+  How to build: 
+  Update History: 
+**************************************************/
 
 // EXPLANATION OF THE BEGINNING IF A PROGRAM DETAILS
-/*
-* Title: (descriptive title)
-* Version: m.n (version number, following specified guidelines)
-* Filename: (name of file)
-* Author(s): (person who wrote code)
-* Purpose of Program: (describe what is going on)
-* How to build:  (any specifics about compilation)
-* Update History: (list of changes made since first written, date of each change
-*/
+/**************************************************************************************************
+  Title: (descriptive title)
+  Version: m.n (version number, following specified guidelines)
+  Filename: (name of file)
+  Author(s): (person who wrote code)
+  Purpose of Program: (describe what is going on)
+  How to build:  (any specifics about compilation)
+  Update History: (list of changes made since first written, date of each change
+**************************************************************************************************/
 
 
 
 // EACH FUNCTION - PUT THIS PART BY FUNCTIONS AND FILL IT OUT
-/* FUNCTION_NAME_HERE
-* Parameters: 
-* Author(s): 
-* Called by: 
-* Purpose/Function Performed: 
-* Calling Convention: 
-* Conditions at Exit: 
-* Date Started: 
-* Update History: 
-*/
+
+/************************************************************************************************** 
+  Function: 
+  Author(s): 
+  Summary: 
+  Description: 
+  Preconditions: 
+  Parameters: 
+  Returns: 
+  Example: 
+  Conditions at Exit: 
+**************************************************************************************************/
+
+
 
 // EXPLANATION OF EACH FUNCTION DETAILS
-/* FUNCTION_NAME_HERE
-* Parameters: (name, description of each parameter)
-* Author(s): (person who wrote code)
-* Called by: (list of programs/routines that use this)
-* Purpose/Function Performed: (operation performed by this function)
-* Calling Convention: (example)
-* Conditions at Exit: (include flags modified/other conditions)
-* Data Started: (when this function was started)
-* Update History: (list of changes made since first written)
-*/
+
+/**************************************************************************************************
+  Function:  function name
+  Parameters: (name, description of each parameter)
+  Author(s): (person who wrote code)
+  Summary: (summary of what function does)
+  Description: (small description as of what is going on)
+  Preconditions: (what should be true before function is called)
+  Parameters: (list of parameters and what they are)
+  Returns: (what this function returns and what it means)
+  Example: (example)
+  Conditions at Exit: (include flags modified/other conditions)
+**************************************************************************************************/

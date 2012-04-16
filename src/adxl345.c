@@ -7,41 +7,27 @@ static double SCALES[4] = { .0039, .0078, .0156, .0312};  // from datasheet
 
 static void AccelStopTx(I2C_MODULE i2c);
 
-ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, 
-						unsigned int peripheral_clock_speed, 
-						unsigned int i2c_speed, 
-						char resolution, 
-						char bandwidth, 
-						accel_raw_t *readings) {
+ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, char resolution, char bandwidth, accel_raw_t *readings) {
 
-  unsigned int actualClock;
-  ACCEL_RESULT result;
-  
-  // Check clock rate for peripheral bus
-  actualClock = I2CSetFrequency(i2c, peripheral_clock_speed, i2c_speed)
-  if (actualClock - i2c_speed > i2c_speed / 10) {
-    DBPRINTF("AccelInitI2C: Error, I2C clock frequency (%u) error exceeds 10%%n\n", actualClock); 
-    return ACCEL_FAIL;
-  }
-  I2CEnable(i2c, TRUE);
+  // I2C should already be enabled
   
   // Write configurations to it
-  result = AccelWrite(i2c, ACCEL_POWER_CTL, ACCEL_MEASURE);   // Put accel in MEASURE mode
-  if (result == ACCEL_FAIL) {
+  // Put accel in MEASURE mode
+  if (AccelWrite(i2c, ACCEL_POWER_CTL, ACCEL_MEASURE) == ACCEL_FAIL) {
     DBPRINTF("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c); 
-    return ACCEL_FAIL;
+    return ACCEL_FAIL
   }
   
-  result = AccelWrite(i2c, ACCEL_DATA_FORMAT, resolution);   // Data Format
-  if (result == ACCEL_FAIL) {
-    DBPRINTF("AccelInitI2C: Error, could not write to ACCEL_DATA_FORMAT to I2C=%d\n", i2c); 
-    return ACCEL_FAIL;
+  // Set Data Format
+  if (AccelWrite(i2c, ACCEL_DATA_FORMAT, resolution) == ACCEL_FAIL) {
+    DBPRINTF("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c); 
+    return ACCEL_FAIL
   }
-  
-  result = AccelWrite(i2c, ACCEL_BW_RATE, bandwidth);  // Bandwidth
-  if (result == ACCEL_FAIL) {
-    DBPRINTF("AccelInitI2C: Error, could not write to ACCEL_BW_RATE to I2C=%d\n", i2c);
-    return ACCEL_FAIL;
+
+  // Set Bandwidth
+  if (AccelWrite(i2c, ACCEL_BW_RATE, bandwidth) == ACCEL_FAIL) {
+    DBPRINTF("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c); 
+    return ACCEL_FAIL
   }
   
   // Determine which scaling to use when getting the values
@@ -58,7 +44,7 @@ ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c,
 
 
 ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
-  if (I2CShared_Write(i2c, ACCEL_WRITE, i2c_reg, data)) {
+  if (I2CShared_WriteByte(i2c, ACCEL_WRITE, i2c_reg, data)) {
     return ACCEL_SUCCESS;
   } else {
     return ACCEL_FAIL;
@@ -67,7 +53,7 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
 
 
 ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
-  if (I2CShared_Read(i2c, ACCEL_READ, i2c_reg, buffer)) {
+  if (I2CShared_ReadByte(i2c, ACCEL_WRITE, ACCEL_READ, i2c_reg, buffer)) {
     return ACCEL_SUCCESS;
   } else {
     return ACCEL_FAIL;
@@ -76,121 +62,17 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
 
 
 ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *readings) {
-  BOOL ack, trans;
-  char temp_lsb;
-  char temp_msb;
-
-  // Wait until bus is open
-  while(!I2CBusIsIdle(i2c));  
+  char reading_rainbow[6];
   
-  // START TRANSACTION
-  if(!I2CShared_StartTransfer(i2c, FALSE) {
-    DBPRINTF("AccelReadAllAxes: Error, bus collision during transfer start to I2C=%d\n", i2c);
+  // read x,y, and z data into buffer
+  if (I2CShared_ReadMultipleBytes(I2C_MODULE i2c, ACCEL_WRITE, ACCEL_READ, ACCEL_DATAX0, 6, reading_rainbow)) {
+    readings->x = (reading_rainbow[1] << 8) | reading_rainbow[0];
+    readings->y = (reading_rainbow[3] << 8) | reading_rainbow[2];
+    readings->z = (reading_rainbow[5] << 8) | reading_rainbow[4];
+    return ACCEL_SUCCESS;
+  } else {
     return ACCEL_FAIL;
   }
-    
-  // SEND ADDRESS
-  trans = I2CShared_TransmitOneByte(i2c, ACCEL_READ);
-  ack = I2CByteWasAcknowledged(i2c);
-  if (!trans || !ack) {
-    DBPRINTF("AccelReadAllAxes: Error, could not send i2c_address 0x%c to I2C=%d\n", i2c_addr, i2c);
-    I2CShared_StopTransfer(i2c);
-    return FALSE;
-  }
-  
-  // SEND INTERNAL REGISTER
-  trans = I2CShared_TransmitOneByte(i2c, ACCEL_DATAX0);
-  ack = I2CByteWasAcknowledged(i2c);
-  if (!trans || !ack) {
-    DBPRINTF("I2CShared_Read: Error, could not send i2c_register 0x%c to I2C=%d\n", i2c_register, i2c);
-    I2CShared_StopTransfer(i2c);
-    return FALSE;
-  }
-  
-  // START READING
-  // Read raw X
-  // read x LSB
-  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
-  if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
-    I2CShared_StopTransfer(i2c);
-    return ACCEL_FAIL;
-  }
-  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
-  // x LSB
-  temp_lsb = I2CGetByte(i2c);
-  I2CAcknowledgeByte(i2c, TRUE);
-  // read x MSB
-  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
-  if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
-    I2CShared_StopTransfer(i2c);
-    return ACCEL_FAIL;
-  }
-  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
-  // x MSB
-  temp_msb = I2CGetByte(i2c);
-  I2CAcknowledgeByte(i2c, TRUE);
-  // Update X
-  accel_raw_t->x = (temp_msb << 8) | temp_lsb;
-  
-  // Read raw Y
-  // read y LSB
-  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
-  if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
-    I2CShared_StopTransfer(i2c);
-    return ACCEL_FAIL;
-  }
-  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
-  // y LSB
-  temp_lsb = I2CGetByte(i2c);
-  I2CAcknowledgeByte(i2c, TRUE);
-  // read y MSB
-  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
-  if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
-    I2CShared_StopTransfer(i2c);
-    return ACCEL_FAIL;
-  }
-  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
-  // y MSB
-  temp_msb = I2CGetByte(i2c);  
-  I2CAcknowledgeByte(i2c, TRUE);
-  // Update Y
-  accel_raw_t->y = (temp_msb << 8) | temp_lsb;
-  
-  // Read raw Z
-  // read z LSB
-  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
-  if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
-    I2CShared_StopTransfer(i2c);
-    return ACCEL_FAIL;
-  }
-  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
-  // z LSB
-  temp_lsb = I2CGetByte(i2c);
-  I2CAcknowledgeByte(i2c, TRUE);
-  // read z mSB
-  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
-  if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
-    I2CShared_StopTransfer(i2c);
-    return ACCEL_FAIL;
-  }
-  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
-  // z MSB
-  temp_msb = I2CGetByte(i2c);  
-  // Send NACK to stop reading
-  I2CAcknowledgeByte(i2c, FALSE);
-  // Update Z
-  accel_raw_t->z = (temp_msb << 8) | temp_lsb;
-  // END READ
-  
-  // Stop the transation
-  I2CStop(i2c);
-  return ACCEL_SUCCESS;
 }
 
 

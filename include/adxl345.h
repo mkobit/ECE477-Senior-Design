@@ -90,24 +90,24 @@ typedef enum {
   ACCEL_FAIL
 } ACCEL_RESULT;
 
-typedef struct accel_raw_readings {
+typedef struct accel_raw_t {
   short int x;
   short int y;
   short int z;
   int scale_ind;
-} accel_raw_readings;
+} accel_raw_t;
 
 ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, 
 						unsigned int peripheral_clock_speed, 
 						unsigned int i2c_speed, 
 						char resolution, 
 						char bandwidth, 
-						accel_raw_readings *readings);
+						accel_raw_t *readings);
 ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data);
 ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer);
-ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings);
-double AccelGetX(accel_raw_readings *readings);
-double AccelGetY(accel_raw_readings *readings);
-double AccelGetZ(accel_raw_readings *readings);
+ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *readings);
+double AccelGetX(accel_raw_t *readings);
+double AccelGetY(accel_raw_t *readings);
+double AccelGetZ(accel_raw_t *readings);
 
 #endif

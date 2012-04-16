@@ -22,16 +22,16 @@ GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
 
 
 // TODO get functions
-double GyroGetX(gyro_raw_readings *readings) {
+double GyroGetX(gyro_raw_t *readings) {
   return 0.0;
 }
 
 
-double GyroGetY(gyro_raw_readings *readings) {
+double GyroGetY(gyro_raw_t *readings) {
   return 0.0;
 }
 
 
-double GyroGetZ(gyro_raw_readings *readings) {
+double GyroGetZ(gyro_raw_t *readings) {
   return 0.0;
 }

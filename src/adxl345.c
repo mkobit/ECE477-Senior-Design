@@ -12,7 +12,7 @@ ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c,
 						unsigned int i2c_speed, 
 						char resolution, 
 						char bandwidth, 
-						accel_raw_readings *readings) {
+						accel_raw_t *readings) {
 
   unsigned int actualClock;
   ACCEL_RESULT result;
@@ -75,7 +75,7 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
 }
 
 
-ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
+ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *readings) {
   BOOL ack, trans;
   char temp_lsb;
   char temp_msb;
@@ -90,13 +90,21 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   }
     
   // SEND ADDRESS
-  // Send address for transaction OR'ed with write bit, address is beginning of axis data
-  trans = I2CShared_TransmitOneByte(i2c, (ACCEL_DATAX0 << 1) | I2C_WRITE);
+  trans = I2CShared_TransmitOneByte(i2c, ACCEL_READ);
   ack = I2CByteWasAcknowledged(i2c);
   if (!trans || !ack) {
-    DBPRINTF("AccelReadAllAxes: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
+    DBPRINTF("AccelReadAllAxes: Error, could not send i2c_address 0x%c to I2C=%d\n", i2c_addr, i2c);
     I2CShared_StopTransfer(i2c);
-    return ACCEL_FAIL;
+    return FALSE;
+  }
+  
+  // SEND INTERNAL REGISTER
+  trans = I2CShared_TransmitOneByte(i2c, ACCEL_DATAX0);
+  ack = I2CByteWasAcknowledged(i2c);
+  if (!trans || !ack) {
+    DBPRINTF("I2CShared_Read: Error, could not send i2c_register 0x%c to I2C=%d\n", i2c_register, i2c);
+    I2CShared_StopTransfer(i2c);
+    return FALSE;
   }
   
   // START READING
@@ -112,7 +120,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   // x LSB
   temp_lsb = I2CGetByte(i2c);
   I2CAcknowledgeByte(i2c, TRUE);
-  // read 
+  // read x MSB
   result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
   if (result != I2C_SUCCESS) {
     DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
@@ -124,7 +132,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   temp_msb = I2CGetByte(i2c);
   I2CAcknowledgeByte(i2c, TRUE);
   // Update X
-  accel_raw_readings->x = (temp_msb << 8) | temp_lsb;
+  accel_raw_t->x = (temp_msb << 8) | temp_lsb;
   
   // Read raw Y
   // read y LSB
@@ -150,7 +158,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   temp_msb = I2CGetByte(i2c);  
   I2CAcknowledgeByte(i2c, TRUE);
   // Update Y
-  accel_raw_readings->y = (temp_msb << 8) | temp_lsb;
+  accel_raw_t->y = (temp_msb << 8) | temp_lsb;
   
   // Read raw Z
   // read z LSB
@@ -177,7 +185,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   // Send NACK to stop reading
   I2CAcknowledgeByte(i2c, FALSE);
   // Update Z
-  accel_raw_readings->z = (temp_msb << 8) | temp_lsb;
+  accel_raw_t->z = (temp_msb << 8) | temp_lsb;
   // END READ
   
   // Stop the transation
@@ -186,21 +194,21 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
 }
 
 
-double AccelGetX(accel_raw_readings *readings) {
+double AccelGetX(accel_raw_t *readings) {
   double xf;
   xf = (double) readings->x * SCALES[readings->scale_ind];
   return xf;
 }
 
 
-double AccelGetY(accel_raw_readings *readings) {
+double AccelGetY(accel_raw_t *readings) {
   double yf;
   yf = (double) readings->y * SCALES[readings->scale_ind];
   return yf;
 }
 
 
-double AccelGetZ(accel_raw_readings *readings) {
+double AccelGetZ(accel_raw_t *readings) {
   double zf;
   zf = (double) readings->z * SCALES[readings->scale_ind];
   return zf;

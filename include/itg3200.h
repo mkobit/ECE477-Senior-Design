@@ -52,7 +52,18 @@
 #define GYRO_INT_CFG_GYRO_RDY_EN		(1 << 2)
 #define GYRO_INT_CFG_RAW_RDY_EN		(1 << 0)
 
-typedef struct gyro_readings {
-} gyro_readings;
+#define GYRO_FAIL -1
+#define GYRO_SUCCESS 1
+
+typedef gyro_raw_readings {
+  short int x;
+  short int y;
+  short int z;
+  // TODO add sensitivity things here
+} gyro_raw_readings;
+
+float AccelGetX(gyro_raw_readings *readings);
+float AccelGetY(gyro_raw_readings *readings);
+float AccelGetZ(gyro_raw_readings *readings);
 
 #endif

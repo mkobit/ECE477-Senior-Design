@@ -29,12 +29,12 @@
 #define	ACCEL_INT_MAP		0x2F	//Interrupt Mapping Control
 #define	ACCEL_INT_SOURCE		0x30	//Source of interrupts
 #define	ACCEL_DATA_FORMAT	0x31	//Data format control
-#define ACCEL_DATAX0			0x32	//X-Axis Data 0
-#define ACCEL_DATAX1			0x33	//X-Axis Data 1
-#define ACCEL_DATAY0			0x34	//Y-Axis Data 0
-#define ACCEL_DATAY1			0x35	//Y-Axis Data 1
-#define ACCEL_DATAZ0			0x36	//Z-Axis Data 0
-#define ACCEL_DATAZ1			0x37	//Z-Axis Data 1
+#define ACCEL_DATAX0			0x32	//X-Axis Data 0 LSB
+#define ACCEL_DATAX1			0x33	//X-Axis Data 1 MSB
+#define ACCEL_DATAY0			0x34	//Y-Axis Data 0 LSB
+#define ACCEL_DATAY1			0x35	//Y-Axis Data 1 MSB
+#define ACCEL_DATAZ0			0x36	//Z-Axis Data 0 LSB
+#define ACCEL_DATAZ1			0x37	//Z-Axis Data 1 MSB
 #define	ACCEL_FIFO_CTL		0x38	//FIFO control
 #define	ACCEL_FIFO_STATUS	0x39	//FIFO status
 
@@ -79,6 +79,12 @@
 #define	ACCEL_SPI		(1 << 6)
 #define	ACCEL_SELF_TEST	(1 << 7)
 
+// Sensitivity indices for the static array in adxl.c for 10-bit resolution
+#define	ACCEL_SCALE_2G 0
+#define	ACCEL_SCALE_4G 1
+#define	ACCEL_SCALE_8G 2
+#define	ACCEL_SCALE_16G 3
+
 typedef enum {
   ACCEL_SUCCESS = 0,
   ACCEL_FAIL
@@ -91,14 +97,20 @@ typedef struct accel_raw_readings {
   short int y;
   short int z;
   // TODO add sensitivity things here
+  int scale_ind;
 } accel_raw_readings;
 
-ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, unsigned int i2c_speed);
+ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, 
+						unsigned int peripheral_clock_speed, 
+						unsigned int i2c_speed, 
+						char resolution, 
+						char bandwidth, 
+						accel_raw_readings *readings);
 ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_addr, BYTE data);
 ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_addr, char *buffer);
 ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings);
-float AccelGetX(accel_raw_readings *readings);
-float AccelGetY(accel_raw_readings *readings);
-float AccelGetZ(accel_raw_readings *readings);
+double AccelGetX(accel_raw_readings *readings);
+double AccelGetY(accel_raw_readings *readings);
+double AccelGetZ(accel_raw_readings *readings);
 
 #endif

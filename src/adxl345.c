@@ -1,14 +1,24 @@
 #include <p32xxxx.h>
 #include <plib.h>
 #include "adxl345.h"
+#include "i2c_shared.h"
+
+static double SCALES[4] = { .0039, .0078, .0156, .0312};  // from datasheet
 
 static void AccelStopTx(I2C_MODULE i2c);
 
-ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, unsigned int i2c_speed, char resolution, char bandwidth) {
+ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, 
+						unsigned int peripheral_clock_speed, 
+						unsigned int i2c_speed, 
+						char resolution, 
+						char bandwidth, 
+						accel_raw_readings *readings) {
+
   unsigned int actualClock;
   ACCEL_RESULT result;
   
-  actualClock = I2CSetFrequency(i2c, GetPeripheralClock(), i2c_speed)
+  // Check clock rate for peripheral bus
+  actualClock = I2CSetFrequency(i2c, peripheral_clock_speed, i2c_speed)
   if (actualClock - i2c_speed > i2c_speed / 10) {
     DBPRINTF("AccelInitI2C: Error, I2C clock frequency (%u) error exceeds 10%%n\n", actualClock); 
     return ACCEL_FAIL;
@@ -33,51 +43,53 @@ ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, unsigned int i2c_speed, char resolutio
     DBPRINTF("AccelInitI2C: Error, could not write to ACCEL_BW_RATE to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
+  
+  // Determine which scaling to use when getting the values
+  switch(resolution) {
+    case ACCEL_RANGE_2G: readings->scale_ind = ACCEL_SCALE_2G; break;
+    case ACCEL_RANGE_4G: readings->scale_ind = ACCEL_SCALE_4G; break;
+    case ACCEL_RANGE_8G: readings->scale_ind = ACCEL_SCALE_8G; break;
+    case ACCEL_RANGE_16G: readings->scale_ind = ACCEL_SCALE_16G; break;
+    default: DBPRINTF("AccelInitI2C: Error, 0x%c not a valid range for data format for adxl345\n", resolution); return ACCEL_FAIL;
+  }
+  
   return ACCEL_SUCCESS;
 }
 
 
 ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_addr, BYTE data) {
-  I2C_RESULT result;
-  I2C_STATUS status;
+  BOOL ack, trans;
 
   // Wait until bus is open
   while(!I2CBusIsIdle(i2c));  
   
   // START TRANSACTION
-  if(I2CStart(i2c) != I2C_SUCCESS) {
+  if(!I2CShared_StartTransfer(i2c, FALSE) {
     DBPRINTF("AccelRead: Error, bus collision during transfer start to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
-  do { 
-    status = I2CGetStatus(i2c);
-  } while (!(status & I2C_START));  // blocks until start is finished
-  
+    
   // SEND ADDRESS
-  // Wait for the transmitter to be ready
-  while(!I2CTransmitterIsReady(i2c));
-  // Send address for transaction OR'ed with write bit
-  result = I2CSendByte(i2c, (data << 1) | I2C_WRITE);
-  while (!I2CTransmissionHasCompleted(i2c));
-  if (result != I2C_SUCCESS || !I2CByteWasAcknowledged(i2c)) {
+  // Send address for transaction OR'ed with write bit 
+  trans = I2CShared_TransmitOneByte(i2c, (i2c_addr << 1) | I2C_WRITE);
+  ack = I2CByteWasAcknowledged(i2c);
+  if (!trans || !ack) {
     DBPRINTF("AccelWrite: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
-    I2CStop(i2c);
+    I2CShared_StopTransfer(i2c);
     return ACCEL_FAIL;
   }
   
   // WRITE DATA BYTE
-  result = I2CSendByte(i2c, data);
-  while (!I2CTransmissionHasCompleted(i2c));
-  if (result != I2C_SUCCESS || !I2CByteWasAcknowledged(i2c)) {
+  trans = I2CShared_TransmitOneByte(i2c, data);
+  ack = I2CByteWasAcknowledged(i2c);
+  if (!trans || !ack) {
     DBPRINTF("AccelWrite: Error, could not send data byte 0x%c to I2C=%d\n", data, i2c);
-    I2CStop(i2c);
+    I2CShared_StopTransfer(i2c);
     return ACCEL_FAIL;
   }
     
   // SEND STOP
-  do {
-    status = I2CGetStatus(i2c);
-  } while ( !(status & I2C_STOP) );
+  I2CShared_StopTransfer(i2c);
   
   // Transaction complete
   return ACCEL_SUCCESS;
@@ -87,30 +99,25 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_addr, BYTE data) {
 ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_addr, char *buffer) {
   I2C_RESULT result;
     
-  while(!I2CBusIsIdle(i2c));  // wait until bus is open
+  while(!I2CBusIsIdle(i2c));  
   
-  // Start transaction
-  if(I2CStart(EEPROM_I2C_BUS) != I2C_SUCCESS) {
+  // START TRANSACTION
+  if(!I2CShared_StartTransfer(i2c, FALSE) {
     DBPRINTF("AccelRead: Error, bus collision during transfer start to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
-  do { // blocks until start is finished
-    result = I2CGetStatus(EEPROM_I2C_BUS);
-  } while (!(result & I2C_START));
-  if (result != I2C_SUCCESS || !I2CByteWasAcknowledged(i2c)) {
-    DBPRINTF("AccelRead: Error, could not start a write to I2C=%d\n", i2c);
-    I2CStop(i2c);
+    
+  // SEND ADDRESS
+  // Send address for transaction OR'ed with write bit 
+  trans = I2CShared_TransmitOneByte(i2c, (i2c_addr << 1) | I2C_WRITE);
+  ack = I2CByteWasAcknowledged(i2c);
+  if (!trans || !ack) {
+    DBPRINTF("AccelWrite: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
+    I2CShared_StopTransfer(i2c);
     return ACCEL_FAIL;
   }
-  // Send address for transaction OR'ed with read bit
-  result = I2CSendByte(i2c, (data << 1) | I2C_READ);
-  while (!I2CTransmissionHasCompleted(i2c));
-  if (result != I2C_SUCCESS || !I2CByteWasAcknowledged(i2c)) {
-    DBPRINTF("AccelRead: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
-    I2CStop(i2c);
-    return ACCEL_FAIL;
-  }
-  // Read data byte
+  
+  // READ DATA BYTE
   result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
   if (result != I2C_SUCCESS) {
     DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
@@ -118,33 +125,141 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_addr, char *buffer) {
     return ACCEL_FAIL;
   }
   while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
-  I2CAcknowledgeByte(i2c, TRUE);
   *buffer = I2CGetByte(i2c);
-  
+  I2CAcknowledgeByte(i2c, FALSE); // send nack on last byte
+  I2CStop(i2c);
+  return ACCEL_SUCCESS;
 }
 
 
 ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
+  BOOL ack, trans;
+  char temp_lsb;
+  char temp_msb;
+
+  // Wait until bus is open
+  while(!I2CBusIsIdle(i2c));  
+  
+  // START TRANSACTION
+  if(!I2CShared_StartTransfer(i2c, FALSE) {
+    DBPRINTF("AccelRead: Error, bus collision during transfer start to I2C=%d\n", i2c);
+    return ACCEL_FAIL;
+  }
+    
+  // SEND ADDRESS
+  // Send address for transaction OR'ed with write bit, address is beginning of axis data
+  trans = I2CShared_TransmitOneByte(i2c, (ACCEL_DATAX0 << 1) | I2C_WRITE);
+  ack = I2CByteWasAcknowledged(i2c);
+  if (!trans || !ack) {
+    DBPRINTF("AccelWrite: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
+    I2CShared_StopTransfer(i2c);
+    return ACCEL_FAIL;
+  }
+  
+  // START READING
+  // Read raw X
+  // read x LSB
+  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
+  if (result != I2C_SUCCESS) {
+    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    I2CShared_StopTransfer(i2c);
+    return ACCEL_FAIL;
+  }
+  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
+  // x LSB
+  temp_lsb = I2CGetByte(i2c);
+  I2CAcknowledgeByte(i2c, TRUE);
+  // read 
+  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
+  if (result != I2C_SUCCESS) {
+    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    I2CShared_StopTransfer(i2c);
+    return ACCEL_FAIL;
+  }
+  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
+  // x MSB
+  temp_msb = I2CGetByte(i2c);
+  I2CAcknowledgeByte(i2c, TRUE);
+  // Update X
+  accel_raw_readings->x = (temp_msb << 8) | temp_lsb;
+  
+  // Read raw Y
+  // read y LSB
+  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
+  if (result != I2C_SUCCESS) {
+    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    I2CShared_StopTransfer(i2c);
+    return ACCEL_FAIL;
+  }
+  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
+  // y LSB
+  temp_lsb = I2CGetByte(i2c);
+  I2CAcknowledgeByte(i2c, TRUE);
+  // read y MSB
+  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
+  if (result != I2C_SUCCESS) {
+    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    I2CShared_StopTransfer(i2c);
+    return ACCEL_FAIL;
+  }
+  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
+  // y MSB
+  temp_msb = I2CGetByte(i2c);  
+  I2CAcknowledgeByte(i2c, TRUE);
+  // Update Y
+  accel_raw_readings->y = (temp_msb << 8) | temp_lsb;
+  
+  // Read raw Z
+  // read z LSB
+  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
+  if (result != I2C_SUCCESS) {
+    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    I2CShared_StopTransfer(i2c);
+    return ACCEL_FAIL;
+  }
+  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
+  // z LSB
+  temp_lsb = I2CGetByte(i2c);
+  I2CAcknowledgeByte(i2c, TRUE);
+  // read z mSB
+  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
+  if (result != I2C_SUCCESS) {
+    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    I2CShared_StopTransfer(i2c);
+    return ACCEL_FAIL;
+  }
+  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
+  // z MSB
+  temp_msb = I2CGetByte(i2c);  
+  // Send NACK to stop reading
+  I2CAcknowledgeByte(i2c, FALSE);
+  // Update Z
+  accel_raw_readings->z = (temp_msb << 8) | temp_lsb;
+  // END READ
+  
+  // Stop the transation
+  I2CStop(i2c);
+  return ACCEL_SUCCESS;
 }
 
 
-float AccelGetX(accel_raw_readings *readings) {
-  float xf;
-  xf = readings->x * 5.0;// TODO this needs to be changed to accurately convert the accel
+double AccelGetX(accel_raw_readings *readings) {
+  double xf;
+  xf = (double) readings->x * SCALES[readings->scale_ind];
   return xf;
 }
 
 
-float AccelGetY(accel_raw_readings *readings) {
-  float yf;
-  yf = readings->y * 5.0; // TODO this needs to be changed to accurately convert the accel
+double AccelGetY(accel_raw_readings *readings) {
+  double yf;
+  yf = (double) readings->y * SCALES[readings->scale_ind];
   return yf;
 }
 
 
-float AccelGetZ(accel_raw_readings *readings) {
-  float zf;
-  zf = readings->z * 5.0; // TODO this needs to be changed to accurately convert the accel
+double AccelGetZ(accel_raw_readings *readings) {
+  double zf;
+  zf = (double) readings->z * SCALES[readings->scale_ind];
   return zf;
 }
 

@@ -97,12 +97,12 @@ typedef struct accel_raw_t {
   int scale_ind;
 } accel_raw_t;
 
-ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, char resolution, char bandwidth, accel_raw_t *readings);
+ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, char resolution, char bandwidth, accel_raw_t *raw);
 ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data);
 ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer);
-ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *readings);
-double AccelGetX(accel_raw_t *readings);
-double AccelGetY(accel_raw_t *readings);
-double AccelGetZ(accel_raw_t *readings);
+ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw);
+double AccelGetX(accel_raw_t *raw);
+double AccelGetY(accel_raw_t *raw);
+double AccelGetZ(accel_raw_t *raw);
 
 #endif

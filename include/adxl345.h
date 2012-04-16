@@ -90,13 +90,10 @@ typedef enum {
   ACCEL_FAIL
 } ACCEL_RESULT;
 
-typedef int ACCEL_RESULT;
-
 typedef struct accel_raw_readings {
   short int x;
   short int y;
   short int z;
-  // TODO add sensitivity things here
   int scale_ind;
 } accel_raw_readings;
 

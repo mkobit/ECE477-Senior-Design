@@ -55,15 +55,29 @@
 #define GYRO_FAIL -1
 #define GYRO_SUCCESS 1
 
+typedef enum {
+  GYRO_SUCCESS = 0,
+  GYRO_FAIL
+} GYRO_RESULT;
+
 typedef gyro_raw_readings {
   short int x;
   short int y;
   short int z;
-  // TODO add sensitivity things here
+  int scale_ind;
 } gyro_raw_readings;
 
-float AccelGetX(gyro_raw_readings *readings);
-float AccelGetY(gyro_raw_readings *readings);
-float AccelGetZ(gyro_raw_readings *readings);
+GYRO_RESULT GyroInitI2C(I2C_MODULE i2c, 
+						unsigned int peripheral_clock_speed, 
+						unsigned int i2c_speed, 
+						char resolution, 
+						char bandwidth, 
+						accel_raw_readings *readings);
+GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data);
+GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer);
+GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings);
+double GyroGetX(gyro_raw_readings *readings);
+double GyroGetY(gyro_raw_readings *readings);
+double GyroGetZ(gyro_raw_readings *readings);
 
 #endif

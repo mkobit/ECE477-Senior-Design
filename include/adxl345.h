@@ -103,8 +103,8 @@ ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c,
 						char resolution, 
 						char bandwidth, 
 						accel_raw_readings *readings);
-ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_addr, BYTE data);
-ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_addr, char *buffer);
+ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data);
+ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer);
 ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings);
 double AccelGetX(accel_raw_readings *readings);
 double AccelGetY(accel_raw_readings *readings);

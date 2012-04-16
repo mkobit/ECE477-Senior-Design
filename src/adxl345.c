@@ -57,78 +57,21 @@ ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c,
 }
 
 
-ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_addr, BYTE data) {
-  BOOL ack, trans;
-
-  // Wait until bus is open
-  while(!I2CBusIsIdle(i2c));  
-  
-  // START TRANSACTION
-  if(!I2CShared_StartTransfer(i2c, FALSE) {
-    DBPRINTF("AccelWrite: Error, bus collision during transfer start to I2C=%d\n", i2c);
+ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
+  if (I2CShared_Write(i2c, ACCEL_WRITE, i2c_reg, data)) {
+    return ACCEL_SUCCESS;
+  } else {
     return ACCEL_FAIL;
   }
-    
-  // SEND ADDRESS
-  // Send address for transaction OR'ed with write bit 
-  trans = I2CShared_TransmitOneByte(i2c, (i2c_addr << 1) | I2C_WRITE);
-  ack = I2CByteWasAcknowledged(i2c);
-  if (!trans || !ack) {
-    DBPRINTF("AccelWrite: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
-    I2CShared_StopTransfer(i2c);
-    return ACCEL_FAIL;
-  }
-  
-  // WRITE DATA BYTE
-  trans = I2CShared_TransmitOneByte(i2c, data);
-  ack = I2CByteWasAcknowledged(i2c);
-  if (!trans || !ack) {
-    DBPRINTF("AccelWrite: Error, could not send data byte 0x%c to I2C=%d\n", data, i2c);
-    I2CShared_StopTransfer(i2c);
-    return ACCEL_FAIL;
-  }
-    
-  // SEND STOP
-  I2CShared_StopTransfer(i2c);
-  
-  // Transaction complete
-  return ACCEL_SUCCESS;
 }
 
 
-ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_addr, char *buffer) {
-  I2C_RESULT result;
-    
-  while(!I2CBusIsIdle(i2c));  
-  
-  // START TRANSACTION
-  if(!I2CShared_StartTransfer(i2c, FALSE) {
-    DBPRINTF("AccelRead: Error, bus collision during transfer start to I2C=%d\n", i2c);
+ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
+  if (I2CShared_Read(i2c, ACCEL_READ, i2c_reg, buffer)) {
+    return ACCEL_SUCCESS;
+  } else {
     return ACCEL_FAIL;
   }
-    
-  // SEND ADDRESS
-  // Send address for transaction OR'ed with write bit 
-  trans = I2CShared_TransmitOneByte(i2c, (i2c_addr << 1) | I2C_WRITE);
-  ack = I2CByteWasAcknowledged(i2c);
-  if (!trans || !ack) {
-    DBPRINTF("AccelRead: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
-    I2CShared_StopTransfer(i2c);
-    return ACCEL_FAIL;
-  }
-  
-  // READ DATA BYTE
-  result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
-  if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
-    I2CStop(i2c);
-    return ACCEL_FAIL;
-  }
-  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
-  *buffer = I2CGetByte(i2c);
-  I2CAcknowledgeByte(i2c, FALSE); // send nack on last byte
-  I2CStop(i2c);
-  return ACCEL_SUCCESS;
 }
 
 

@@ -3,6 +3,26 @@
 #include "itg3200.h"
 #include "i2c_shared.h"
 
+/************************************************************************************************** 
+  Function: 
+
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, char sample_rate_div, char power_mgmt_sel) {
 
   // OR the low pass frequency passed with dflp_config with full scale operation and write it to the gyro
@@ -31,6 +51,26 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, char sample_rate_div, char p
   return GYRO_SUCCESS;
 }
 
+/************************************************************************************************** 
+  Function: 
+
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
   if (I2CShared_Write(i2c, GYRO_WRITE, i2c_reg, data)) {
     return GYRO_SUCCESS;
@@ -39,7 +79,26 @@ GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
   }
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
   if (I2CShared_Read(i2c, GYRO_READ, i2c_reg, buffer)) {
     return GYRO_SUCCESS;
@@ -48,7 +107,26 @@ GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
   }
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
   char reading_rainbow[8];
   int dataToRead;
@@ -78,7 +156,26 @@ GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
 }
 
 
-// TODO get functions
+/************************************************************************************************** 
+  Function: 
+
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double GyroGetTemp(gyro_raw_t *raw) {
   double temperature;
   temperature = -GYRO_TEMP_OFFSET - raw->temp;
@@ -87,21 +184,78 @@ double GyroGetTemp(gyro_raw_t *raw) {
   return temperature;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double GyroGetX(gyro_raw_t *raw) {
   double xd;
   xd = (double) raw->x / GYRO_CONV_TO_DEGREES;
   return xd;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double GyroGetY(gyro_raw_t *raw) {
   double yd;
   yd = (double) raw->y / GYRO_CONV_TO_DEGREES;
   return yd;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double GyroGetZ(gyro_raw_t *raw) {
   double zd;
   zd = (double) raw->z / GYRO_CONV_TO_DEGREES;

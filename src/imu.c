@@ -4,6 +4,26 @@
 
 static inline void ImuToggleSelector(imu_t* imu);
 
+/************************************************************************************************** 
+  Function: 
+
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 IMU_RESULT ImuInit(imu_t* imu, 
           unsigned int peripheral_clock_speed, 
 					unsigned int i2c_speed, 
@@ -46,7 +66,26 @@ IMU_RESULT ImuInit(imu_t* imu,
   }
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 IMU_RESULT ImuUpdate(imu_t *imu) {
   ACCEL_RESULT a_result;
   GYRO_RESULT g_result;
@@ -78,22 +117,98 @@ IMU_RESULT ImuUpdate(imu_t *imu) {
   }
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 accel_raw_t *ImuGetRawAccel(imu_t *imu) {
   return &imu->accel_raw;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 gyro_raw_t *ImuGetRawGyro(imu_t *imu) {
   return &imu->gyro_raw;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 BOOL ImuIsOn(imu_t *imu) {
   return imu->isOn;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double ImuGetGyroTemp(imu_t *imu) {
   double gtemp;
   gtemp = GyroGetTemp(&imu->gyro_raw);
@@ -107,41 +222,156 @@ double ImuGetGyroX(imu_t *imu) {
   return gx;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double ImuGetGyroY(imu_t *imu) {
   double gy;
   gy = GyroGetX(&imu->gyro_raw);
   return gy;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double ImuGetGyroZ(imu_t *imu) {
   double gz;
   gz = GyroGetX(&imu->gyro_raw);
   return gz;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double ImuGetAccelX(imu_t *imu) {
   double ax;
   ax = AccelGetZ(&imu->accel_raw);
   return ax;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double ImuGetAccelY(imu_t *imu) {
   double ay;
   ay = AccelGetZ(&imu->accel_raw);
   return ay;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double ImuGetAccelZ(imu_t *imu) {
   double az;
   az = AccelGetZ(&imu->accel_raw);
   return az;
 }
 
+/************************************************************************************************** 
+  Function: 
+
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 static inline void ImuToggleSelector(imu_t* imu) {
   imu->readAccelFirst = !imu->readAccelFirst;
 }

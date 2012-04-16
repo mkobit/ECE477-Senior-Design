@@ -7,6 +7,26 @@ static double SCALES[4] = { .0039, .0078, .0156, .0312};  // from datasheet
 
 static void AccelStopTx(I2C_MODULE i2c);
 
+/************************************************************************************************** 
+  Function: 
+
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, char resolution, char bandwidth, accel_raw_t *raw) {
 
   // I2C should already be enabled
@@ -42,7 +62,26 @@ ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, char resolution, char bandwidth, accel
   return ACCEL_SUCCESS;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
   if (I2CShared_WriteByte(i2c, ACCEL_WRITE, i2c_reg, data)) {
     return ACCEL_SUCCESS;
@@ -51,7 +90,26 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
   }
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
   if (I2CShared_ReadByte(i2c, ACCEL_WRITE, ACCEL_READ, i2c_reg, buffer)) {
     return ACCEL_SUCCESS;
@@ -60,7 +118,26 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
   }
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
   char reading_rainbow[6];
   
@@ -76,21 +153,78 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
   }
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double AccelGetX(accel_raw_t *raw) {
   double xf;
   xf = (double) raw->x * SCALES[raw->scale_ind];
   return xf;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double AccelGetY(accel_raw_t *raw) {
   double yf;
   yf = (double) raw->y * SCALES[raw->scale_ind];
   return yf;
 }
 
+/************************************************************************************************** 
+  Function: 
 
+  Author(s): 
+
+  Summary: 
+
+  Description: 
+
+  Preconditions: 
+
+  Parameters: 
+
+  Returns: 
+
+  Example: 
+
+  Conditions at Exit: 
+
+**************************************************************************************************/
 double AccelGetZ(accel_raw_t *raw) {
   double zf;
   zf = (double) raw->z * SCALES[raw->scale_ind];

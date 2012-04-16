@@ -2,6 +2,8 @@
 #include <plib.h>
 #include "adxl345.h"
 
+static void AccelStopTx(I2C_MODULE i2c);
+
 ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, unsigned int i2c_speed, char resolution, char bandwidth) {
   unsigned int actualClock;
   ACCEL_RESULT result;
@@ -50,11 +52,6 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_addr, BYTE data) {
   do { 
     status = I2CGetStatus(i2c);
   } while (!(status & I2C_START));  // blocks until start is finished
-  /*if (result != I2C_SUCCESS || !I2CByteWasAcknowledged(i2c)) {
-    DBPRINTF("AccelWrite: Error, could not start a write to I2C=%d\n", i2c);
-    I2CStop(i2c);
-    return ACCEL_FAIL;
-  }PROBABLY NOT NEEDED*/
   
   // SEND ADDRESS
   // Wait for the transmitter to be ready

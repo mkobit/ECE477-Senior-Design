@@ -65,7 +65,7 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_addr, BYTE data) {
   
   // START TRANSACTION
   if(!I2CShared_StartTransfer(i2c, FALSE) {
-    DBPRINTF("AccelRead: Error, bus collision during transfer start to I2C=%d\n", i2c);
+    DBPRINTF("AccelWrite: Error, bus collision during transfer start to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
     
@@ -112,7 +112,7 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_addr, char *buffer) {
   trans = I2CShared_TransmitOneByte(i2c, (i2c_addr << 1) | I2C_WRITE);
   ack = I2CByteWasAcknowledged(i2c);
   if (!trans || !ack) {
-    DBPRINTF("AccelWrite: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
+    DBPRINTF("AccelRead: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
     I2CShared_StopTransfer(i2c);
     return ACCEL_FAIL;
   }
@@ -142,7 +142,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   
   // START TRANSACTION
   if(!I2CShared_StartTransfer(i2c, FALSE) {
-    DBPRINTF("AccelRead: Error, bus collision during transfer start to I2C=%d\n", i2c);
+    DBPRINTF("AccelReadAllAxes: Error, bus collision during transfer start to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
     
@@ -151,7 +151,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   trans = I2CShared_TransmitOneByte(i2c, (ACCEL_DATAX0 << 1) | I2C_WRITE);
   ack = I2CByteWasAcknowledged(i2c);
   if (!trans || !ack) {
-    DBPRINTF("AccelWrite: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
+    DBPRINTF("AccelReadAllAxes: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
     I2CShared_StopTransfer(i2c);
     return ACCEL_FAIL;
   }
@@ -161,7 +161,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   // read x LSB
   result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
   if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
     I2CShared_StopTransfer(i2c);
     return ACCEL_FAIL;
   }
@@ -172,7 +172,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   // read 
   result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
   if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
     I2CShared_StopTransfer(i2c);
     return ACCEL_FAIL;
   }
@@ -187,7 +187,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   // read y LSB
   result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
   if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
     I2CShared_StopTransfer(i2c);
     return ACCEL_FAIL;
   }
@@ -198,7 +198,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   // read y MSB
   result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
   if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
     I2CShared_StopTransfer(i2c);
     return ACCEL_FAIL;
   }
@@ -213,7 +213,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   // read z LSB
   result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
   if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
     I2CShared_StopTransfer(i2c);
     return ACCEL_FAIL;
   }
@@ -224,7 +224,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings) {
   // read z mSB
   result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
   if (result != I2C_SUCCESS) {
-    DBPRINTF("AccelRead: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    DBPRINTF("AccelReadAllAxes: Error, could not configure I2C=%d to be a receiver\n", i2c);
     I2CShared_StopTransfer(i2c);
     return ACCEL_FAIL;
   }

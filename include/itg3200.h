@@ -24,14 +24,18 @@
 //Sample Rate Divider
 //Fsample = Fint / (divider + 1) where Fint is either 1kHz or 8kHz
 
-//DLPF, Full Scale Register Bits
-//FS_SEL must be set to 3 for proper operation
-//Set DLPF_CFG to 3 for 1kHz Fint and 42 Hz Low Pass Filter
-#define GYRO_DLPF_CFG_0	(1 << 0)
+//DLPF register settings
+// Low pass filter bandwidth
+#define GYRO_DLPF_LPF_256HZ	(0)
+#define GYRO_DLPF_LPF_188HZ	(1)
+#define GYRO_DLPF_LPF_98HZ	(2)
+#define GYRO_DLPF_LPF_42HZ	(3)
+#define GYRO_DLPF_LPF_20HZ	(4)
+#define GYRO_DLPF_LPF_10HZ	(5)
+#define GYRO_DLPF_LPF_5HZ	(6)
 #define GYRO_DLPF_CFG_1	(1 << 1)
 #define GYRO_DLPF_CFG_2	(1 << 2)
-#define GYRO_DLPF_FS_SEL_0	(1 << 3)
-#define GYRO_DLPF_FS_SEL_1	(1 << 4)
+#define GYRO_DLPF_FS_ON (0x18)
 
 //Power Management Register Bits
 //Recommended to set CLK_SEL to 1,2 or 3 at startup for more stable clock
@@ -64,20 +68,20 @@ typedef gyro_raw_t {
   short int x;
   short int y;
   short int z;
+  short int temp;
   int scale_ind;
 } gyro_raw_t;
 
 GYRO_RESULT GyroInitI2C(I2C_MODULE i2c, 
-						unsigned int peripheral_clock_speed, 
-						unsigned int i2c_speed, 
 						char resolution, 
 						char bandwidth, 
-						accel_raw_readings *readings);
+						accel_raw_readings *raw);
 GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data);
 GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer);
-GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, accel_raw_readings *readings);
-double GyroGetX(gyro_raw_t *readings);
-double GyroGetY(gyro_raw_t *readings);
-double GyroGetZ(gyro_raw_t *readings);
+GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp);
+double GyroGetTemp(gyro_raw_t *raw);
+double GyroGetX(gyro_raw_t *raw);
+double GyroGetY(gyro_raw_t *raw);
+double GyroGetZ(gyro_raw_t *raw);
 
 #endif

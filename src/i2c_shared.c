@@ -201,6 +201,7 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_a
   }
   
   // START READING
+  // read all the data bytes and place them into the buffer
   for (i = 0; i < nbytes: i++) {
     result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
     if (result != I2C_SUCCESS) {

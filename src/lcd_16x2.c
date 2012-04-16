@@ -10,11 +10,12 @@ static IoPortId _d0_port, _d1_port, _d2_port, _d3_port, _d4_port, _d5_port, _d6_
 
 static void LcdSetOutputs(int rs, int rw, unsigned char c);
 static inline void LcdConfigAllAsOutputs();
-static void LcdEnableOn();
-static void LcdEnableOff();
+/*static inline void LcdEnableOn();
+static inline void LcdEnableOff();*/
+static void LcdToggleEnable();
 static void LcdSetDataOutputs(unsigned char data);
 
-void LcdInitPins(unsigned int rs, IoPortId rs_port,
+void LcdSetPins(unsigned int rs, IoPortId rs_port,
             unsigned int rw, IoPortId rw_port,
             unsigned int en, IoPortId en_port,
             unsigned int d0, IoPortId d0_port,
@@ -24,7 +25,11 @@ void LcdInitPins(unsigned int rs, IoPortId rs_port,
             unsigned int d4, IoPortId d4_port,
             unsigned int d5, IoPortId d5_port,
             unsigned int d6, IoPortId d6_port,
-            unsigned int d7, IoPortId d7_port) {
+            unsigned int d7, IoPortId d7_port,
+            unsigned char dots_display_control) {
+  
+  unsigned char disp_out;
+  
   _rs = rs;
   _rw = rw;
   _en = en;
@@ -47,36 +52,41 @@ void LcdInitPins(unsigned int rs, IoPortId rs_port,
   _d4_port = d4_port;
   _d5_port = d5_port;
   _d6_port = d6_port;
-  _d7_port = d7_port; // TODO fix this stuff and change it around
+  _d7_port = d7_port;
   LcdConfigAllAsOutputs();
-  LcdInstrSetOutputs(LCD_INSTR, LCD_WRITE, LCD_BOOT);
-  LcdEnableOn();
-  DelayUs(1);
-  LcdEnableOff();
-  DelayMs(5);
-  LcdEnableOn();
-  DelayUs(1);
-  LcdEnableOff();
-  DelayUs(200);
-  LcdEnableOn();
-  DelayUs(1);
-  LcdEnableOff();
-  DelayUs(200);
+  
+  // Pins initalized, now do bootup sequence for LCD
+  DelayMs(50);  // delay for LCD to be fully powered
+  disp_out = 0x20 | LCD_INTERFACE_LENGTH_8BIT | LCD_LINES_2 | dots_display_control; // Command "Set Interface"
+  LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);  // Instruction - SetFunction
+  LcdToggleEnable();
+  DelayMs(5); // > 4.1 ms
+  LcdToggleEnable();
+  DelayUs(200); // > 100 us
+  LcdToggleEnable();
+  DelayUs(200); // > 100 us, last time
+  // Initialization commands
+  // Write Command "Set Interface", already on bus
+  LcdToggleEnable();  
+  DelayUs(43);  // 37 us + 15%
+  // Write Command "Enable Display/Cursor"
+  LcdInstrSetDisplayMode(LCD_DISPLAY_OFF, LCD_CURSOR_OFF, LCD_CURSOR_BLINK_OFF);
+  // Write Command "Clear and Home"
+  LcdInstrClearDisplay();
+  // Write Command "Set Entry Mode"
+  LcdInstrSetEntryMode(LCD_DDRAM_ADDRESS_INCR, LCD_SHIFT_DISPLAY_OFF);
+  
 }
 
 void LcdInstrClearDisplay() {
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, LCD_INSTR_CLEAR);
-  LcdEnableOn();
-  DelayUs(1);
-  LcdEnableOff();
+  LcdToggleEnable();
   DelayMs(2);	// 1.52 ms on datasheet
 }
 
 void LcdInstrReturnHome() {
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, LCD_INSTR_RETHOME);
-  LcdEnableOn();
-  DelayUs(1);
-  LcdEnableOff();
+  LcdToggleEnable();
   DelayMs(2);	// 1.52 ms on datasheet
 }
 
@@ -84,60 +94,40 @@ void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_
   unsigned char disp_out;
   disp_out = 0x04 | ddram_address_gain | shift_display;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
-  LcdEnableOn();
-  DelayUs(1);
-  LcdEnableOff();
-  DelayUs(45);	// 37 us on datasheet
+  LcdToggleEnable();
+  DelayUs(43);	// 37 us + 15%
 }
 
 void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_control, unsigned char cursor_blink_control) {
   unsigned char disp_out;
   disp_out = 0x08 | display_control | cursor_control | cursor_blink_control;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
-  LcdEnableOn();
-  DelayUs(1);
-  LcdEnableOff();
-  DelayUs(45);	// 37 us on datasheet
+  LcdToggleEnable();
+  DelayUs(43);	// 37 us + 15%
 }
 
 void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shift_direction) {
   unsigned char disp_out;
-  disp_out = 0x10 | shift_select << 3 | shift_direction;
+  disp_out = 0x10 | shift_select | shift_direction;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
-  LcdEnableOn();
-  DelayUs(1);
-  LcdEnableOff();
-  DelayUs(45);	// 37 us on datasheet
-}
-
-void LcdInstrSetFunction(unsigned char interface_length_control, unsigned char line_number_control, unsigned char dots_display_control) {
-  unsigned char disp_out;
-  disp_out = 0x20 | interface_length_control | line_number_control | dots_display_control;
-  LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
-  LcdEnableOn();
-  DelayUs(1);
-  LcdEnableOff();
-  DelayUs(45);	// 37 us on datasheet
+  LcdToggleEnable();
+  DelayUs(43);	// 37 us + 15%
 }
 
 void LcdInstrSetCGRAMAddress(unsigned char address) {
   unsigned char disp_out;
   disp_out = address & LCD_CGRAM_MASK;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
-  LcdEnableOn();
-  DelayUs(1);
-  LcdEnableOff();
-  DelayUs(45);	// 37 us on datasheet
+  LcdToggleEnable();
+  DelayUs(43);	// 37 us + 15%
 }
 
 void LcdInstrSetDDRAMAddress(unsigned char address) {
   unsigned char disp_out;
   disp_out = address & LCD_DDRAM_MASK;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
-  LcdEnableOn();
-  DelayUs(1);
-  LcdEnableOff();
-  DelayUs(45);	// 37 us on datasheet
+  LcdToggleEnable();
+  DelayUs(43);	// 37 us + 15%
 }
 
 static void LcdSetDataOutputs(unsigned char data) {
@@ -164,10 +154,8 @@ void LcdDisplayData(unsigned char *data) {
         break;
       default:            // print character
         LcdSetOutputs(LCD_DATA, LCD_WRITE, *data);  // this requires delay
-        LcdEnableOn();
-        DelayUs(1); // datasheet says 400 ns = .4 us
-        LcdEnableOff();
-        DelayUs(1);// TODO fix this stuff and change it around, delay is supposed to be 43 us (?) i believe
+        LcdToggleEnable();
+        DelayUs(50);// 43 us + 15%
         break;
     }
     data++;
@@ -193,10 +181,15 @@ static inline void LcdConfigAllAsOutputs() {
   PORTSetPinsDigitalOut(_d7_port, _d7);
 }
 
-static void LcdEnableOn() {
+/*static void LcdEnableOn() {
   PORTSetBits(_en_port, _en);
 }
 
 static void LcdEnableOff() {
   PORTClearBits(_en_port, _en);
-}
+}*/
+
+static void LcdToggleEnable() {
+  PORTSetBits(_en_port, _en);
+  DelayUs(1); // 1 us delay for hold time of enable
+  PORTClearBits(_en_port, _en);

@@ -34,14 +34,23 @@
 
 /************************************************************************************************** 
   Function: 
+  
   Author(s): 
+  
   Summary: 
+  
   Description: 
+  
   Preconditions: 
+  
   Parameters: 
+  
   Returns: 
+  
   Example: 
+  
   Conditions at Exit: 
+  
 **************************************************************************************************/
 
 
@@ -50,13 +59,21 @@
 
 /**************************************************************************************************
   Function:  function name
+  
   Parameters: (name, description of each parameter)
+  
   Author(s): (person who wrote code)
+  
   Summary: (summary of what function does)
+  
   Description: (small description as of what is going on)
+  
   Preconditions: (what should be true before function is called)
+  
   Parameters: (list of parameters and what they are)
+  
   Returns: (what this function returns and what it means)
+  
   Example: (example)
   Conditions at Exit: (include flags modified/other conditions)
 **************************************************************************************************/

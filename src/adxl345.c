@@ -22,21 +22,21 @@ static double SCALES[4] = { .0039, .0078, .0156, .0312};  // from datasheet
     I2C module previously enabled
 
   Parameters: 
-      I2C_MODULE i2c - I2C module associated with this accelerometer
-      char range - constant for the range of gravity
-          ACCEL_SCALE_2G
-          ACCEL_SCALE_4G
-          ACCEL_SCALE_8G
-          ACCEL_SCALE_16G
-      char bandwidth - device bandwidth and output data rate
-          ACCEL_BW_1600
-          ACCEL_BW_800
-          ACCEL_BW_400
-          ACCEL_BW_200
-          ACCEL_BW_100
-          ACCEL_BW_50
-          ACCEL_BW_25
-      accel_raw_t *raw - accelerometer data structure associated with this accelerometer
+    I2C_MODULE i2c - I2C module associated with this accelerometer
+    char range - constant for the range of gravity
+      ACCEL_SCALE_2G  - 2 G's (gravity)
+      ACCEL_SCALE_4G  - 4 G's
+      ACCEL_SCALE_8G  - 8 G's
+      ACCEL_SCALE_16G - 16 G's
+    char bandwidth - device bandwidth and output data rate
+      ACCEL_BW_1600   - 1600 Hz
+      ACCEL_BW_800    - 800 Hz
+      ACCEL_BW_400    - 400 Hz
+      ACCEL_BW_200    - 200 Hz
+      ACCEL_BW_100    - 100 Hz
+      ACCEL_BW_50     - 50 Hz
+      ACCEL_BW_25     - 25 Hz
+    accel_raw_t *raw - accelerometer data structure associated with this accelerometer
 
   Returns:
     ACCEL_SUCCESS - If successful

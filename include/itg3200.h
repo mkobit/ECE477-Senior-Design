@@ -42,7 +42,7 @@
 
 //Power Management Register Bits
 //Recommended to set CLK_SEL to 1,2 or 3 at startup for more stable clock
-#define GYRO_PWR_MGM_CLK_SEL_INT (0)
+#define GYRO_PWR_MGM_CLK_SEL_INTERNAL (0)
 #define GYRO_PWR_MGM_CLK_SEL_X	(1)
 #define GYRO_PWR_MGM_CLK_SEL_Y	(2)
 #define GYRO_PWR_MGM_CLK_SEL_Z	(3)

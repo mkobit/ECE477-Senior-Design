@@ -26,7 +26,7 @@ int main(void)
         BIT_0, IOPORT_F,
         BIT_1, IOPORT_F,
         BIT_4, IOPORT_F,
-        LCD_INTERFACE_LENGTH_8BIT, LCD_LINES_2, LCD_DOTS_5x8);   // Using a wide selection of pins in lab with these ports connected
+        LCD_DOTS_5x8);   // Using a wide selection of pins in lab with these ports connected
   // this test will just test writing
   LcdInstrSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_OFF, LCD_CURSOR_BLINK_ON);
   

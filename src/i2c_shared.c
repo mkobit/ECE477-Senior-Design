@@ -52,21 +52,29 @@ return TRUE;
   Function: 
     BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data)
     
-  Author(s): 
+  Author(s): 		
 
-  Summary: 
 
-  Description: 
+  Summary: 		
 
-  Preconditions: 
 
-  Parameters: 
+  Description: 		
 
-  Returns: 
 
-  Example: 
+  Preconditions: 		
 
-  Conditions at Exit: 
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data) {
@@ -87,23 +95,32 @@ BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data) {
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE data) {
@@ -154,23 +171,32 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE 
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 BOOL I2CShared_ReadByte(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read, char i2c_register, char *buffer) {
@@ -233,23 +259,32 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read,
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read, char i2c_register_start, int nbytes, char *buffer) {
@@ -321,23 +356,32 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_a
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 void I2CShared_StopTransfer(I2C_MODULE i2c) {

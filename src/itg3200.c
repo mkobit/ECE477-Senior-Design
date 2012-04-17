@@ -4,23 +4,32 @@
 #include "i2c_shared.h"
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, char sample_rate_div, char power_mgmt_sel) {
@@ -52,23 +61,32 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, char sample_rate_div, char p
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
@@ -80,23 +98,32 @@ GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
@@ -108,23 +135,32 @@ GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
@@ -157,23 +193,32 @@ GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
 
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 double GyroGetTemp(gyro_raw_t *raw) {
@@ -185,23 +230,32 @@ double GyroGetTemp(gyro_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 double GyroGetX(gyro_raw_t *raw) {
@@ -211,23 +265,32 @@ double GyroGetX(gyro_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 double GyroGetY(gyro_raw_t *raw) {
@@ -237,23 +300,32 @@ double GyroGetY(gyro_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 double GyroGetZ(gyro_raw_t *raw) {

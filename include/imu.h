@@ -8,6 +8,8 @@
 #define ImuGetGyroPitch(p_imu) (ImuGetGyroY(p_imu))
 #define ImuGetGyroYaw(p_imu) (ImuGetGyroZ(p_imu))
 
+typedef unsigned char imu_id;
+
 typedef enum {
   IMU_SUCCESS = 0,
   IMU_FAIL
@@ -16,9 +18,10 @@ typedef enum {
 typedef struct imu_t {
   I2C_MODULE i2c_module;
   BOOL isOn;
+  BOOL updateAccelFirst;
   accel_raw_t accel_raw;
   gyro_raw_t gyro_raw;
-  BOOL updateAccelFirst;
+  const imu_id id;
 } imu_t;
 
 IMU_RESULT ImuInit(imu_t* imu, 

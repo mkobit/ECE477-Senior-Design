@@ -4,28 +4,81 @@
 
 /************************************************************************************************** 
   Function: 
+    BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigned int i2c_speed)
   
-  Author(s): 
+  Authors(s):		mkobit
   
   Summary: 
+    
   
   Description: 
+    
   
   Preconditions: 
+    
   
   Parameters: 
+    
   
   Returns: 
+    
   
   Example: 
+    
   
   Conditions at Exit: 
+    
+  
+**************************************************************************************************/
+BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigned int i2c_speed) {
+  unsigned int actualClock;
+  
+  // Check clock rate for peripheral bus
+  actualClock = I2CSetFrequency(i2c, peripheral_clock_speed, i2c_speed)
+  if (actualClock - i2c_speed > i2c_speed / 10) {
+    DBPRINTF("I2CShared_Init: Error, I2C clock frequency (%u) error exceeds 10%%n\n", actualClock); 
+    return FALSE;
+  }
+  
+  // Enable I2C
+  I2CEnable(i2c, TRUE);
+  
+  return TRUE;
+}
+
+/************************************************************************************************** 
+  Function: 
+    BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart)
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
   
 **************************************************************************************************/
 BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart) {
   I2C_STATUS status;
 
-  // Send the Start (or Restart) signal
+  // Send the start/restart signal
   if(restart) {
     I2CRepeatStart(i2c);
   }
@@ -52,28 +105,28 @@ return TRUE;
   Function: 
     BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data)
     
-  Author(s): 		
+  Author(s):
 
 
-  Summary: 		
+  Summary:
 
 
-  Description: 		
+  Description:
 
 
-  Preconditions: 		
+  Preconditions:
 
 
-  Parameters: 		
+  Parameters:
 
 
-  Returns: 		
+  Returns:
 
 
-  Example: 		
+  Example:
 
 
-  Conditions at Exit: 		
+  Conditions at Exit:
 
 
 **************************************************************************************************/
@@ -95,33 +148,33 @@ BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data) {
 }
 
 /************************************************************************************************** 
-  Function: 		
-
-
-  Author(s): 		
-
-
-  Summary: 		
-
-
-  Description: 		
-
-
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
-
+  Function: 
+    
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
+  
 **************************************************************************************************/
 BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE data) {
   BOOL ack, trans;
@@ -171,31 +224,31 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE 
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:
 
 
-  Author(s): 		
+  Author(s):
 
 
-  Summary: 		
+  Summary:
 
 
-  Description: 		
+  Description:
 
 
-  Preconditions: 		
+  Preconditions:
 
 
-  Parameters: 		
+  Parameters:
 
 
-  Returns: 		
+  Returns:
 
 
-  Example: 		
+  Example:
 
 
-  Conditions at Exit: 		
+  Conditions at Exit:
 
 
 **************************************************************************************************/
@@ -259,31 +312,7 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read,
 }
 
 /************************************************************************************************** 
-  Function: 		
-
-
-  Author(s): 		
-
-
-  Summary: 		
-
-
-  Description: 		
-
-
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
+  Function:			Author(s):		mkobitmkobit	Summary:			Description:			Preconditions:			Parameters:			Returns:			Example:			Conditions at Exit:
 
 
 **************************************************************************************************/
@@ -356,31 +385,7 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_a
 }
 
 /************************************************************************************************** 
-  Function: 		
-
-
-  Author(s): 		
-
-
-  Summary: 		
-
-
-  Description: 		
-
-
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
+  Function:			Author(s):		mkobit	Summary:			Description:			Preconditions:			Parameters:			Returns:			Example:			Conditions at Exit:
 
 
 **************************************************************************************************/

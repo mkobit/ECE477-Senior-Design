@@ -25,7 +25,7 @@ DDRAM Address:     40 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F ... 67
 
 // Cursor or Display Shift 
 #define LCD_SHIFT_SELECT_DISPLAY (1 << 3)
-#define LCD_SHIFT_SELECT_NONE 0
+#define LCD_SHIFT_SELECT_CURSOR 0
 #define LCD_SHIFT_DIRECTION_RIGHT (1 << 2)
 #define LCD_SHIFT_DIRECTION_LEFT 0
 
@@ -79,5 +79,6 @@ void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shif
 void LcdInstrSetCGRAMAddress(unsigned char address);
 void LcdInstrSetDDRAMAddress(unsigned char address);
 void LcdDisplayData(unsigned char *data);
+void LcdDisplayChar(unsigned char c);
 
 #endif

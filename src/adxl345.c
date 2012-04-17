@@ -8,26 +8,53 @@ static double SCALES[4] = { .0039, .0078, .0156, .0312};  // from datasheet
 static void AccelStopTx(I2C_MODULE i2c);
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
+    ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, char resolution, char bandwidth, accel_raw_t *raw)
+    
+  Author(s): 		
+    mkobit
+    
+  Summary: 		
+    Initializes the accelerometer
+    
+  Description: 		
+    Typically will be called from the IMU code to set the sampling rate of the IMU and the resolution on the data
 
-  Author(s): 
-
-  Summary: 
-
-  Description: 
-
-  Preconditions: 
+  Preconditions: 		
+    I2C module previously enabled
 
   Parameters: 
+      I2C_MODULE i2c - I2C module associated with this accelerometer
+      char range - constant for the range of gravity
+          ACCEL_SCALE_2G
+          ACCEL_SCALE_4G
+          ACCEL_SCALE_8G
+          ACCEL_SCALE_16G
+      char bandwidth - device bandwidth and output data rate
+          ACCEL_BW_1600
+          ACCEL_BW_800
+          ACCEL_BW_400
+          ACCEL_BW_200
+          ACCEL_BW_100
+          ACCEL_BW_50
+          ACCEL_BW_25
+      accel_raw_t *raw - accelerometer data structure associated with this accelerometer
 
-  Returns: 
+  Returns: 		
+    ACCEL_SUCCESS - If successful
+    ACCEL_FAIL - If any AccelWrite function fails to write to the accelerometer or the resolution is not 1 of the resolutions provided
 
-  Example: 
+  Example:
+    <code>
+    AccelInitI2C(I2C1, ACCEL_SCALE_4G, ACCEL_BW_100, &raw_values)
+    </code>
 
-  Conditions at Exit: 
+  Conditions at Exit:
+    Accelerometer set to take samples at set data rate and the range is also set. If either of these do not get set, ACCEL_FAIL is returned.
+    I2C bus is in idle state
 
 **************************************************************************************************/
-ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, char resolution, char bandwidth, accel_raw_t *raw) {
+ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, char range, char bandwidth, accel_raw_t *raw) {
 
   // I2C should already be enabled
   
@@ -39,7 +66,7 @@ ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, char resolution, char bandwidth, accel
   }
   
   // Set Data Format
-  if (AccelWrite(i2c, ACCEL_DATA_FORMAT, resolution) == ACCEL_FAIL) {
+  if (AccelWrite(i2c, ACCEL_DATA_FORMAT, range) == ACCEL_FAIL) {
     DBPRINTF("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c); 
     return ACCEL_FAIL
   }
@@ -51,35 +78,49 @@ ACCEL_RESULT AccelInitI2C(I2C_MODULE i2c, char resolution, char bandwidth, accel
   }
   
   // Determine which scaling to use when getting the values
-  switch(resolution) {
+  switch(range) {
     case ACCEL_RANGE_2G: raw->scale_ind = ACCEL_SCALE_2G; break;
     case ACCEL_RANGE_4G: raw->scale_ind = ACCEL_SCALE_4G; break;
     case ACCEL_RANGE_8G: raw->scale_ind = ACCEL_SCALE_8G; break;
     case ACCEL_RANGE_16G: raw->scale_ind = ACCEL_SCALE_16G; break;
-    default: DBPRINTF("AccelInitI2C: Error, 0x%c not a valid range for data format for adxl345\n", resolution); return ACCEL_FAIL;
+    default: DBPRINTF("AccelInitI2C: Error, 0x%c not a valid range for data format for adxl345\n", range); return ACCEL_FAIL;
   }
   
   return ACCEL_SUCCESS;
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
+    ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data)
 
-  Author(s): 
+  Author(s): 		
+    mkobit
 
-  Summary: 
+  Summary: 		
+    Writes a single byte to an accelerometer register using the I2C module parameter
 
-  Description: 
+  Description:
+    Passes control to the shared I2C library to write by providings the default accelerometer I2C write address
 
-  Preconditions: 
+  Preconditions:
+    I2C module previously enabled and running
 
-  Parameters: 
+  Parameters:
+    I2C_MODULE i2c - I2C module to connect with
+    char i2c_reg - register to write to
+    BYTE data - data to be written
 
-  Returns: 
+  Returns: 		
+    ACCEL_SUCCESS - If successful
+    ACCEL_FAIL - If I2CShared library cannot complete its write
 
-  Example: 
+  Example: 		
+    <code>
+    AccelWrite(i2c, ACCEL_DATA_FORMAT, ACCEL_SCALE_8G)
+    </code>
 
-  Conditions at Exit: 
+  Conditions at Exit: 		
+    I2C bus is in idle state
 
 **************************************************************************************************/
 ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
@@ -91,23 +132,32 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function:
+    ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer)
 
-  Author(s): 
+  Author(s):
 
-  Summary: 
 
-  Description: 
+  Summary:
 
-  Preconditions: 
 
-  Parameters: 
+  Description: 		
 
-  Returns: 
 
-  Example: 
+  Preconditions: 		
 
-  Conditions at Exit: 
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
@@ -119,23 +169,32 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
@@ -154,23 +213,32 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 double AccelGetX(accel_raw_t *raw) {
@@ -180,23 +248,32 @@ double AccelGetX(accel_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 double AccelGetY(accel_raw_t *raw) {
@@ -206,23 +283,32 @@ double AccelGetY(accel_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function: 
+  Function: 		
 
-  Author(s): 
 
-  Summary: 
+  Author(s): 		
 
-  Description: 
 
-  Preconditions: 
+  Summary: 		
 
-  Parameters: 
 
-  Returns: 
+  Description: 		
 
-  Example: 
 
-  Conditions at Exit: 
+  Preconditions: 		
+
+
+  Parameters: 		
+
+
+  Returns: 		
+
+
+  Example: 		
+
+
+  Conditions at Exit: 		
+
 
 **************************************************************************************************/
 double AccelGetZ(accel_raw_t *raw) {

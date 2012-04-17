@@ -25,6 +25,7 @@ typedef struct imu_t {
 } imu_t;
 
 IMU_RESULT ImuInit(imu_t* imu, 
+          I2C_MODULE i2c, 
 					unsigned int peripheral_clock_speed, 
 					unsigned int i2c_speed, 
 					char accel_resolution, 

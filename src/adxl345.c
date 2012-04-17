@@ -48,7 +48,7 @@ static double SCALES[4] = { .0039, .0078, .0156, .0312};  // from datasheet
     </code>
 
   Conditions at Exit:
-    Accelerometer set to take samples at set data rate and the range is also set. If either of these do not get set, ACCEL_FAIL is returned.
+    Accelerometer set to take samples at set data rate and the range is also set. If either of these do not get set, ACCEL_FAIL is returned
     I2C bus is in idle state
 
 **************************************************************************************************/
@@ -139,7 +139,7 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
   Summary:
     Interface for the IMU to use, reads a single byte into buffer using I2CShared_ReadByte 
 
-  Description:		Passes control to the shared I2C library to read by providings the default accelerometer I2C read address	Preconditions:		I2C module previously enabled and running	Parameters:		I2C_MODULE i2c - I2C module to connect with
+  Description:		Passes control to the shared I2C library to read by providing the default accelerometer I2C read address	Preconditions:		I2C module previously enabled and running	Parameters:		I2C_MODULE i2c - I2C module to connect with
     char i2c_reg - register to read from
     char *buffer - buffer to place read byte into	Returns:		ACCEL_SUCCESS - If successful
     ACCEL_FAIL - If I2CShared library cannot complete its I2CShared_ReadByte	Example:		<code>

@@ -3,7 +3,7 @@
 
 /* Display character address code:
 Display position:  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16
-DDRAM Address:     00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F ... 27	-- shift mode for this use
+DDRAM Address:     00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F ... 27	-- shift mode goes this far
 DDRAM Address:     40 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F ... 67
 */
 
@@ -49,7 +49,7 @@ DDRAM Address:     40 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F ... 67
 #define LCD_READ 1
 #define LCD_WRITE 0
 #ifndef BYTE_MASK
-#define BYTE_MASK 0xFF
+  #define BYTE_MASK 0xFF
 #endif
 
 #define LCD_INSTR_CLEAR (0x01)
@@ -59,7 +59,7 @@ DDRAM Address:     40 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F ... 67
 #define LINE_2 0x40
 
 
-void LcdInitPins(unsigned int rs, IoPortId rs_port,
+void LcdInit(unsigned int rs, IoPortId rs_port,
             unsigned int rw, IoPortId rw_port,
             unsigned int en, IoPortId en_port,
             unsigned int d0, IoPortId d0_port,
@@ -69,13 +69,13 @@ void LcdInitPins(unsigned int rs, IoPortId rs_port,
             unsigned int d4, IoPortId d4_port,
             unsigned int d5, IoPortId d5_port,
             unsigned int d6, IoPortId d6_port,
-            unsigned int d7, IoPortId d7_port);
+            unsigned int d7, IoPortId d7_port,
+            unsigned char dots_display_control);
 void LcdInstrClearDisplay();
 void LcdInstrReturnHome();
 void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_display); // TODO comeback to this
 void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_control, unsigned char cursor_blink_control);
 void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shift_direction);
-void LcdInstrSetFunction(unsigned char interface_length_control, unsigned char line_number_control, unsigned char dots_display_control);
 void LcdInstrSetCGRAMAddress(unsigned char address);
 void LcdInstrSetDDRAMAddress(unsigned char address);
 void LcdDisplayData(unsigned char *data);

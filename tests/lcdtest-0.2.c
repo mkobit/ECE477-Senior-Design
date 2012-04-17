@@ -3,18 +3,15 @@
 #include "lcd_16x2.h"
 #include "delay.h"
 
-#pragma config FNOSC = PRIPLL	// Primary Osc w/PLL (XT+,HS+,EC+PLL)
-#pragma config POSCMOD = HS		// HS osc mode 
-#pragma config FPLLMUL = MUL_18	// PLL Multiplier
-#pragma config FPLLIDIV = DIV_2	// PLL Input Divider
-#pragma config FPBDIV = DIV_2
-#pragma config FPLLODIV = DIV_1
+#pragma config POSCMOD=XT, FNOSC=PRIPLL 
+#pragma config FPLLIDIV=DIV_2, FPLLMUL=MUL_20, FPLLODIV=DIV_1
+#pragma config FPBDIV=DIV_2, FWDTEN=OFF, CP=OFF, BWP=OFF
 
-#define SYSTEM_FREQUENCY 72000000L
+#define SYSTEM_FREQUENCY 80000000L
 int main(void)
 {
   int pbFreq;
-
+  
   pbFreq = SYSTEMConfigPerformance(SYSTEM_FREQUENCY);
   DelayInit(SYSTEM_FREQUENCY);
   DelayS(1);  // simple delay to get ready for program
@@ -30,17 +27,10 @@ int main(void)
         BIT_1, IOPORT_F,
         BIT_4, IOPORT_F,
         LCD_INTERFACE_LENGTH_8BIT, LCD_LINES_2, LCD_DOTS_5x8);   // Using a wide selection of pins in lab with these ports connected
-  // this test will just test writing to the LCD
-  LcdInstrSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_OFF, LCD_CURSOR_BLINK_ON);;
+  // this test will just test writing
+  LcdInstrSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_OFF, LCD_CURSOR_BLINK_ON);
   
   while(1) {
-    LcdReturnHome();
-    LcdDisplayData("Hello\nThere!");
-    DelayS(3);
-    LcdInstrClearDisplay();
-    DelayS(2);
-    LcdDisplayData("Just cleared\nDid you see that?");
   }
-
   return 0;
 }

@@ -68,7 +68,7 @@ IMU_RESULT ImuInit(imu_t* imu,
   if (accel_init_result == ACCEL_SUCCESS && gyro_init_result == GYRO_SUCCESS) {
     imu->isOn = TRUE;
     // Assign the IMU an ID and increment the ID
-    imu->id = IMU_ID;
+    imu->id = IMU_ID; // TODO if this does not work move responsibility to main program to initialize the ID
     IMU_ID++;
     return IMU_SUCCESS;
   } else {

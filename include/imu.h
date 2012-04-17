@@ -28,10 +28,10 @@ IMU_RESULT ImuInit(imu_t* imu,
           I2C_MODULE i2c, 
 					unsigned int peripheral_clock_speed, 
 					unsigned int i2c_speed, 
-					char accel_resolution, 
+					char accel_range, 
 					char accel_bandwidth, 
 					char gyro_dlpf_lpf, 
-					char gyro_sample_rate_div, 
+					unsigned char gyro_sample_rate_div, 
 					char gyro_power_mgmt_sel);
 IMU_RESULT ImuUpdate(imu_t *imu);
 accel_raw_t *ImuGetRawAccel(imu_t *imu);

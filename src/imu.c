@@ -6,59 +6,96 @@ static imu_id IMU_ID = 0;     // Assign a unique ID to each imu that calls init
 static inline void ImuToggleSelector(imu_t* imu);
 
 /************************************************************************************************** 
-  Function: 		
-
-
-  Author(s): 		
-
-
-  Summary: 		
-
-
-  Description: 		
-
-
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
-
-**************************************************************************************************/
-IMU_RESULT ImuInit(imu_t* imu, 
+  Function:		ImuInit(imu_t* imu,
+          I2C_MODULE i2c,
           unsigned int peripheral_clock_speed, 
 					unsigned int i2c_speed, 
 					char accel_resolution, 
 					char accel_bandwidth, 
           char gyro_dlpf_lpf, 
           char gyro_sample_rate_div, 
+          char gyro_power_mgmt_sel)
+
+  Author(s):		mkobit
+
+  Summary:		Initializes IMU and its I2C port
+
+  Description:		Goes through each step of initializing the I2C port for a particular IMU, as well as writing configuration settings to the accelerometer and gyroscope
+
+  Preconditions:		Nothing else using I2C port
+
+  Parameters:		imu_t* imu - reference to IMU to be initialized
+    I2C_MODULE i2c - I2C module to associate with this IMU
+    unsigned int peripheral_clock_speed - peripheral bus speed
+    unsigned int i2c_speed - target I2C bus speed
+    char accel_range - range of accelerometer
+      ACCEL_SCALE_2G  - 2 G's (gravity)
+      ACCEL_SCALE_4G  - 4 G's
+      ACCEL_SCALE_8G  - 8 G's
+      ACCEL_SCALE_16G - 16 G's
+    char accel_bandwidth - bandwidth of accelerometer
+      ACCEL_BW_1600   - 1600 Hz
+      ACCEL_BW_800    - 800 Hz
+      ACCEL_BW_400    - 400 Hz
+      ACCEL_BW_200    - 200 Hz
+      ACCEL_BW_100    - 100 Hz
+      ACCEL_BW_50     - 50 Hz
+      ACCEL_BW_25     - 25 Hz
+    char dlpf_lpf - low pass filter configuration for sensor acquisition
+      GYRO_DLPF_LPF_256HZ	  - results in 8 kHz sample rate
+      GYRO_DLPF_LPF_188HZ   - results in 1 kHz sample rate
+      GYRO_DLPF_LPF_98HZ    - *
+      GYRO_DLPF_LPF_42HZ    - *
+      GYRO_DLPF_LPF_20HZ    - *
+      GYRO_DLPF_LPF_10HZ    - *
+      GYRO_DLPF_LPF_5HZ     - *
+    unsigned char sample_rate_div - sample rate divider, F = F_internal / (sample_rate_div + 1)
+      e.g. -> 1kHz sample rate from dlpf_lpf, sample_rate_div = 9, F = 1 kHz / (9 _ 1) = 100 Hz 
+    char power_mgmt_sel - device clock selector
+      GYRO_PWR_MGM_CLK_SEL_INTERNAL - internal oscillator
+			GYRO_PWR_MGM_CLK_SEL_X        - X as clock reference
+			GYRO_PWR_MGM_CLK_SEL_Y        - Y as clock reference
+			GYRO_PWR_MGM_CLK_SEL_Z        - Z as clock reference
+
+  Returns:		IMU_SUCCESS - IMU successfully initialized
+    IMU_FAIL - IMU unsuccessfully initialized
+
+  Example:		<code>
+      ImuInit(I2C1,
+              40000000L,
+              300000,
+              ACCEL_RANGE_4G,
+              ACCEL_BW_100,
+              GYRO_DLPF_LPF_42HZ,
+              9,
+              GYRO_PWR_MGM_CLK_SEL_X)
+    </code>
+
+  Conditions at Exit:		I2C module initialized
+    Accelerometer initialized
+    Gyroscope initialized
+
+**************************************************************************************************/
+IMU_RESULT ImuInit(imu_t* imu,
+          I2C_MODULE i2c,
+          unsigned int peripheral_clock_speed, 
+					unsigned int i2c_speed, 
+					char accel_range, 
+					char accel_bandwidth, 
+          char gyro_dlpf_lpf, 
+          unsigned char gyro_sample_rate_div, 
           char gyro_power_mgmt_sel) {
                                     
   unsigned int actualClock;
   ACCEL_RESULT accel_init_result;
   GYRO_RESULT gyro_init_result;
   
-  // Check clock rate for peripheral bus
-  actualClock = I2CSetFrequency(i2c, peripheral_clock_speed, i2c_speed)
-  if (actualClock - i2c_speed > i2c_speed / 10) {
-    DBPRINTF("AccelInitI2C: Error, I2C clock frequency (%u) error exceeds 10%%n\n", actualClock); 
+  if (!I2CShared_Init(i2c, peripheral_clock_speed, i2c_speed)) {
+    DBPRINTF("AccelInitI2C: Error, I2C could not be initted\n", actualClock); 
     return IMU_FAIL;
   }
-  
-  // Enable I2C
-  I2CEnable(i2c, TRUE);
-  
   // Init both modules of the imu
-  accel_init_result = AccelInitI2C(i2c, accel_resolution, accel_bandwidth, &imu->accel_raw);
+  accel_init_result = AccelInit(i2c, accel_range, accel_bandwidth, &imu->accel_raw);
   gyro_init_result = GyroInit(i2c, gyro_dlpf_lpf, gyro_sample_rate_div, gyro_power_mgmt_sel);
   
   // Give a semi-random true/false to read accelerometer first  
@@ -80,32 +117,27 @@ IMU_RESULT ImuInit(imu_t* imu,
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:		IMU_RESULT ImuUpdate(imu_t *imu)
 
+  Author(s):		mkobit
 
-  Author(s): 		
+  Summary:		Updates both the gyroscope and accelerometer raw values
 
+  Description:		Checks if the IMU is online and then updates the accelerometer and gyroscope hased on which was updated first last time. 
 
-  Summary: 		
+  Preconditions:		ImuInit called
 
+  Parameters:		imu_t *imu - reference to the IMU being looked at
 
-  Description: 		
+  Returns:		IMU_SUCCESS - If successful
+    IMU_FAIL - If IMU is not on or read is unsuccessful
 
+  Example:		<code>
+    ImuUpdate(&imu)
+    </code>
 
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
+  Conditions at Exit:		Gyroscope updated
+    Accelerometer updated
 
 **************************************************************************************************/
 IMU_RESULT ImuUpdate(imu_t *imu) {
@@ -130,42 +162,37 @@ IMU_RESULT ImuUpdate(imu_t *imu) {
   ImuToggleSelector(imu);
   
   // Check for any errors
- if (accel_init_result == ACCEL_SUCCESS && gyro_init_result == GYRO_SUCCESS) {
+ if (a_result == ACCEL_SUCCESS && g_result == GYRO_SUCCESS) {
     return IMU_SUCCESS;
   } else {
-    // failure initializing, do not use this IMU
+    // failure updating, do not use this IMU
     DBPRINTF("ImuUpdate: Error, could not update both accel and gyro at I2C=%d. Results->(accel, gyro) = (%d, %d)\n", imu->i2c, a_result, g_result);
     return IMU_FAIL;
   }
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:		accel_raw_t *ImuGetRawAccel(imu_t *imu)
 
+  Author(s):		mkobit
 
-  Author(s): 		
+  Summary:		Gives a reference to the last read raw accelerometer data
 
+  Description:		Same as summary
 
-  Summary: 		
+  Preconditions:		ImuInit called
+    ImuUpdate typically called
 
+  Parameters:		imu_t *imu - reference to the IMU being looked at
 
-  Description: 		
+  Returns:		accel_raw_t * - reference to imu's raw accelerometer data
 
+  Example:		<code>
+    accel_raw_t *raw_a
+    raw_a = ImuGetRawGyro(&imu)
+    </code>
 
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
+  Conditions at Exit:		None
 
 **************************************************************************************************/
 accel_raw_t *ImuGetRawAccel(imu_t *imu) {
@@ -173,32 +200,27 @@ accel_raw_t *ImuGetRawAccel(imu_t *imu) {
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:		gyro_raw_t *ImuGetRawGyro(imu_t *imu)
 
+  Author(s):		mkobit
 
-  Author(s): 		
+  Summary:		Gives a reference to the last read raw gyroscope data
 
+  Description:		Same as summary
 
-  Summary: 		
+  Preconditions:		ImuInit called
+    ImuUpdate typically called
+    
+  Parameters:		imu_t *imu - reference to the IMU being looked at
 
+  Returns:		gyro_raw_t * - reference to imu's raw gyro data
 
-  Description: 		
+  Example:		<code>
+    gyro_raw_t *raw_g
+    raw_g = ImuGetRawGyro(&imu)
+    </code>
 
-
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
+  Conditions at Exit:		None
 
 **************************************************************************************************/
 gyro_raw_t *ImuGetRawGyro(imu_t *imu) {
@@ -206,32 +228,26 @@ gyro_raw_t *ImuGetRawGyro(imu_t *imu) {
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:		BOOL ImuIsOn(imu_t *imu)
 
+  Author(s):		mkobit
 
-  Author(s): 		
+  Summary:		Tells calling program if the IMU is online or offline
 
+  Description:		Same as summary
 
-  Summary: 		
+  Preconditions:		ImuInit called
 
+  Parameters:		imu_t *imu - reference to the IMU being used
 
-  Description: 		
+  Returns:		TRUE - IMU is online
+    FALSE - IMU is offline
 
+  Example:		<code>
+    ImuIsOn(&imu)
+    </code>
 
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
+  Conditions at Exit:		None
 
 **************************************************************************************************/
 BOOL ImuIsOn(imu_t *imu) {
@@ -239,32 +255,27 @@ BOOL ImuIsOn(imu_t *imu) {
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:		
 
+  Author(s):		mkobit
 
-  Author(s): 		
+  Summary:		Gets temperature of gyroscope in terms of Celsius
 
+  Description:		Calls GyroGetTemp
 
-  Summary: 		
+  Preconditions:		ImuInit called
+    ImuUpdate called
 
+  Parameters:		imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
-  Description: 		
+  Returns:		double gtemp - gyroscope temperature
 
+  Example:		<code>
+    double gtemp;
+    gtemp = ImuGetGyroTemp(&imu)
+    </code>
 
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
+  Conditions at Exit:		None
 
 **************************************************************************************************/
 double ImuGetGyroTemp(imu_t *imu) {
@@ -273,7 +284,39 @@ double ImuGetGyroTemp(imu_t *imu) {
   return gtemp;
 }
 
+/************************************************************************************************** 
+  Function:
+		double ImuGetGyroX(imu_t *imu)
 
+  Author(s):
+		mkobit
+
+  Summary:
+		Gets angular momentum, roll, in terms of 'degrees / s'
+
+  Description:
+		Calls ImuGetGyroX
+
+  Preconditions:
+		ImuInit called
+    ImuUpdate called
+
+  Parameters:
+		imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
+
+  Returns:
+		double gx - gyroscope roll in terms of degrees/s
+
+  Example:
+		<code>
+    double gx;
+    gx = ImuGetGyroX(&imu)
+    </code>
+
+  Conditions at Exit:
+		None
+
+**************************************************************************************************/
 double ImuGetGyroX(imu_t *imu) {
   double gx;
   gx = GyroGetX(&imu->gyro_raw);
@@ -281,32 +324,29 @@ double ImuGetGyroX(imu_t *imu) {
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:		double ImuGetGyroY(imu_t *imu)
 
+  Author(s):		mkobit
 
-  Author(s): 		
+  Summary:
+		Gets angular momentum, pitch, in terms of 'degrees / s'
 
+  Description:
+		Calls ImuGetGyroY
 
-  Summary: 		
+  Preconditions:		ImuInit called
+    ImuUpdate called
 
+  Parameters:		imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
-  Description: 		
+  Returns:		double gy - gyroscope pitch in terms of degrees/s
 
+  Example:		<code>
+    double gz;
+    gz = ImuGetGyroZ(&imu)
+    </code>
 
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
+  Conditions at Exit:		None
 
 **************************************************************************************************/
 double ImuGetGyroY(imu_t *imu) {
@@ -316,32 +356,28 @@ double ImuGetGyroY(imu_t *imu) {
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:		double ImuGetGyroZ(imu_t *imu)
 
+  Author(s):		mkobit
 
-  Author(s): 		
+  Summary:
+		Gets angular momentum, yaw, in terms of 'degrees / s'
 
+  Description:
+		Calls ImuGetGyroZ		
+  Preconditions:		ImuInit called
+    ImuUpdate called
 
-  Summary: 		
+  Parameters:		imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
+  Returns:		double gz - gyroscope yaw in terms of degrees/s
 
-  Description: 		
+  Example:		<code>
+    double gz;
+    gz = ImuGetGyroZ(&imu)
+    </code>
 
-
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
+  Conditions at Exit:		None
 
 **************************************************************************************************/
 double ImuGetGyroZ(imu_t *imu) {
@@ -351,32 +387,29 @@ double ImuGetGyroZ(imu_t *imu) {
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:		double ImuGetAccelX(imu_t *imu)
 
+  Author(s):		mkobit
 
-  Author(s): 		
+  Summary:
+		Gets acceleration in X direction in terms of 'g's
 
+  Description:
+		Calls AccelGetX	
 
-  Summary: 		
+  Preconditions:		ImuInit called
+    ImuUpdate called
 
+  Parameters:		imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
-  Description: 		
+  Returns:		double ax - accelerometer value in X in terms of 'g's
 
+  Example:		<code>
+    double az;
+    az = ImuGetAccelZ(&imu)
+    </code>
 
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
+  Conditions at Exit:		None
 
 **************************************************************************************************/
 double ImuGetAccelX(imu_t *imu) {
@@ -386,32 +419,28 @@ double ImuGetAccelX(imu_t *imu) {
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:		double ImuGetAccelY(imu_t *imu)
 
+  Author(s):		mkobit
 
-  Author(s): 		
+  Summary:
+		Gets acceleration in Y direction in terms of 'g's
 
+  Description:
+		Calls AccelGetY		
+  Preconditions:		ImuInit called
+    ImuUpdate called
 
-  Summary: 		
+  Parameters:		imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
+  Returns:		double ay - accelerometer value in Y in terms of 'g's
 
-  Description: 		
+  Example:		<code>
+    double az;
+    az = ImuGetAccelZ(&imu)
+    </code>
 
-
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
+  Conditions at Exit:		None
 
 **************************************************************************************************/
 double ImuGetAccelY(imu_t *imu) {
@@ -421,32 +450,27 @@ double ImuGetAccelY(imu_t *imu) {
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:		double ImuGetAccelZ(imu_t *imu)
 
+  Author(s):		mkobit
 
-  Author(s): 		
+  Summary:		Gets acceleration in Z direction in terms of 'g's
 
+  Description:		Calls AccelGetZ
 
-  Summary: 		
+  Preconditions:		ImuInit called
+    ImuUpdate called
 
+  Parameters:		imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
-  Description: 		
+  Returns:		double az - accelerometer value in Z in terms of 'g's
 
+  Example:		<code>
+    double az;
+    az = ImuGetAccelZ(&imu)
+    </code>
 
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
+  Conditions at Exit:		None
 
 **************************************************************************************************/
 double ImuGetAccelZ(imu_t *imu) {
@@ -456,32 +480,25 @@ double ImuGetAccelZ(imu_t *imu) {
 }
 
 /************************************************************************************************** 
-  Function: 		
+  Function:		static inline void ImuToggleSelector(imu_t* imu)
 
+  Author(s):		mkobit
 
-  Author(s): 		
+  Summary:		Sets the IMU to read the other module first
 
+  Description:		Toggled after every update. Accel readings will happen first every other time because of this
 
-  Summary: 		
+  Preconditions:		ImuInit called
 
+  Parameters:		imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
-  Description: 		
+  Returns:		void
 
+  Example:		<code>
+    ImuToggleSelector(&imu)
+    </code>
 
-  Preconditions: 		
-
-
-  Parameters: 		
-
-
-  Returns: 		
-
-
-  Example: 		
-
-
-  Conditions at Exit: 		
-
+  Conditions at Exit:		IMU will read the gyro/accel first next time
 
 **************************************************************************************************/
 static inline void ImuToggleSelector(imu_t* imu) {

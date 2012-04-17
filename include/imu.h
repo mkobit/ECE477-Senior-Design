@@ -4,6 +4,10 @@
 #include "itg3200.h"
 #include "adxl345.h"
 
+#define ImuGetGyroRoll(p_imu) (ImuGetGyroX(p_imu))
+#define ImuGetGyroPitch(p_imu) (ImuGetGyroY(p_imu))
+#define ImuGetGyroYaw(p_imu) (ImuGetGyroZ(p_imu))
+
 typedef enum {
   IMU_SUCCESS = 0,
   IMU_FAIL
@@ -30,9 +34,9 @@ accel_raw_t *ImuGetRawAccel(imu_t *imu);
 gyro_raw_t *ImuGetRawGyro(imu_t *imu);
 BOOL ImuIsOn(imu_t *imu);
 double ImuGetGyroTemp(imu_t *imu);
-double ImuGetGyroX(imu_t *imu);
-double ImuGetGyroY(imu_t *imu);
-double ImuGetGyroZ(imu_t *imu);
+double ImuGetGyroX(imu_t *imu);       // X === Roll
+double ImuGetGyroY(imu_t *imu);       // Y === Pitch
+double ImuGetGyroZ(imu_t *imu);       // Z === Yaw
 double ImuGetAccelX(imu_t *imu);
 double ImuGetAccelY(imu_t *imu);
 double ImuGetAccelZ(imu_t *imu);

@@ -1,7 +1,10 @@
 #ifndef GYRO3200_H
 #define GYRO3200_H
 
-// constants taken from https://github.com/a1ronzo/6DOF-Digital/
+#define GyroGetRoll(p_gyro) (GyroGetX(p_gyro))
+#define GyroGetPitch(p_gyro) (GyroGetY(p_gyro))
+#define GyroGetYaw(p_gyro) (GyroGetZ(p_gyro))
+
 /* Register map for the GYRO3200 */
 #define GYRO_READ	0xD1
 #define GYRO_WRITE	0xD0
@@ -82,8 +85,8 @@ GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data);
 GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer);
 GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp);
 double GyroGetTemp(gyro_raw_t *raw);
-double GyroGetX(gyro_raw_t *raw);
-double GyroGetY(gyro_raw_t *raw);
-double GyroGetZ(gyro_raw_t *raw);
+double GyroGetX(gyro_raw_t *raw);   // X === Roll
+double GyroGetY(gyro_raw_t *raw);   // Y === Pitch
+double GyroGetZ(gyro_raw_t *raw);   // Z === Yaw
 
 #endif

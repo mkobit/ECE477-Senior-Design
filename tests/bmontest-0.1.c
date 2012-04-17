@@ -18,7 +18,7 @@
 int main(void)
 {
   int pbFreq;
-  unsigned char presence;
+  BATTMON_RESULT presence;
   char buffer[10] = {'a', 'b', 'c', 'd', 'e', 'f'};
 
   pbFreq = SYSTEMConfigPerformance(SYSTEM_FREQUENCY);

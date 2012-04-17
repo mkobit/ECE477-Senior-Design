@@ -72,12 +72,17 @@
 #define MSBIT_MASK 	0x80
 #define LSBIT_MASK	0x01
 
+typedef enum {
+  BATTMON_SUCCESS = 0,
+  BATTMON_FAIL
+} BATTMON_RESULT;
+
 void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port);
-unsigned char BatteryMonitorReadBytes(unsigned char net_address_command, 
+BATTMON_RESULT BatteryMonitorReadBytes(unsigned char net_address_command, 
 										unsigned char start_addr, 
 										unsigned char *data, 
 										int nitems);
-unsigned char BatteryMonitorWriteBytes(unsigned char net_address_command, 
+BATTMON_RESULT BatteryMonitorWriteBytes(unsigned char net_address_command, 
 										unsigned char start_addr, 
 										unsigned char *data, 
 										int nitems);

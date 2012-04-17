@@ -1,6 +1,7 @@
 #ifndef I2C_SHARED_H
 #define I2C_SHARED_H
 
+BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigned int i2c_speed);
 BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart);
 BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data);
 BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE data);

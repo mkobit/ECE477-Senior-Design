@@ -16,6 +16,35 @@ static unsigned char BatteryMonitorReset();
 static unsigned char BatteryMonitorReadByte();
 static void BatteryMonitorWriteByte(unsigned char c);
 
+/************************************************************************************************** 
+  Function: 
+    
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 /* BatteryMonitorInit
 * Parameters: 
 	int batt_mon_pin - pin number of the battery monitor pin
@@ -44,6 +73,35 @@ void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port) {
 	}
 }
 
+/************************************************************************************************** 
+  Function: 
+    
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 /* BatteryMonitorReadBytes
 * Parameters:
 	unsigned char net_address_command - command for how the bus master will interact with the slaves
@@ -90,7 +148,35 @@ unsigned char BatteryMonitorReadBytes(unsigned char net_address_command,
 	return presence_detect;
 }
 
-
+/************************************************************************************************** 
+  Function: 
+    
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 /* BatteryMonitorWriteBytes
 * Parameters:
 	unsigned char net_address_command - command for how the bus master will interact with the slaves
@@ -135,6 +221,35 @@ unsigned char BatteryMonitorWriteBytes(unsigned char net_address_command,
 	return presence_detect;
 }
 
+/************************************************************************************************** 
+  Function: 
+    
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 /* BatteryMonitorReset
 * Author(s): mkobit
 * Called by: internal functions
@@ -182,6 +297,35 @@ static unsigned char BatteryMonitorReadByte() {
 	return result;
 }
 
+/************************************************************************************************** 
+  Function: 
+    
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 /* BatteryMonitorWriteByte
 * Parameters: 
 	unsigned char c - character to be written to the one wire bus, least significant bit first
@@ -202,6 +346,35 @@ static void BatteryMonitorWriteByte(unsigned char c) {
 	}
 }
 
+/************************************************************************************************** 
+  Function: 
+    
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 /* BatteryMonitor_drive_low
 * Author(s): mkobit
 * Called by: internal functions 
@@ -216,6 +389,35 @@ static void BatteryMonitor_drive_low() {
 	PORTClearBits(_bmon_port, _bmon_pin);
 }
 
+/************************************************************************************************** 
+  Function: 
+    
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 /* BatteryMonitor_drive_high
 * Author(s): mkobit
 * Called by: internal functions
@@ -230,6 +432,35 @@ static void BatteryMonitor_drive_high() {
 	PORTSetBits(_bmon_port, _bmon_pin);
 }
 
+/************************************************************************************************** 
+  Function: 
+    
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 /* BatteryMonitor_read_onewire
 * Author(s): mkobit
 * Called by: internal functions
@@ -252,6 +483,35 @@ static unsigned char BatteryMonitor_read_onewire() {
 	return read_data;
 }
 
+/************************************************************************************************** 
+  Function: 
+    
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 /* BatteryMonitor_read_bit
 * Author(s): mkobit
 * Called by: internal functions
@@ -275,6 +535,35 @@ static unsigned char BatteryMonitor_read_bit() {
 	return result;
 }
 
+/************************************************************************************************** 
+  Function: 
+    
+  
+  Author(s): 
+    
+  
+  Summary: 
+    
+  
+  Description: 
+    
+  
+  Preconditions: 
+    
+  
+  Parameters: 
+    
+  
+  Returns: 
+    
+  
+  Example: 
+    
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 /* BatteryMonitor_write_bit
 * Parameters: 
 	unsigned char bit - 0 or !0, determines which protocol to use to write a 1 or 0 to one-wire

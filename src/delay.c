@@ -199,7 +199,7 @@ void DelayUs(unsigned int us) {
 us_t DelayUtilGetUs(void) {
   us_t currentUs;
   currentUs = ReadCoreTimer() / _core_ticks_in_us;
-  return us_t;
+  return currentUs;
 }
 
 /************************************************************************************************** 

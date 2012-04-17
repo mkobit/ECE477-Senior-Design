@@ -12,8 +12,8 @@
 #define SQUARE(x) (x*x)
 #define SYSTEM_FREQUENCY 72000000L
 
-#define TEST_PIN BIT_5
-#define TEST_PORT IOPORT_F
+#define TEST_PIN BIT_11
+#define TEST_PORT IOPORT_B
 
 
 int main(void)

@@ -161,7 +161,7 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
   Function:		ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw)	Author(s):
     mkobit
 
-  Summary:		Reads x,y, and z acceleration data into the (raw) structure	Description:		Passes control to the shared I2C library to read several bytes into the buffer starting from the X axis register	Preconditions:		I2C module previously enabled and running	Parameters:
+  Summary:		Reads x, y, and z acceleration data into the (raw) structure	Description:		Passes control to the shared I2C library to read several bytes into the buffer starting from the X axis register	Preconditions:		I2C module previously enabled and running	Parameters:
     I2C_MODULE i2c -  I2C module to connect with
     accel_raw_t *raw - reference to structure to place read data into	Returns:		ACCEL_SUCCESS - If successful
     ACCEL_FAIL - If I2CShared library cannot complete its I2CShared_ReadMultipleBytes	Example:		<code>

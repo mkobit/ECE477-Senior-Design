@@ -60,9 +60,6 @@
 #define GYRO_INT_CFG_GYRO_RDY_EN		(1 << 2)
 #define GYRO_INT_CFG_RAW_RDY_EN		(1 << 0)
 
-#define GYRO_FAIL -1
-#define GYRO_SUCCESS 1
-
 #define GYRO_CONV_TO_DEGREES 14.375
 #define GYRO_TEMP_CONV_TO_DEGREES 280
 #define GYRO_TEMP_OFFSET -13200
@@ -73,7 +70,7 @@ typedef enum {
   GYRO_FAIL
 } GYRO_RESULT;
 
-typedef gyro_raw_t {
+typedef struct gyro_raw_t {
   short int x;
   short int y;
   short int z;

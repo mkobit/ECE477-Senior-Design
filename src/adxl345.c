@@ -69,19 +69,19 @@ ACCEL_RESULT AccelInit(I2C_MODULE i2c, char range, char bandwidth, accel_raw_t *
   // Put accel in MEASURE mode
   if (AccelWrite(i2c, ACCEL_POWER_CTL, ACCEL_MEASURE) == ACCEL_FAIL) {
     DBPRINTF("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c); 
-    return ACCEL_FAIL
+    return ACCEL_FAIL;
   }
   
   // Set Data Format
   if (AccelWrite(i2c, ACCEL_DATA_FORMAT, range) == ACCEL_FAIL) {
-    DBPRINTF("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c); 
-    return ACCEL_FAIL
+    DBPRINTF("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c);
+    return ACCEL_FAIL;
   }
 
   // Set Bandwidth
   if (AccelWrite(i2c, ACCEL_BW_RATE, bandwidth) == ACCEL_FAIL) {
     DBPRINTF("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c); 
-    return ACCEL_FAIL
+    return ACCEL_FAIL;
   }
   
   return ACCEL_SUCCESS;
@@ -139,13 +139,28 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
   Summary:
     Interface for the IMU to use, reads a single byte into buffer using I2CShared_ReadByte 
 
-  Description:		Passes control to the shared I2C library to read by providing the default accelerometer I2C read address	Preconditions:		I2C module previously enabled and running	Parameters:		I2C_MODULE i2c - I2C module to connect with
+  Description:
+		Passes control to the shared I2C library to read by providing the default accelerometer I2C read address
+
+	Preconditions:
+		I2C module previously enabled and running
+
+	Parameters:
+		I2C_MODULE i2c - I2C module to connect with
     char i2c_reg - register to read from
-    char *buffer - buffer to place read byte into	Returns:		ACCEL_SUCCESS - If successful
-    ACCEL_FAIL - If I2CShared library cannot complete its I2CShared_ReadByte	Example:		<code>
+    char *buffer - buffer to place read byte into
+
+	Returns:
+		ACCEL_SUCCESS - If successful
+    ACCEL_FAIL - If I2CShared library cannot complete its I2CShared_ReadByte
+
+	Example:
+		<code>
     char c;
     AccelRead(i2c, ACCEL_DEVID, &c)
-    </code>	Conditions at Exit:
+    </code>
+
+	Conditions at Exit:
     I2C bus is in idle state
 
 **************************************************************************************************/
@@ -158,15 +173,35 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
 }
 
 /************************************************************************************************** 
-  Function:		ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw)	Author(s):
+  Function:
+		ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw)
+
+	Author(s):
     mkobit
 
-  Summary:		Reads x, y, and z acceleration data into the (raw) structure	Description:		Passes control to the shared I2C library to read several bytes into the buffer starting from the X axis register	Preconditions:		I2C module previously enabled and running	Parameters:
+  Summary:
+		Reads x, y, and z acceleration data into the (raw) structure
+
+	Description:
+		Passes control to the shared I2C library to read several bytes into the buffer starting from the X axis register
+
+	Preconditions:
+		I2C module previously enabled and running
+
+	Parameters:
     I2C_MODULE i2c -  I2C module to connect with
-    accel_raw_t *raw - reference to structure to place read data into	Returns:		ACCEL_SUCCESS - If successful
-    ACCEL_FAIL - If I2CShared library cannot complete its I2CShared_ReadMultipleBytes	Example:		<code>
+    accel_raw_t *raw - reference to structure to place read data into
+
+	Returns:
+		ACCEL_SUCCESS - If successful
+    ACCEL_FAIL - If I2CShared library cannot complete its I2CShared_ReadMultipleBytes
+
+	Example:
+		<code>
     AccelReadAllAxes(i2c, &accel_data)
-    </code>	Conditions at Exit:
+    </code>
+
+	Conditions at Exit:
     I2C bus is in idle state, (raw) has most recent readings
 
 **************************************************************************************************/
@@ -186,12 +221,36 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function:		AccelGetX(accel_raw_t *raw)	Author(s):		mkobit	Summary:		Returns 'g' value of X acceleration	Description:		Multiplies the value in the (raw) data by its corresponding scale factor in (SCALES) and returns it	Preconditions:		AccelInit called prior to this on the (raw) value
-    AccelReadAllAxes called to place data in raw	Parameters:		accel_raw_t *raw - pointer to raw read data from accelerometer	Returns:		double xf - value in X in terms of 'g's	Example:		<code>
+  Function:
+		AccelGetX(accel_raw_t *raw)
+
+	Author(s):
+		mkobit
+
+	Summary:
+		Returns 'g' value of X acceleration
+
+	Description:
+		Multiplies the value in the (raw) data by its corresponding scale factor in (SCALES) and returns it
+
+	Preconditions:
+		AccelInit called prior to this on the (raw) value
+    AccelReadAllAxes called to place data in raw
+
+	Parameters:
+		accel_raw_t *raw - pointer to raw read data from accelerometer
+
+	Returns:
+		double xf - value in X in terms of 'g's
+
+	Example:
+		<code>
     double xg;
     AccelReadAllAxes(I2C1, &accel_readings)
     xg = AccelGetX(&accel_readings)
-    </code>	Conditions at Exit:
+    </code>
+
+	Conditions at Exit:
     None
 
 **************************************************************************************************/
@@ -202,12 +261,36 @@ double AccelGetX(accel_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function:		AccelGetY(accel_raw_t *raw)	Author(s):		mkobit	Summary:		Returns 'g' value of Y acceleration	Description:		Multiplies the value in the (raw) data by its corresponding scale factor in (SCALES) and returns it	Preconditions:		AccelInit called prior to this on the (raw) value
-    AccelReadAllAxes called to place data in raw	Parameters:		accel_raw_t *raw - pointer to raw read data from accelerometer	Returns:		double xf - value in Y in terms of 'g's	Example:		<code>
+  Function:
+		AccelGetY(accel_raw_t *raw)
+
+	Author(s):
+		mkobit
+
+	Summary:
+		Returns 'g' value of Y acceleration
+
+	Description:
+		Multiplies the value in the (raw) data by its corresponding scale factor in (SCALES) and returns it
+
+	Preconditions:
+		AccelInit called prior to this on the (raw) value
+    AccelReadAllAxes called to place data in raw
+
+	Parameters:
+		accel_raw_t *raw - pointer to raw read data from accelerometer
+
+	Returns:
+		double xf - value in Y in terms of 'g's
+
+	Example:
+		<code>
     double yg;
     AccelReadAllAxes(I2C1, &accel_readings)
     yg = AccelGetY(&accel_readings)
-    </code>	Conditions at Exit:
+    </code>
+
+	Conditions at Exit:
     None
 
 **************************************************************************************************/
@@ -218,12 +301,36 @@ double AccelGetY(accel_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function:		AccelGetZ(accel_raw_t *raw)	Author(s):		mkobit	Summary:		Returns 'g' value of Z acceleration	Description:		Multiplies the value in the (raw) data by its corresponding scale factor in (SCALES) and returns it	Preconditions:		AccelInit called prior to this on the (raw) value
-    AccelReadAllAxes called to place data in raw	Parameters:		accel_raw_t *raw - pointer to raw read data from accelerometer	Returns:		double zf - value in Z in terms of 'g's	Example:		<code>
+  Function:
+		AccelGetZ(accel_raw_t *raw)
+
+	Author(s):
+		mkobit
+
+	Summary:
+		Returns 'g' value of Z acceleration
+
+	Description:
+		Multiplies the value in the (raw) data by its corresponding scale factor in (SCALES) and returns it
+
+	Preconditions:
+		AccelInit called prior to this on the (raw) value
+    AccelReadAllAxes called to place data in raw
+
+	Parameters:
+		accel_raw_t *raw - pointer to raw read data from accelerometer
+
+	Returns:
+		double zf - value in Z in terms of 'g's
+
+	Example:
+		<code>
     double zg;
     AccelReadAllAxes(I2C1, &accel_readings)
     zg = AccelGetZ(&accel_readings)
-    </code>	Conditions at Exit:
+    </code>
+
+	Conditions at Exit:
     None
 
 **************************************************************************************************/

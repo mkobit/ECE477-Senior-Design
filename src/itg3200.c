@@ -4,17 +4,23 @@
 #include "i2c_shared.h"
 
 /************************************************************************************************** 
-  Function:		GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, char sample_rate_div, char power_mgmt_sel)
+  Function:
+		GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, char sample_rate_div, char power_mgmt_sel)
 
-  Author(s):		mkobit
+  Author(s):
+		mkobit
 
-  Summary:		Initializes the gyroscope
+  Summary:
+		Initializes the gyroscope
 
-  Description:		Typically will be called from the IMU code to set the sampling rate of the IMU and the resolution on the data
+  Description:
+		Typically will be called from the IMU code to set the sampling rate of the IMU and the resolution on the data
 
-  Preconditions:		I2C module previously enabled
+  Preconditions:
+		I2C module previously enabled
 
-  Parameters:		I2C_MODULE i2c - I2C module to connect with
+  Parameters:
+		I2C_MODULE i2c - I2C module to connect with
     char dlpf_lpf - low pass filter configuration for sensor acquisition
         GYRO_DLPF_LPF_256HZ	  - results in 8 kHz sample rate
   			GYRO_DLPF_LPF_188HZ   - results in 1 kHz sample rate
@@ -32,13 +38,16 @@
 			GYRO_PWR_MGM_CLK_SEL_Z        - Z as clock reference
 
   Returns:
-    GYRO_SUCCESS - If successful		GYRO_FAIL - If any GyroWrite fails
+    GYRO_SUCCESS - If successful
+		GYRO_FAIL - If any GyroWrite fails
 
-  Example:		<code>
+  Example:
+		<code>
     GyroInit(I2C1, GYRO_DLPF_LPF_42HZ, 5, GYRO_PWR_MGM_CLK_SEL_X)
     </code>
 
-  Conditions at Exit:		Gyro set to take samples at set data rate and the power management is also set. If either of these do not get set, GYRO_FAIL is returned
+  Conditions at Exit:
+		Gyro set to take samples at set data rate and the power management is also set. If either of these do not get set, GYRO_FAIL is returned
     I2C bus is in idle state
 
 **************************************************************************************************/
@@ -71,32 +80,41 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, unsigned char sample_rate_di
 }
 
 /************************************************************************************************** 
-  Function:		GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data)
+  Function:
+		GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data)
 
-  Author(s):		mkobit
+  Author(s):
+		mkobit
 
-  Summary:		Writes a single byte to an gyro register using the I2C module parameter
+  Summary:
+		Writes a single byte to an gyro register using the I2C module parameter
 
-  Description:		Interface for the IMU to use, passes control to the shared I2C library to write by providings the default gyro I2C write address
+  Description:
+		Interface for the IMU to use, passes control to the shared I2C library to write by providings the default gyro I2C write address
 
-  Preconditions:		I2C module previously enabled and running
+  Preconditions:
+		I2C module previously enabled and running
 
-  Parameters:		I2C_MODULE i2c - I2C module to connect with
+  Parameters:
+		I2C_MODULE i2c - I2C module to connect with
     char i2c_reg - register to write to
     BYTE data - data to be written
 
-  Returns:		GYRO_SUCCESS - If successful
+  Returns:
+		GYRO_SUCCESS - If successful
 		GYRO_FAIL - If I2CShared library cannot complete its I2CShared_WriteByte
 
-  Example:		<code>
+  Example:
+		<code>
     GyroWrite(I2C1, GYRO_SMPLRT_DIV, 5)
     </code>
 
-  Conditions at Exit:		
+  Conditions at Exit:
+		
 
 **************************************************************************************************/
 GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
-  if (I2CShared_Write(i2c, GYRO_WRITE, i2c_reg, data)) {
+  if (I2CShared_WriteByte(i2c, GYRO_WRITE, i2c_reg, data)) {
     return GYRO_SUCCESS;
   } else {
     return GYRO_FAIL;
@@ -104,33 +122,42 @@ GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
 }
 
 /************************************************************************************************** 
-  Function:		GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer)
+  Function:
+		GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer)
 
-  Author(s):		mkobit
+  Author(s):
+		mkobit
 
-  Summary:		Interface for the IMU to use, reads a single byte into buffer using I2CShared_ReadByte
+  Summary:
+		Interface for the IMU to use, reads a single byte into buffer using I2CShared_ReadByte
 
-  Description:		Passes control to the shared I2C library to read by providing the default gyro I2C read address
+  Description:
+		Passes control to the shared I2C library to read by providing the default gyro I2C read address
 
-  Preconditions:		I2C module previously enabled and running
+  Preconditions:
+		I2C module previously enabled and running
 
-  Parameters:		I2C_MODULE i2c - I2C module to connect with
+  Parameters:
+		I2C_MODULE i2c - I2C module to connect with
     char i2c_reg - register to read from
     char *buffer - buffer to place read byte into
 
-  Returns:		GYRO_SUCCESS - If successful
+  Returns:
+		GYRO_SUCCESS - If successful
     GYRO_FAIL - If I2CShared library cannot complete its I2CShared_ReadByte
 
-  Example:		<code>
+  Example:
+		<code>
     char c;
     GyroRead(i2c, GYRO_WHO_AM_I, &c)
     </code>
 
-  Conditions at Exit:		
+  Conditions at Exit:
+		
 
 **************************************************************************************************/
 GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
-  if (I2CShared_Read(i2c, GYRO_READ, i2c_reg, buffer)) {
+  if (I2CShared_ReadByte(i2c, GYRO_READ, i2c_reg, buffer)) {
     return GYRO_SUCCESS;
   } else {
     return GYRO_FAIL;
@@ -138,27 +165,36 @@ GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
 }
 
 /************************************************************************************************** 
-  Function:		GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp)
+  Function:
+		GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp)
 
-  Author(s):		mkobit
+  Author(s):
+		mkobit
 
-  Summary:		Reads x, y, and z angular momentum data into the (raw) structure, as well as the temperature if readTemp is TRUE
+  Summary:
+		Reads x, y, and z angular momentum data into the (raw) structure, as well as the temperature if readTemp is TRUE
 
-  Description:		Passes control to the shared I2C library to read several bytes into the buffer starting from the X axis register or the temperature register depending
+  Description:
+		Passes control to the shared I2C library to read several bytes into the buffer starting from the X axis register or the temperature register depending
     on whether or not readTemp is TRUE or FALSE
 
-  Preconditions:		I2C module previously enabled and running
+  Preconditions:
+		I2C module previously enabled and running
 
-  Parameters:		I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp - 
+  Parameters:
+		I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp - 
 
-  Returns:		GYRO_SUCCESS - If successful
+  Returns:
+		GYRO_SUCCESS - If successful
     GYRO_FAIL - If I2CShared library cannot complete its I2CShared_ReadMultipleBytes
 
-  Example:		<code>
+  Example:
+		<code>
     GyroReadAllAxes(I2C1, &gyro_data, TRUE)
     </code>
 
-  Conditions at Exit:		I2C bus is in idle state, (raw) has most recent readings
+  Conditions at Exit:
+		I2C bus is in idle state, (raw) has most recent readings
 
 **************************************************************************************************/
 GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
@@ -190,27 +226,36 @@ GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
 }
 
 /************************************************************************************************** 
-  Function:		double GyroGetTemp(gyro_raw_t *raw)
+  Function:
+		double GyroGetTemp(gyro_raw_t *raw)
 
-  Author(s):		mkobit
+  Author(s):
+		mkobit
 
-  Summary:		Converts temperature read from device to Celsius and returns it
+  Summary:
+		Converts temperature read from device to Celsius and returns it
 
-  Description:		Uses values provided by the datasheet to convert the read temperature into Celsius
+  Description:
+		Uses values provided by the datasheet to convert the read temperature into Celsius
 
-  Preconditions:		GyroInit called prior to this on the (raw) value
+  Preconditions:
+		GyroInit called prior to this on the (raw) value
     GyroReadAllAxes called to place data in raw using TRUE for reading temperature
 
-  Parameters:		gyro_raw_t *raw - pointer to raw read data from gyro
+  Parameters:
+		gyro_raw_t *raw - pointer to raw read data from gyro
 
-  Returns:		double temperature - converted temperature in Celsius
+  Returns:
+		double temperature - converted temperature in Celsius
 
-  Example:		<code>
+  Example:
+		<code>
     double tempC
     tempC = GyroGetTemp(&raw_gyro)
     </code>
 
-  Conditions at Exit:		None
+  Conditions at Exit:
+		None
 
 **************************************************************************************************/
 double GyroGetTemp(gyro_raw_t *raw) {
@@ -222,27 +267,36 @@ double GyroGetTemp(gyro_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function:		double GyroGetX(gyro_raw_t *raw)
+  Function:
+		double GyroGetX(gyro_raw_t *raw)
 
-  Author(s):		mkobit
+  Author(s):
+		mkobit
 
-  Summary:		Returns 'degrees/s' of raw data X which is roll
+  Summary:
+		Returns 'degrees/s' of raw data X which is roll
 
-  Description:		Multiplies the value in the (raw) data by the scale factor provided by the data sheet
+  Description:
+		Multiplies the value in the (raw) data by the scale factor provided by the data sheet
 
-  Preconditions:		GyroInit called prior to this on the (raw) value
+  Preconditions:
+		GyroInit called prior to this on the (raw) value
     GyroReadAllAxes called to place data in raw
 
-  Parameters:		gyro_raw_t *raw - pointer to raw read data from gyro
+  Parameters:
+		gyro_raw_t *raw - pointer to raw read data from gyro
 
-  Returns:		double xd - roll in terms of degrees/s
+  Returns:
+		double xd - roll in terms of degrees/s
 
-  Example:		<code>
+  Example:
+		<code>
     double roll
     roll = GyroGetX(&raw_gyro)
     </code>
 
-  Conditions at Exit:		None
+  Conditions at Exit:
+		None
 
 **************************************************************************************************/
 double GyroGetX(gyro_raw_t *raw) {
@@ -252,27 +306,36 @@ double GyroGetX(gyro_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function:		double GyroGetY(gyro_raw_t *raw)
+  Function:
+		double GyroGetY(gyro_raw_t *raw)
 
-  Author(s):		mkobit
+  Author(s):
+		mkobit
 
-  Summary:		Returns 'degrees/s' of raw data Y which is pitch
+  Summary:
+		Returns 'degrees/s' of raw data Y which is pitch
 
-  Description:		Multiplies the value in the (raw) data by the scale factor provided by the data sheet
+  Description:
+		Multiplies the value in the (raw) data by the scale factor provided by the data sheet
 
-  Preconditions:		GyroInit called prior to this on the (raw) value
+  Preconditions:
+		GyroInit called prior to this on the (raw) value
     GyroReadAllAxes called to place data in raw
 
-  Parameters:		gyro_raw_t *raw - pointer to raw read data from gyro
+  Parameters:
+		gyro_raw_t *raw - pointer to raw read data from gyro
 
-  Returns:		double yd - pitch in terms of degrees/s
+  Returns:
+		double yd - pitch in terms of degrees/s
 
-  Example:		<code>
+  Example:
+		<code>
     double pitch
     pitch = GyroGetY(&raw_gyro)
     </code>
 
-  Conditions at Exit:		None
+  Conditions at Exit:
+		None
 
 **************************************************************************************************/
 double GyroGetY(gyro_raw_t *raw) {
@@ -282,27 +345,36 @@ double GyroGetY(gyro_raw_t *raw) {
 }
 
 /************************************************************************************************** 
-  Function:		double GyroGetZ(gyro_raw_t *raw)
+  Function:
+		double GyroGetZ(gyro_raw_t *raw)
 
-  Author(s):		mkobit
+  Author(s):
+		mkobit
 
-  Summary:		Returns 'degrees/s' of raw data Z which is yaw
+  Summary:
+		Returns 'degrees/s' of raw data Z which is yaw
 
-  Description:		Multiplies the value in the (raw) data by the scale factor provided by the data sheet
+  Description:
+		Multiplies the value in the (raw) data by the scale factor provided by the data sheet
 
-  Preconditions:		GyroInit called prior to this on the (raw) value
+  Preconditions:
+		GyroInit called prior to this on the (raw) value
     GyroReadAllAxes called to place data in raw
 
-  Parameters:		gyro_raw_t *raw - pointer to raw read data from gyro
+  Parameters:
+		gyro_raw_t *raw - pointer to raw read data from gyro
 
-  Returns:		double zd - yaw in terms of degrees/s
+  Returns:
+		double zd - yaw in terms of degrees/s
 
-  Example:		<code>
+  Example:
+		<code>
     double yaw
     yaw = GyroGetZ(&raw_gyro)
     </code>
 
-  Conditions at Exit:		None
+  Conditions at Exit:
+		None
 
 **************************************************************************************************/
 double GyroGetZ(gyro_raw_t *raw) {

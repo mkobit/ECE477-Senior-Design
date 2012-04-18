@@ -69,7 +69,8 @@ static inline void ImuToggleSelector(imu_t* imu);
 
   Example:
 		<code>
-      ImuInit(I2C1,
+      ImuInit(&imu,
+                I2C1,
               40000000L,
               300000,
               ACCEL_RANGE_4G,
@@ -170,9 +171,9 @@ IMU_RESULT ImuUpdate(imu_t *imu) {
   
   if (imu->updateAccelFirst) {
     a_result = AccelReadAllAxes(imu->i2c_module, &imu->accel_raw);
-    g_result = GyroReadAllAxes(imu->i2c_module, &imu->gyro_raw);
+    g_result = GyroReadAllAxes(imu->i2c_module, &imu->gyro_raw, TRUE);
   } else {
-    g_result = GyroReadAllAxes(imu->i2c_module, &imu->gyro_raw);
+    g_result = GyroReadAllAxes(imu->i2c_module, &imu->gyro_raw, TRUE);
     a_result = AccelReadAllAxes(imu->i2c_module, &imu->accel_raw);
   }
   

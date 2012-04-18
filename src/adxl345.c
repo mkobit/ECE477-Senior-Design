@@ -209,7 +209,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
   char reading_rainbow[6];  // placeholder for read data
   
   // read x,y, and z data into buffer
-  if (I2CShared_ReadMultipleBytes(I2C_MODULE i2c, ACCEL_WRITE, ACCEL_READ, ACCEL_DATAX0, 6, reading_rainbow)) {
+  if (I2CShared_ReadMultipleBytes(i2c, ACCEL_WRITE, ACCEL_READ, ACCEL_DATAX0, 6, reading_rainbow)) {
     //expand data and place them into the accel_raw_t raw
     raw->x = (reading_rainbow[1] << 8) | reading_rainbow[0];
     raw->y = (reading_rainbow[3] << 8) | reading_rainbow[2];

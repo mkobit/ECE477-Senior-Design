@@ -157,7 +157,7 @@ GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
 
 **************************************************************************************************/
 GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
-  if (I2CShared_ReadByte(i2c, GYRO_READ, i2c_reg, buffer)) {
+  if (I2CShared_ReadByte(i2c, GYRO_WRITE,GYRO_READ, i2c_reg, buffer)) {
     return GYRO_SUCCESS;
   } else {
     return GYRO_FAIL;
@@ -204,11 +204,11 @@ GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
   char startReadI2CReg;
   
   nDataToRead = 6 + (readTemp ? 2 : 0);
-  offsetForTemp = 0 + (readTemp ? 2 : 0)
+  offsetForTemp = 0 + (readTemp ? 2 : 0);
   startReadI2CReg = readTemp ? GYRO_TEMP_OUT_H : GYRO_XOUT_H;
   
   // read x,y, and z data into buffer
-  if (I2CShared_ReadMultipleBytes(I2C_MODULE i2c, GYRO_WRITE, GYRO_READ, startReadI2CReg, nDataToRead, reading_rainbow)) {
+  if (I2CShared_ReadMultipleBytes(i2c, GYRO_WRITE, GYRO_READ, startReadI2CReg, nDataToRead, reading_rainbow)) {
     //expand data and place them into the accel_raw_t readings
     
     // if readTemp was true, update temperature

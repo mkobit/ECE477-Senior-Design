@@ -21,7 +21,7 @@ typedef struct imu_t {
   BOOL updateAccelFirst;
   accel_raw_t accel_raw;
   gyro_raw_t gyro_raw;
-  const imu_id id;
+  imu_id id;
 } imu_t;
 
 IMU_RESULT ImuInit(imu_t* imu, 

@@ -1,8 +1,10 @@
 #include <plib.h>
 #include <p32xxxx.h>
+#include <sys/appio.h>
 #include <stdio.h>
 #include "imu.h"
 #include "delay.h"
+
 
 // Configuration Bit settings
 //
@@ -32,9 +34,7 @@
 #define GetSystemClock()            (SYS_CLOCK)
 #define GetPeripheralClock()        (SYS_CLOCK/2)
 #define GetInstructionClock()       (SYS_CLOCK)
-#define I2C_CLOCK_FREQ              5000
 
-// EEPROM Constants
 #define TEST_I2C_BUS_ID              I2C1
 #define TEST_I2C_BUS_SPEED           (400000)
 
@@ -48,12 +48,22 @@ int main() {
   IMU_RESULT imu_res;
 
   // initialize debug messages
-  DBINIT();
-  pbFreq = SYSTEMConfigPerformance(GetSystemClock());
   
-  imu_res = ImuInit(&imu, TEST_I2C_BUS_ID, pbFreq, ACCEL_BW_100, GYRO_DLPF_LPF_98HZ, 9, GYRO_PWR_MGM_CLK_SEL_X)
+  pbFreq = SYSTEMConfigPerformance(GetSystemClock());
+  //DBINIT();
+  printf("Yo\n");
+  imu_res = ImuInit(&imu, 
+          TEST_I2C_BUS_ID,
+          pbFreq,
+          TEST_I2C_BUS_SPEED,
+          ACCEL_SCALE_4G,
+          ACCEL_BW_100,
+          GYRO_DLPF_LPF_98HZ,
+          9,
+          GYRO_PWR_MGM_CLK_SEL_X);
   if (imu_res == IMU_FAIL) {
     while(1) {}
   }
+  while(1);
   return 0;
 }

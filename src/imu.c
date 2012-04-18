@@ -15,7 +15,6 @@ static inline void ImuToggleSelector(imu_t* imu);
 					char accel_bandwidth, 
           char gyro_dlpf_lpf, 
           char gyro_sample_rate_div, 
-          char gyro_power_mgmt_sel)
 
   Author(s):
 		mkobit
@@ -28,9 +27,10 @@ static inline void ImuToggleSelector(imu_t* imu);
 
   Preconditions:
 		Nothing else using I2C port
+    I2C not previously configure
 
   Parameters:
-		imu_t* imu - reference to IMU to be initialized
+    imu_t* imu - reference to IMU to be initialized
     I2C_MODULE i2c - I2C module to associate with this IMU
     unsigned int peripheral_clock_speed - peripheral bus speed
     unsigned int i2c_speed - target I2C bus speed

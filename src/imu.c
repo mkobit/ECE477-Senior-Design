@@ -23,6 +23,7 @@ static inline void ImuToggleSelector(imu_t* imu);
   Description:		Goes through each step of initializing the I2C port for a particular IMU, as well as writing configuration settings to the accelerometer and gyroscope
 
   Preconditions:		Nothing else using I2C port
+    I2C not previously configure
 
   Parameters:		imu_t* imu - reference to IMU to be initialized
     I2C_MODULE i2c - I2C module to associate with this IMU

@@ -58,13 +58,10 @@ int main() {
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
   OPENDEBUG();
   
-  OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
-            (pbFreq/16/BAUDRATE) - 1);
-  
   DelayInit(GetSystemClock());
   //DBINIT();
   UARTSendData(UART2, CLEAR_VT);
-  /*imu_res = ImuInit(&imu,
+  imu_res = ImuInit(&imu,
           TEST_I2C_BUS_ID,
           pbFreq,
           TEST_I2C_BUS_SPEED,
@@ -72,16 +69,8 @@ int main() {
           ACCEL_BW_100,
           GYRO_DLPF_LPF_98HZ,
           9,
-          GYRO_PWR_MGM_CLK_SEL_X);*/
+          GYRO_PWR_MGM_CLK_SEL_X);
   init_res = I2CShared_Init(TEST_I2C_BUS_ID, pbFreq, TEST_I2C_BUS_SPEED);
-  UARTSendData(UART2, "Starting\n");
-  UARTSendData(UART2, "fuck you\n");
-  UARTSendData(UART2, "derp\n");
-  while(1) {
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, ACCEL_WRITE, ACCEL_READ, ACCEL_DEVID, &data);
-      DelayMs(500);
-      //printf(CLEAR_VT);
-  }
   if (imu_res == IMU_FAIL) {
     while(1) {}
   }

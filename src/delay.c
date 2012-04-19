@@ -3,7 +3,7 @@
 #include <plib.h>
 
 static unsigned int _core_hz;
-static unsigned int _core_ticks_in_us;	// stored locally so that these delays will be more accurate
+static unsigned int _core_ticks_in_us;  // stored locally so that these delays will be more accurate
 static unsigned int _core_ticks_in_ms;
 
 /************************************************************************************************** 
@@ -38,10 +38,10 @@ static unsigned int _core_ticks_in_ms;
   
 **************************************************************************************************/
 void DelayInit(unsigned int clock_hz) {
-	_core_hz = clock_hz / 2;	// runs at half-speed of system clock
-	_core_ticks_in_us = DELAY_US_TO_CT_TICKS(_core_hz);
-	_core_ticks_in_ms = DELAY_MS_TO_CT_TICKS(_core_hz);
-	WriteCoreTimer(0);
+  _core_hz = clock_hz / 2;  // runs at half-speed of system clock
+  _core_ticks_in_us = DELAY_US_TO_CT_TICKS(_core_hz);
+  _core_ticks_in_ms = DELAY_MS_TO_CT_TICKS(_core_hz);
+  WriteCoreTimer(0);
 }
 
 /************************************************************************************************** 
@@ -74,13 +74,13 @@ void DelayInit(unsigned int clock_hz) {
   
 **************************************************************************************************/
 void DelayS(unsigned int s) {
-	unsigned int start;
-	unsigned int ticks_to_wait;
+  unsigned int start;
+  unsigned int ticks_to_wait;
 
-	ticks_to_wait = s * _core_hz;
-	WriteCoreTimer(0);	// clear timer
-	start = ReadCoreTimer();
-	while ((unsigned int) (ReadCoreTimer() - start) < ticks_to_wait) {};
+  ticks_to_wait = s * _core_hz;
+  WriteCoreTimer(0);  // clear timer
+  start = ReadCoreTimer();
+  while ((unsigned int) (ReadCoreTimer() - start) < ticks_to_wait) {};
 }
 
 /************************************************************************************************** 
@@ -115,13 +115,13 @@ void DelayS(unsigned int s) {
   
 **************************************************************************************************/
 void DelayMs(unsigned int ms) {
-	unsigned int start;
-	unsigned int ticks_to_wait;
+  unsigned int start;
+  unsigned int ticks_to_wait;
 
-	ticks_to_wait = ms * _core_ticks_in_ms;
-	WriteCoreTimer(0);	// clear timer
-	start = ReadCoreTimer();
-	while ((unsigned int) (ReadCoreTimer() - start) < ticks_to_wait) {};
+  ticks_to_wait = ms * _core_ticks_in_ms;
+  WriteCoreTimer(0);  // clear timer
+  start = ReadCoreTimer();
+  while ((unsigned int) (ReadCoreTimer() - start) < ticks_to_wait) {};
 }
 
 /************************************************************************************************** 
@@ -156,13 +156,13 @@ void DelayMs(unsigned int ms) {
   
 **************************************************************************************************/
 void DelayUs(unsigned int us) {
-	unsigned int start;
-	unsigned int ticks_to_wait;
+  unsigned int start;
+  unsigned int ticks_to_wait;
 
-	ticks_to_wait = us * _core_ticks_in_us;
-	WriteCoreTimer(0);	// clear timer
-	start = ReadCoreTimer();
-	while ((unsigned int) (ReadCoreTimer() - start) < ticks_to_wait) {};
+  ticks_to_wait = us * _core_ticks_in_us;
+  WriteCoreTimer(0);  // clear timer
+  start = ReadCoreTimer();
+  while ((unsigned int) (ReadCoreTimer() - start) < ticks_to_wait) {};
 }
 
 /************************************************************************************************** 

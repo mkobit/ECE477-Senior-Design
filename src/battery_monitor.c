@@ -50,27 +50,27 @@ static void BatteryMonitorWriteByte(unsigned char c);
   
 **************************************************************************************************/
 void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port) {
-	_bmon_port = batt_mon_port;
-	_bmon_pin = batt_mon_pin;
-	switch(_bmon_port) {
-		case IOPORT_A: mPORTAOpenDrainOpen(_bmon_pin); break;
-		case IOPORT_B: mPORTBOpenDrainOpen(_bmon_pin); break;
-		case IOPORT_C: mPORTCOpenDrainOpen(_bmon_pin); break;
-		case IOPORT_D: mPORTDOpenDrainOpen(_bmon_pin); break;
-		case IOPORT_E: mPORTEOpenDrainOpen(_bmon_pin); break;
-		case IOPORT_F: mPORTFOpenDrainOpen(_bmon_pin); break;
-		case IOPORT_G: mPORTGOpenDrainOpen(_bmon_pin); break;
-	}
+  _bmon_port = batt_mon_port;
+  _bmon_pin = batt_mon_pin;
+  switch(_bmon_port) {
+    case IOPORT_A: mPORTAOpenDrainOpen(_bmon_pin); break;
+    case IOPORT_B: mPORTBOpenDrainOpen(_bmon_pin); break;
+    case IOPORT_C: mPORTCOpenDrainOpen(_bmon_pin); break;
+    case IOPORT_D: mPORTDOpenDrainOpen(_bmon_pin); break;
+    case IOPORT_E: mPORTEOpenDrainOpen(_bmon_pin); break;
+    case IOPORT_F: mPORTFOpenDrainOpen(_bmon_pin); break;
+    case IOPORT_G: mPORTGOpenDrainOpen(_bmon_pin); break;
+  }
 }
 
 /************************************************************************************************** 
   Function: 
     BATTMON_RESULT BatteryMonitorReadBytes(unsigned char net_address_command, 
-										unsigned char start_addr, 
-										unsigned char *data, 
-										int nitems)
+                    unsigned char start_addr, 
+                    unsigned char *data, 
+                    int nitems)
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Reads (nitems) bytes into (data) from the battery monitor
@@ -110,44 +110,44 @@ void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port) {
   
 **************************************************************************************************/
 BATTMON_RESULT BatteryMonitorReadBytes(unsigned char net_address_command, 
-										unsigned char start_addr, 
-										unsigned char *data, 
-										int nitems) {
-	int i;
-	BATTMON_RESULT presence_detect;
-	unsigned char data_read;
-	if (net_address_command == BATTERY_MONITOR_NET_SKIP_ADDR) {
-		// saves time by not using net_address, assuming only 1 one-wire device on the bus
-		presence_detect = BatteryMonitorReset();
-		if (!presence_detect) return presence_detect;	// not detected, return a failure
-		BatteryMonitorWriteByte(net_address_command);
-		BatteryMonitorWriteByte(BATTERY_MONITOR_FUNC_READ_DATA);
-		BatteryMonitorWriteByte(start_addr);
-	}
-	//else if (net_address_command == BATTERY_MONITOR_NET_RESUME {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_NET_MATCH_ADDR) {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_NET_SEARCH_ADDR) {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_NET_READ_ADDR) {} *NOT IMPLEMENTED*
-	else {
-		return BATTMON_FAIL;	// not a valid net_address_command
-	}
+                    unsigned char start_addr, 
+                    unsigned char *data, 
+                    int nitems) {
+  int i;
+  BATTMON_RESULT presence_detect;
+  unsigned char data_read;
+  if (net_address_command == BATTERY_MONITOR_NET_SKIP_ADDR) {
+    // saves time by not using net_address, assuming only 1 one-wire device on the bus
+    presence_detect = BatteryMonitorReset();
+    if (!presence_detect) return presence_detect;  // not detected, return a failure
+    BatteryMonitorWriteByte(net_address_command);
+    BatteryMonitorWriteByte(BATTERY_MONITOR_FUNC_READ_DATA);
+    BatteryMonitorWriteByte(start_addr);
+  }
+  //else if (net_address_command == BATTERY_MONITOR_NET_RESUME {} *NOT IMPLEMENTED*
+  //else if (net_address_command == BATTERY_MONITOR_NET_MATCH_ADDR) {} *NOT IMPLEMENTED*
+  //else if (net_address_command == BATTERY_MONITOR_NET_SEARCH_ADDR) {} *NOT IMPLEMENTED*
+  //else if (net_address_command == BATTERY_MONITOR_NET_READ_ADDR) {} *NOT IMPLEMENTED*
+  else {
+    return BATTMON_FAIL;  // not a valid net_address_command
+  }
 
-	for (i = 0; i < nitems; i++) {
-		data_read = BatteryMonitorReadByte();
-		*(data++) = data_read;
-	}
-	presence_detect = BatteryMonitorReset();	// reset at end of function
-	return presence_detect;
+  for (i = 0; i < nitems; i++) {
+    data_read = BatteryMonitorReadByte();
+    *(data++) = data_read;
+  }
+  presence_detect = BatteryMonitorReset();  // reset at end of function
+  return presence_detect;
 }
 
 /************************************************************************************************** 
   Function: 
     BATTMON_RESULT BatteryMonitorWriteBytes(unsigned char net_address_command, 
-										unsigned char start_addr, 
-										unsigned char *data, 
-										int nitems)
+                    unsigned char start_addr, 
+                    unsigned char *data, 
+                    int nitems)
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Writes several bytes to the battery monitor 
@@ -182,38 +182,38 @@ BATTMON_RESULT BatteryMonitorReadBytes(unsigned char net_address_command,
   
 **************************************************************************************************/
 BATTMON_RESULT BatteryMonitorWriteBytes(unsigned char net_address_command, 
-										unsigned char start_addr, 
-										unsigned char *data, 
-										int nitems) {
-	int i;
-	BATTMON_RESULT presence_detect;
-	if (net_address_command == BATTERY_MONITOR_NET_SKIP_ADDR) {
-		// saves time by not using net_address, assuming only 1 one-wire device on the bus
-		presence_detect = BatteryMonitorReset();
-		if (!presence_detect) return presence_detect;	// not detected, return a failure
-		BatteryMonitorWriteByte(net_address_command);
-		BatteryMonitorWriteByte(BATTERY_MONITOR_FUNC_WRITE_DATA);
-		BatteryMonitorWriteByte(start_addr);
-	}
-	//else if (net_address_command == BATTERY_MONITOR_NET_RESUME {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_NET_MATCH_ADDR) {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_NET_SEARCH_ADDR) {} *NOT IMPLEMENTED*
-	//else if (net_address_command == BATTERY_MONITOR_NET_READ_ADDR) {} *NOT IMPLEMENTED*
-	else {
-		return 0;	// not a valid net_address_command
-	}
-	for (i = 0; i < nitems; i++) {
-		BatteryMonitorWriteByte(*(data++));
-	}
-	presence_detect = BatteryMonitorReset();	// reset at end of function
-	return presence_detect;
+                    unsigned char start_addr, 
+                    unsigned char *data, 
+                    int nitems) {
+  int i;
+  BATTMON_RESULT presence_detect;
+  if (net_address_command == BATTERY_MONITOR_NET_SKIP_ADDR) {
+    // saves time by not using net_address, assuming only 1 one-wire device on the bus
+    presence_detect = BatteryMonitorReset();
+    if (!presence_detect) return presence_detect;  // not detected, return a failure
+    BatteryMonitorWriteByte(net_address_command);
+    BatteryMonitorWriteByte(BATTERY_MONITOR_FUNC_WRITE_DATA);
+    BatteryMonitorWriteByte(start_addr);
+  }
+  //else if (net_address_command == BATTERY_MONITOR_NET_RESUME {} *NOT IMPLEMENTED*
+  //else if (net_address_command == BATTERY_MONITOR_NET_MATCH_ADDR) {} *NOT IMPLEMENTED*
+  //else if (net_address_command == BATTERY_MONITOR_NET_SEARCH_ADDR) {} *NOT IMPLEMENTED*
+  //else if (net_address_command == BATTERY_MONITOR_NET_READ_ADDR) {} *NOT IMPLEMENTED*
+  else {
+    return 0;  // not a valid net_address_command
+  }
+  for (i = 0; i < nitems; i++) {
+    BatteryMonitorWriteByte(*(data++));
+  }
+  presence_detect = BatteryMonitorReset();  // reset at end of function
+  return presence_detect;
 }
 
 /************************************************************************************************** 
   Function: 
     static BATTMON_RESULT BatteryMonitorReset()
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Resets the one wire bus and detects the presence
@@ -246,17 +246,17 @@ BATTMON_RESULT BatteryMonitorWriteBytes(unsigned char net_address_command,
   
 **************************************************************************************************/
 static BATTMON_RESULT BatteryMonitorReset() {
-	BATTMON_RESULT presence_detected;
-	
-	BatteryMonitor_drive_low();
-	DelayUs(480);
-	BatteryMonitor_drive_high();	// release bus
-	DelayUs(100);
+  BATTMON_RESULT presence_detected;
+  
+  BatteryMonitor_drive_low();
+  DelayUs(480);
+  BatteryMonitor_drive_high();  // release bus
+  DelayUs(100);
   // Read presence bit, 0 if present 1 if not present so value is inverted for logical clarity
-	presence_detected = BatteryMonitor_read_onewire() == 0 ? BATTMON_SUCCESS : BATTMON_FAIL;
-	DelayUs(380);
-	BatteryMonitor_drive_high();	// release bus
-	return presence_detected;
+  presence_detected = BatteryMonitor_read_onewire() == 0 ? BATTMON_SUCCESS : BATTMON_FAIL;
+  DelayUs(380);
+  BatteryMonitor_drive_high();  // release bus
+  return presence_detected;
 }
 
 /************************************************************************************************** 
@@ -264,7 +264,7 @@ static BATTMON_RESULT BatteryMonitorReset() {
     static unsigned char BatteryMonitorReadByte()
   
   Author(s):
-		mkobit
+    mkobit
   
   Summary: 
     Reads an entire byte off of the one-wire bus
@@ -295,23 +295,23 @@ static BATTMON_RESULT BatteryMonitorReset() {
   
 **************************************************************************************************/
 static unsigned char BatteryMonitorReadByte() {
-	unsigned char loop;
-	unsigned char result = 0;
-	
-	for (loop = 0; loop < 8; loop++) {
-		result >>= 1;
-		if (BatteryMonitor_read_bit()) {
-			result |= MSBIT_MASK;	// if bit read is 1, or in a 1
-		}
-	}
-	return result;
+  unsigned char loop;
+  unsigned char result = 0;
+  
+  for (loop = 0; loop < 8; loop++) {
+    result >>= 1;
+    if (BatteryMonitor_read_bit()) {
+      result |= MSBIT_MASK;  // if bit read is 1, or in a 1
+    }
+  }
+  return result;
 }
 
 /************************************************************************************************** 
   Function: 
     static void BatteryMonitorWriteByte(unsigned char c)
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Writes an entire byte to the one wire battery monitor device
@@ -341,19 +341,19 @@ static unsigned char BatteryMonitorReadByte() {
   
 **************************************************************************************************/
 static void BatteryMonitorWriteByte(unsigned char c) {
-	unsigned char loop;
-	
-	for (loop = 0; loop < 8; loop++) {
-		BatteryMonitor_write_bit(c & LSBIT_MASK);
-		c >>= 1;
-	}
+  unsigned char loop;
+  
+  for (loop = 0; loop < 8; loop++) {
+    BatteryMonitor_write_bit(c & LSBIT_MASK);
+    c >>= 1;
+  }
 }
 
 /************************************************************************************************** 
   Function: 
     static void BatteryMonitor_drive_low()
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Configures the 1-wire port pin as an output and drives the port pin low
@@ -381,15 +381,15 @@ static void BatteryMonitorWriteByte(unsigned char c) {
   
 **************************************************************************************************/
 static void BatteryMonitor_drive_low() {
-	PORTSetPinsDigitalOut(_bmon_port, _bmon_pin);
-	PORTClearBits(_bmon_port, _bmon_pin);
+  PORTSetPinsDigitalOut(_bmon_port, _bmon_pin);
+  PORTClearBits(_bmon_port, _bmon_pin);
 }
 
 /************************************************************************************************** 
   Function: 
     static void BatteryMonitor_drive_high()
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Configures the 1-wire port pin as an output and drives the port pin high
@@ -417,15 +417,15 @@ static void BatteryMonitor_drive_low() {
   
 **************************************************************************************************/
 static void BatteryMonitor_drive_high() {
-	PORTSetPinsDigitalOut(_bmon_port, _bmon_pin);
-	PORTSetBits(_bmon_port, _bmon_pin);
+  PORTSetPinsDigitalOut(_bmon_port, _bmon_pin);
+  PORTSetBits(_bmon_port, _bmon_pin);
 }
 
 /************************************************************************************************** 
   Function: 
     static unsigned char BatteryMonitor_read_onewire()
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Configures one wire interface as input and samples the line
@@ -454,22 +454,22 @@ static void BatteryMonitor_drive_high() {
   
 **************************************************************************************************/
 static unsigned char BatteryMonitor_read_onewire(void) {
-	unsigned char read_data = 0;
-	
-	PORTSetPinsDigitalIn(_bmon_port, _bmon_pin);
-	if(PORTReadBits(_bmon_port, _bmon_pin)) {
-		read_data = 1;
-	} else {
-		read_data = 0;
-	}
-	return read_data;
+  unsigned char read_data = 0;
+  
+  PORTSetPinsDigitalIn(_bmon_port, _bmon_pin);
+  if(PORTReadBits(_bmon_port, _bmon_pin)) {
+    read_data = 1;
+  } else {
+    read_data = 0;
+  }
+  return read_data;
 }
 
 /************************************************************************************************** 
   Function: 
     static unsigned char BatteryMonitor_read_bit()
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Describes read protocol for one-wire device
@@ -498,23 +498,23 @@ static unsigned char BatteryMonitor_read_onewire(void) {
   
 **************************************************************************************************/
 static unsigned char BatteryMonitor_read_bit() {
-	unsigned char result;
-	
-	BatteryMonitor_drive_low();
-	DelayUs(3);	// minimum 1 us
-	BatteryMonitor_drive_high();
-	DelayUs(20);	// tRDV - max 15 us
-	result = BatteryMonitor_read_onewire();
-	BatteryMonitor_drive_high();
-	DelayUs(57);	// time slot (min,max) = (60, 120) us
-	return result;
+  unsigned char result;
+  
+  BatteryMonitor_drive_low();
+  DelayUs(3);  // minimum 1 us
+  BatteryMonitor_drive_high();
+  DelayUs(20);  // tRDV - max 15 us
+  result = BatteryMonitor_read_onewire();
+  BatteryMonitor_drive_high();
+  DelayUs(57);  // time slot (min,max) = (60, 120) us
+  return result;
 }
 
 /************************************************************************************************** 
   Function: 
     static void BatteryMonitor_write_bit(unsigned char bit)
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Describes write protocol for one-wire device
@@ -544,17 +544,17 @@ static unsigned char BatteryMonitor_read_bit() {
   
 **************************************************************************************************/
 static void BatteryMonitor_write_bit(unsigned char bit) {
-	if (bit) {
-		// write 1 bit
-		BatteryMonitor_drive_low();
-		DelayUs(7);	// Write-1 Low Time, (min, max) = (1, 15) us
-		BatteryMonitor_drive_high();
-		DelayUs(75); 	//recovery time and slot time, min recovery is 1 us
-	} else {
-		// write 0 bit
-		BatteryMonitor_drive_low();
-		DelayUs(80);	// Write-0 Low Time, (min, max) = (60, 120) us
-		BatteryMonitor_drive_high();
-		DelayUs(2); 	//recovery time, min is 1 us		
-	}
+  if (bit) {
+    // write 1 bit
+    BatteryMonitor_drive_low();
+    DelayUs(7);  // Write-1 Low Time, (min, max) = (1, 15) us
+    BatteryMonitor_drive_high();
+    DelayUs(75);   //recovery time and slot time, min recovery is 1 us
+  } else {
+    // write 0 bit
+    BatteryMonitor_drive_low();
+    DelayUs(80);  // Write-0 Low Time, (min, max) = (60, 120) us
+    BatteryMonitor_drive_high();
+    DelayUs(2);   //recovery time, min is 1 us    
+  }
 }

@@ -4,11 +4,11 @@
 #include "delay.h"
 
 // Pin numbers
-static unsigned int _rs, _rw, _en;	
+static unsigned int _rs, _rw, _en;  
 static unsigned int _d0, _d1, _d2, _d3, _d4, _d5, _d6, _d7;
 
 // port IDs
-static IoPortId _rs_port, _rw_port, _en_port;	
+static IoPortId _rs_port, _rw_port, _en_port;  
 static IoPortId _d0_port, _d1_port, _d2_port, _d3_port, _d4_port, _d5_port, _d6_port, _d7_port;
 
 
@@ -32,7 +32,7 @@ static void LcdSetDataOutputs(unsigned char data);
             unsigned int d7, IoPortId d7_port,
             unsigned char dots_display_control)
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Sets static variables in LCD module and initalizes the LCD
@@ -45,17 +45,17 @@ static void LcdSetDataOutputs(unsigned char data);
     DelayInit called to setup Delay library. This is used for almost all functions, so it must be initialized.
   
   Parameters: 
-    unsigned int rs   - rs pin		IoPortId rs_port  - rs port
-    unsigned int rw   - rw pin		IoPortId rw_port  - rw port
-    unsigned int en   - en pin		IoPortId en_port  - en port
-    unsigned int d0   - data 0 pin		IoPortId d0_port  - data 0 port
-    unsigned int d1   - *		IoPortId d1_port  - *
-    unsigned int d2   - *		IoPortId d2_port  - *
-    unsigned int d3   - *		IoPortId d3_port  - *
-    unsigned int d4   - *		IoPortId d4_port  - *
-    unsigned int d5   - *		IoPortId d5_port  - *
-    unsigned int d6   - *		IoPortId d6_port  - *
-    unsigned int d7   - *		IoPortId d7_port  - *
+    unsigned int rs   - rs pin    IoPortId rs_port  - rs port
+    unsigned int rw   - rw pin    IoPortId rw_port  - rw port
+    unsigned int en   - en pin    IoPortId en_port  - en port
+    unsigned int d0   - data 0 pin    IoPortId d0_port  - data 0 port
+    unsigned int d1   - *    IoPortId d1_port  - *
+    unsigned int d2   - *    IoPortId d2_port  - *
+    unsigned int d3   - *    IoPortId d3_port  - *
+    unsigned int d4   - *    IoPortId d4_port  - *
+    unsigned int d5   - *    IoPortId d5_port  - *
+    unsigned int d6   - *    IoPortId d6_port  - *
+    unsigned int d7   - *    IoPortId d7_port  - *
     unsigned char dots_display_control - constant from library to determine how many dots to display
       LCD_DOTS_5x11
       LCD_DOTS_5x8
@@ -151,7 +151,7 @@ void LcdInit(unsigned int rs, IoPortId rs_port,
   Function: 
     void LcdInstrClearDisplay()
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Clears the LCD display
@@ -182,14 +182,14 @@ void LcdInit(unsigned int rs, IoPortId rs_port,
 void LcdInstrClearDisplay() {
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, LCD_INSTR_CLEAR);
   LcdToggleEnable();
-  DelayMs(2);	// 1.52 ms on datasheet
+  DelayMs(2);  // 1.52 ms on datasheet
 }
 
 /************************************************************************************************** 
   Function: 
     void LcdInstrReturnHome()
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Returns the cursor in the LCD to the Home position
@@ -220,14 +220,14 @@ void LcdInstrClearDisplay() {
 void LcdInstrReturnHome() {
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, LCD_INSTR_RETHOME);
   LcdToggleEnable();
-  DelayMs(2);	// 1.52 ms on datasheet
+  DelayMs(2);  // 1.52 ms on datasheet
 }
 
 /************************************************************************************************** 
   Function: 
     void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_display)
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary:
     Sets cursor move direction and specifies display shift
@@ -264,14 +264,14 @@ void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_
   disp_out = 0x04 | ddram_address_gain | shift_display;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdToggleEnable();
-  DelayUs(43);	// 37 us + 15%
+  DelayUs(43);  // 37 us + 15%
 }
 
 /************************************************************************************************** 
   Function: 
     void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_control, unsigned char cursor_blink_control)
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Sets various settings of the display
@@ -311,14 +311,14 @@ void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_
   disp_out = 0x08 | display_control | cursor_control | cursor_blink_control;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdToggleEnable();
-  DelayUs(43);	// 37 us + 15%
+  DelayUs(43);  // 37 us + 15%
 }
 
 /************************************************************************************************** 
   Function: 
     void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shift_direction)
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Set cursor moving and display shift control bit, and the direction, without changing DDRAM data
@@ -332,11 +332,11 @@ void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_
   
   Parameters: 
     unsigned char shift_select  - shift display/cursor
-			LCD_SHIFT_SELECT_DISPLAY - shifts display, cursor follows shift
-			LCD_SHIFT_SELECT_CURSOR
+      LCD_SHIFT_SELECT_DISPLAY - shifts display, cursor follows shift
+      LCD_SHIFT_SELECT_CURSOR
     unsigned char shift_direction - direction to shift cursor/display
       LCD_SHIFT_DIRECTION_RIGHT
-			LCD_SHIFT_DIRECTION_LEFT
+      LCD_SHIFT_DIRECTION_LEFT
       
   Returns: 
     void
@@ -355,14 +355,14 @@ void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shif
   disp_out = 0x10 | shift_select | shift_direction;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdToggleEnable();
-  DelayUs(43);	// 37 us + 15%
+  DelayUs(43);  // 37 us + 15%
 }
 
 /************************************************************************************************** 
   Function: 
     
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Sets the CGRAM address in the LCD
@@ -394,14 +394,14 @@ void LcdInstrSetCGRAMAddress(unsigned char address) {
   disp_out = address & LCD_CGRAM_MASK;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdToggleEnable();
-  DelayUs(43);	// 37 us + 15%
+  DelayUs(43);  // 37 us + 15%
 }
 
 /************************************************************************************************** 
   Function: 
     void LcdInstrSetDDRAMAddress(unsigned char address)
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Sets the DDRAM address in the LCD
@@ -436,14 +436,14 @@ void LcdInstrSetDDRAMAddress(unsigned char address) {
   disp_out = address & LCD_DDRAM_MASK;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdToggleEnable();
-  DelayUs(43);	// 37 us + 15%
+  DelayUs(43);  // 37 us + 15%
 }
 
 /************************************************************************************************** 
   Function: 
     static void LcdSetDataOutputs(unsigned char data)
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Sets/clears digital outs for (d0-d7)
@@ -473,7 +473,7 @@ void LcdInstrSetDDRAMAddress(unsigned char address) {
   
 **************************************************************************************************/
 static void LcdSetDataOutputs(unsigned char data) {
-	// set each output pin or clear it
+  // set each output pin or clear it
   data & 0x80 ? PORTSetBits(_d7_port, _d7) : PORTClearBits(_d7_port, _d7);
   data & 0x40 ? PORTSetBits(_d6_port, _d6) : PORTClearBits(_d6_port, _d6);
   data & 0x20 ? PORTSetBits(_d5_port, _d5) : PORTClearBits(_d5_port, _d5);
@@ -488,7 +488,7 @@ static void LcdSetDataOutputs(unsigned char data) {
   Function: 
     
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Writes a string of data to the LCD
@@ -529,7 +529,7 @@ void LcdDisplayData(unsigned char *data) {
         break;
       case '\r':          
         // Home, point to first line
-        LcdSetDDRAMAddress(LINE_1);	// may use return home here?
+        LcdSetDDRAMAddress(LINE_1);  // may use return home here?
         break;
       default:            
         // print character to LCD
@@ -545,7 +545,7 @@ void LcdDisplayData(unsigned char *data) {
     void LcdDisplayChar(unsigned char c)
   
   Author(s):
-		mkobit
+    mkobit
   
   Summary: 
     Writes a single character to the LCD
@@ -583,7 +583,7 @@ void LcdDisplayChar(unsigned char c) {
   Function: 
     static void LcdSetOutputs(int rs, int rw, unsigned char c)
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Sets/clears the digital outputs
@@ -622,7 +622,7 @@ static void LcdSetOutputs(int rs, int rw, unsigned char c) {
   Function: 
     static inline void LcdConfigAllAsOutputs()
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Configures all static pins/ports as digital outputs
@@ -664,7 +664,7 @@ static inline void LcdConfigAllAsOutputs() {
   Function: 
     static void LcdToggleEnable()
   
-  Author(s):		mkobit
+  Author(s):    mkobit
   
   Summary: 
     Toggles enable to send a pulse to the LCD

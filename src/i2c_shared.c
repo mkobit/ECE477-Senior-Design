@@ -12,7 +12,7 @@ static void I2CShared_StopTransfer(I2C_MODULE i2c);
     BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigned int i2c_speed)
   
   Authors(s):
-		mkobit
+    mkobit
   
   Summary: 
     Enables an I2C module with the given speed
@@ -65,7 +65,7 @@ BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigne
     static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart)
   
   Author(s):
-		mkobit
+    mkobit
   
   Summary: 
     Starts or restarts a transaction
@@ -190,7 +190,7 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data) {
     BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE data)
   
   Author(s):
-		mkobit
+    mkobit
   
   Summary: 
     Writes a single byte, (data), to the (i2c) module to register (i2c_register)
@@ -203,9 +203,9 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data) {
   
   Parameters: 
     I2C_MODULE i2c - I2C module to be used for this transaction
-		char i2c_addr - write address of I2C device
-		char i2c_register - I2C register to write to
-		BYTE data - data to be written
+    char i2c_addr - write address of I2C device
+    char i2c_register - I2C register to write to
+    BYTE data - data to be written
   
   Returns: 
     TRUE - write succesful
@@ -280,10 +280,10 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE 
   
   Parameters: 
     I2C_MODULE i2c - I2C module to be used for this transaction
-		char i2c_addr_write - write address of I2C device
-		char i2c_addr_read - read address of I2C device
-		char i2c_register - I2C register to read from 
-		char *buffer - buffer to place read byte into
+    char i2c_addr_write - write address of I2C device
+    char i2c_addr_read - read address of I2C device
+    char i2c_register - I2C register to read from 
+    char *buffer - buffer to place read byte into
   
   Returns: 
     TRUE - read succesful
@@ -355,40 +355,40 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read,
 
 /************************************************************************************************** 
   Function:
-		BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read, char i2c_register_start, int nbytes, char *buffer)
+    BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read, char i2c_register_start, int nbytes, char *buffer)
 
-	Author(s):
-		mkobit
+  Author(s):
+    mkobit
 
-	Summary:
-		Reads (nbytes) from the (i2c) module starting from (i2c_addr_read)  and places in (buffer)
+  Summary:
+    Reads (nbytes) from the (i2c) module starting from (i2c_addr_read)  and places in (buffer)
 
-	Description:
-		Waits until (i2c) bus is idle and then uses I2C protocol to start a transaction, write to the device and its register, restart with the read address
+  Description:
+    Waits until (i2c) bus is idle and then uses I2C protocol to start a transaction, write to the device and its register, restart with the read address
     and read the data. Sends a NACK at the end to stop the transmission and then stops the transaction
 
-	Preconditions:
-		I2C module configured
+  Preconditions:
+    I2C module configured
 
-	Parameters:
-		I2C_MODULE i2c - I2C module to be used for this transaction
-		char i2c_addr_write - write address of I2C device
-		char i2c_addr_read - read address of I2C device
-		char i2c_register_start - I2C register to begin reading from
-		int nbytes - how many bytes to be read
-		char *buffer - buffer to place read bytes
+  Parameters:
+    I2C_MODULE i2c - I2C module to be used for this transaction
+    char i2c_addr_write - write address of I2C device
+    char i2c_addr_read - read address of I2C device
+    char i2c_register_start - I2C register to begin reading from
+    int nbytes - how many bytes to be read
+    char *buffer - buffer to place read bytes
 
-	Returns:
-		TRUE - reads were successful
+  Returns:
+    TRUE - reads were successful
     FALSE - at least 1 read was not successful
 
-	Example:
-		<code>
+  Example:
+    <code>
     // example from gyroscope, reading_rainbow buffer size 8
     I2CShared_ReadMultipleBytes(I2C_MODULE i2c, GYRO_WRITE, GYRO_READ, startReadI2CReg, nDataToRead, reading_rainbow)
     </code>
 
-	Conditions at Exit:
+  Conditions at Exit:
     Buffer has n bytes of data in it read from (i2c)
     I2C bus idle
 
@@ -461,33 +461,33 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_a
 
 /************************************************************************************************** 
   Function:
-		void I2CShared_StopTransfer(I2C_MODULE i2c)
+    void I2CShared_StopTransfer(I2C_MODULE i2c)
 
-	Author(s):
-		mkobit
+  Author(s):
+    mkobit
 
-	Summary:
-		Stops a transaction on the (i2c) module
+  Summary:
+    Stops a transaction on the (i2c) module
 
-	Description:
-		Sends a stop signal and waits until the signal is complete
+  Description:
+    Sends a stop signal and waits until the signal is complete
     Static function, used by internal library
 
-	Preconditions:
-		I2C module configured
+  Preconditions:
+    I2C module configured
 
-	Parameters:
-		I2C_MODULE i2c - I2C module to be used for this transaction
+  Parameters:
+    I2C_MODULE i2c - I2C module to be used for this transaction
 
-	Returns:
-		void
+  Returns:
+    void
 
-	Example:
-		<code>
+  Example:
+    <code>
     I2CShared_StopTransfer(I2C1)
     </code>
 
-	Conditions at Exit:
+  Conditions at Exit:
     I2C bus idle
 
 **************************************************************************************************/

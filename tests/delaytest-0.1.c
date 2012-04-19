@@ -1,18 +1,24 @@
 #include <plib.h>
 #include "delay.h"
+#include <p32xxxx.h>
 #include <string.h>
 #include <stdlib.h>
 
+
 // TODO these need to be looked into to see what kind of config we need to use
 // In MPLAB, Help/Topics/PIC32MX Config Settings
-#pragma config FNOSC = PRIPLL	// Primary Osc w/PLL (XT+,HS+,EC+PLL)
+/*#pragma config FNOSC = PRIPLL	// Primary Osc w/PLL (XT+,HS+,EC+PLL)
 #pragma config POSCMOD = HS		// HS osc mode 
 #pragma config FPLLMUL = MUL_18	// PLL Multiplier
 #pragma config FPLLIDIV = DIV_2	// PLL Input Divider
 #pragma config FPBDIV = DIV_2
-#pragma config FPLLODIV = DIV_1
+#pragma config FPLLODIV = DIV_1*/
 
-#define SYSTEM_FREQUENCY 72000000L
+#pragma config FPLLMUL = MUL_20, FPLLIDIV = DIV_2
+#pragma config FPLLODIV = DIV_1, FWDTEN = OFF
+#pragma config POSCMOD = HS, FNOSC = PRIPLL
+
+#define SYSTEM_FREQUENCY 80000000L
 #define BAUDRATE 57600
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
@@ -42,13 +48,13 @@ int main(void)
 		(pbFreq/16/BAUDRATE) - 1);
 	DelayInit(SYSTEM_FREQUENCY);
 	putsUART2(CLEAR_VT);
-	DelayMs(3000);
+	DelayMs(1500);
 	putsUART2("Beginning in 3...\r\n");
 	DelayS(1);
 	putsUART2("Beginning in 2...\r\n");
 	DelayUs(50000);
 	DelayMs(995);
-	putsUART2("Beginning in 1...\r\n");
+	putsUART2("Beginning in 1...\n\r");
 	DelayS(1);
 	putsUART2("Start!\n\r");
 	while(1) {

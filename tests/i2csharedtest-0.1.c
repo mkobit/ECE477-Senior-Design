@@ -1,14 +1,13 @@
-#include <p32xxxx.h>
 #include <plib.h>
-#include <stdio.h>
+#include <p32xxxx.h>
+//#include <stdio.h>
 #include "delay.h"
-#include "i2c_shared.h"
-#include "lcd_16x2.h"
+//#include "i2c_shared.h"
+//#include "lcd_16x2.h"
 
-#pragma config FPLLMUL  = MUL_20        // PLL Multiplier
-#pragma config FPLLIDIV = DIV_2         // PLL Input Divider
-#pragma config FPLLODIV = DIV_1         // PLL Output Divider
-#pragma config FWDTEN   = OFF           // Watchdog Timer
+#pragma config FPLLMUL = MUL_20, FPLLIDIV = DIV_2
+#pragma config FPLLODIV = DIV_1, FWDTEN = OFF
+#pragma config POSCMOD = HS, FNOSC = PRIPLL
 
 #define SYS_CLOCK (80000000L)
 #define GetSystemClock()            (SYS_CLOCK)
@@ -25,29 +24,27 @@
 void OPENDEBUG();
 
 int main() {
-    long int pbFreq;
-    long int delayed = 0;
-  imu_t imu;
-  IMU_RESULT imu_res = IMU_SUCCESS;
-  BOOL result;
+  int pbFreq;
+  long int delayed = 0;
+  BOOL result = TRUE;
   BOOL init_res;
   char data = 0xFF;
 
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
-  OPENDEBUG();
+  
+  //OPENDEBUG();
+  OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
+            (pbFreq/16/BAUDRATE) - 1);
 
   DelayInit(GetSystemClock());
   ///UARTSendData(UART2, CLEAR_VT);
   init_res = I2CShared_Init(TEST_I2C_BUS_ID, pbFreq, TEST_I2C_BUS_SPEED);
-  printf("Starting\n");
-  printf("derp\n");
+  putsUART2(CLEAR_VT);
+  printf("Starting = init_res = %d\r\n", (int) init_res);
   while(1) {
       result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA7, 0xA6, 0x00, &data);
       DelayMs(500);
-      printf("Hi\n");
-  }
-  if (imu_res == IMU_FAIL) {
-    while(1) {}
+      printf("Result = %d\r\n", (int)result);
   }
   while(1) {}
   return 0;

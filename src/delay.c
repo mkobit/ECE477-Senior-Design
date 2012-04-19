@@ -1,6 +1,6 @@
-#include "delay.h"
 #include <p32xxxx.h>
 #include <plib.h>
+#include "delay.h"
 
 static unsigned int _core_hz;
 static unsigned int _core_ticks_in_us;  // stored locally so that these delays will be more accurate
@@ -76,11 +76,14 @@ void DelayInit(unsigned int clock_hz) {
 void DelayS(unsigned int s) {
   unsigned int start;
   unsigned int ticks_to_wait;
+  unsigned int core_time;
 
   ticks_to_wait = s * _core_hz;
   WriteCoreTimer(0);  // clear timer
   start = ReadCoreTimer();
-  while ((unsigned int) (ReadCoreTimer() - start) < ticks_to_wait) {};
+  do {
+    core_time = ReadCoreTimer();
+  } while((core_time - start) < ticks_to_wait);
 }
 
 /************************************************************************************************** 
@@ -117,16 +120,20 @@ void DelayS(unsigned int s) {
 void DelayMs(unsigned int ms) {
   unsigned int start;
   unsigned int ticks_to_wait;
+  unsigned int core_time;
 
   ticks_to_wait = ms * _core_ticks_in_ms;
-  WriteCoreTimer(0);  // clear timer
+  //WriteCoreTimer(0);  // clear timer
   start = ReadCoreTimer();
-  while ((unsigned int) (ReadCoreTimer() - start) < ticks_to_wait) {};
+  do {
+    core_time = ReadCoreTimer();
+  } while((core_time - start) < ticks_to_wait);
+  //while ((unsigned int) (ReadCoreTimer() - start) < ticks_to_wait) {};
 }
 
 /************************************************************************************************** 
   Function: 
-    DelayUs(unsigned int us)
+    void DelayUs(unsigned int us)
   
   Author(s): 
     mkobit
@@ -158,11 +165,14 @@ void DelayMs(unsigned int ms) {
 void DelayUs(unsigned int us) {
   unsigned int start;
   unsigned int ticks_to_wait;
+  unsigned int core_time;
 
   ticks_to_wait = us * _core_ticks_in_us;
-  WriteCoreTimer(0);  // clear timer
+  //WriteCoreTimer(0);  // clear timer
   start = ReadCoreTimer();
-  while ((unsigned int) (ReadCoreTimer() - start) < ticks_to_wait) {};
+  do {
+    core_time = ReadCoreTimer();
+  } while((core_time - start) < ticks_to_wait);
 }
 
 /************************************************************************************************** 

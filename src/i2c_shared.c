@@ -44,7 +44,7 @@ static void I2CShared_StopTransfer(I2C_MODULE i2c);
 BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigned int i2c_speed) {
   unsigned int actualClock;
   
-  I2CConfigure(i2c, I2C_ENABLE_HIGH_SPEED);
+  I2CConfigure(i2c, I2C_ENABLE_SLAVE_CLOCK_STRETCHING | I2C_ENABLE_HIGH_SPEED);
 
   // Check clock rate for peripheral bus
   actualClock = I2CSetFrequency(i2c, peripheral_clock_speed, i2c_speed);

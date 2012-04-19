@@ -1,9 +1,9 @@
 #include <plib.h>
 #include <p32xxxx.h>
-#include <sys/appio.h>
 #include <stdio.h>
 #include "imu.h"
 #include "delay.h"
+#include "i2c_shared.h"
 
 
 // Configuration Bit settings
@@ -15,9 +15,10 @@
 #pragma config FPLLMUL  = MUL_20        // PLL Multiplier
 #pragma config FPLLIDIV = DIV_2         // PLL Input Divider
 #pragma config FPLLODIV = DIV_1         // PLL Output Divider
-#pragma config FPBDIV   = DIV_1         // Peripheral Clock divisor
-#pragma config FWDTEN   = OFF           // Watchdog Timer 
+
+/*#pragma config FPBDIV   = DIV_1         // Peripheral Clock divisor
 #pragma config WDTPS    = PS1           // Watchdog Timer Postscale
+#pragma config FWDTEN   = OFF           // Watchdog Timer
 #pragma config FCKSM    = CSDCMD        // Clock Switching & Fail Safe Clock Monitor
 #pragma config OSCIOFNC = OFF           // CLKO Enable
 #pragma config POSCMOD  = HS            // Primary Oscillator
@@ -27,7 +28,7 @@
 #pragma config CP       = OFF           // Code Protect
 #pragma config BWP      = OFF           // Boot Flash Write Protect
 #pragma config PWP      = OFF           // Program Flash Write Protect
-#pragma config ICESEL   = ICS_PGx2      // ICE/ICD Comm Channel Select
+#pragma config ICESEL   = ICS_PGx2      // ICE/ICD Comm Channel Select*/
 
 // Clock Constants
 #define SYS_CLOCK (80000000L)
@@ -36,23 +37,34 @@
 #define GetInstructionClock()       (SYS_CLOCK)
 
 #define TEST_I2C_BUS_ID              I2C1
-#define TEST_I2C_BUS_SPEED           (400000)
+#define TEST_I2C_BUS_SPEED           (100000)
+#define BAUDRATE 57600
 
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
 
-int main() {
-	long int pbFreq;
-	long int delayed = 0;
-  imu_t imu;
-  IMU_RESULT imu_res;
+void OPENDEBUG();
 
+int main() {
+    long int pbFreq;
+    long int delayed = 0;
+  imu_t imu;
+  IMU_RESULT imu_res = IMU_SUCCESS;
+  BOOL result;
+  BOOL init_res;
+  char data;
   // initialize debug messages
   
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
+  OPENDEBUG();
+  
+  OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
+            (pbFreq/16/BAUDRATE) - 1);
+  
+  DelayInit(GetSystemClock());
   //DBINIT();
-  printf("Yo\n");
-  imu_res = ImuInit(&imu, 
+  UARTSendData(UART2, CLEAR_VT);
+  /*imu_res = ImuInit(&imu,
           TEST_I2C_BUS_ID,
           pbFreq,
           TEST_I2C_BUS_SPEED,
@@ -60,10 +72,26 @@ int main() {
           ACCEL_BW_100,
           GYRO_DLPF_LPF_98HZ,
           9,
-          GYRO_PWR_MGM_CLK_SEL_X);
+          GYRO_PWR_MGM_CLK_SEL_X);*/
+  init_res = I2CShared_Init(TEST_I2C_BUS_ID, pbFreq, TEST_I2C_BUS_SPEED);
+  UARTSendData(UART2, "Starting\n");
+  UARTSendData(UART2, "fuck you\n");
+  UARTSendData(UART2, "derp\n");
+  while(1) {
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, ACCEL_WRITE, ACCEL_READ, ACCEL_DEVID, &data);
+      DelayMs(500);
+      //printf(CLEAR_VT);
+  }
   if (imu_res == IMU_FAIL) {
     while(1) {}
   }
-  while(1);
+  while(1) {}
   return 0;
+}
+
+void OPENDEBUG() {
+  UARTConfigure(UART2, UART_ENABLE_PINS_TX_RX_ONLY);
+  UARTSetLineControl(UART2, UART_DATA_SIZE_8_BITS | UART_PARITY_NONE | UART_STOP_BITS_1);
+  UARTSetDataRate(UART2, GetPeripheralClock(), BAUDRATE);
+  UARTEnable(UART2, UART_ENABLE | UART_TX_ENABLE);
 }

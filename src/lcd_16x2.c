@@ -452,7 +452,7 @@ void LcdInstrSetCGRAMAddress(unsigned char address) {
 **************************************************************************************************/
 void LcdInstrSetDDRAMAddress(unsigned char address) {
   unsigned char disp_out;
-  disp_out = address & LCD_DDRAM_MASK;
+  disp_out = address & LCD_DDRAM_MASK | 0x80;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdToggleEnable();
   DelayUs(43);  // 37 us + 15%

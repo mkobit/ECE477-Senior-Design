@@ -40,7 +40,7 @@ int main() {
   ///UARTSendData(UART2, CLEAR_VT);
   init_res = I2CShared_Init(TEST_I2C_BUS_ID, pbFreq, TEST_I2C_BUS_SPEED);
   putsUART2(CLEAR_VT);
-  printf("Starting = init_res = %d\r\n", (int) init_res);
+  printf("Starting -> init_res = %d, lowest enum status for i2c I2C_TRANSMITTER_FULL = %d\r\n", (int) init_res, I2C_TRANSMITTER_FULL);
   while(1) {
       result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA7, 0xA6, 0x00, &data);
       DelayMs(500);

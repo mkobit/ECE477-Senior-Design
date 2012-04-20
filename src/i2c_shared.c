@@ -7,6 +7,7 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data);
 static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart);
 static void I2CShared_StopTransfer(I2C_MODULE i2c);
 
+static void I2CShared_DebugStatus(I2C_STATUS status);
 /************************************************************************************************** 
   Function: 
     BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigned int i2c_speed)
@@ -44,7 +45,7 @@ static void I2CShared_StopTransfer(I2C_MODULE i2c);
 BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigned int i2c_speed) {
   unsigned int actualClock;
   
-  I2CConfigure(i2c, I2C_ENABLE_SLAVE_CLOCK_STRETCHING | I2C_ENABLE_HIGH_SPEED);
+  I2CConfigure(i2c, I2C_ENABLE_HIGH_SPEED);
 
   // Check clock rate for peripheral bus
   actualClock = I2CSetFrequency(i2c, peripheral_clock_speed, i2c_speed);
@@ -163,14 +164,16 @@ return TRUE;
   
 **************************************************************************************************/
 static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data) {
-    
+    I2C_STATUS status;
     // Wait for the transmitter to be ready
     while(!I2CTransmitterIsReady(i2c) && !I2CBusIsIdle(i2c)); // TODO testing the !I2CBusIsIdle(i2c) to see if that helps
 
     // Transmit the byte
-    if(I2CSendByte(i2c, data) == I2C_MASTER_BUS_COLLISION)
+    status = I2CSendByte(i2c, data);
+    I2CShared_DebugStatus(status);
+    if(status == I2C_MASTER_BUS_COLLISION)
     {
-        printf("I2CShared_TransmitOneByte: Error, I2C Master Bus Collision\n");
+        printf("I2CShared_TransmitOneByte: Error, I2C Master Bus Collision , status = %d\n", status);
         return FALSE;
     }
 
@@ -503,3 +506,20 @@ static void I2CShared_StopTransfer(I2C_MODULE i2c) {
   } while (!(status & I2C_STOP));
 }
 
+static void I2CShared_DebugStatus(I2C_STATUS status) {
+    switch(status) {
+        case I2C_TRANSMITTER_FULL: printf("I2CShared_DebugStatus: I2C_TRANSMITTER_FULL"); break;
+        case I2C_DATA_AVAILABLE: printf("I2CShared_DebugStatus: I2C_DATA_AVAILABLE"); break;
+        case I2C_SLAVE_READ: printf("I2CShared_DebugStatus: I2C_SLAVE_READ"); break;
+        case I2C_START: printf("I2CShared_DebugStatus: I2C_START"); break;
+        case I2C_STOP: printf("I2CShared_DebugStatus: I2C_STOP"); break;
+        case I2C_SLAVE_DATA: printf("I2CShared_DebugStatus: I2C_SLAVE_DATA"); break;
+        case I2C_RECEIVER_OVERFLOW: printf("I2CShared_DebugStatus: I2C_RECEIVER_OVERFLOW"); break;
+        case I2C_TRANSMITTER_OVERFLOW: printf("I2CShared_DebugStatus: I2C_TRANSMITTER_OVERFLOW"); break;
+        case I2C_10BIT_ADDRESS: printf("I2CShared_DebugStatus: I2C_10BIT_ADDRESS"); break;
+        case I2C_GENERAL_CALL: printf("I2CShared_DebugStatus: I2C_GENERAL_CALL"); break;
+        case I2C_ARBITRATION_LOSS: printf("I2CShared_DebugStatus: I2C_ARBITRATION_LOSS"); break;
+        case I2C_TRANSMITTER_BUSY: printf("I2CShared_DebugStatus: I2C_TRANSMITTER_BUSY"); break;
+        case I2C_BYTE_ACKNOWLEDGED: printf("I2CShared_DebugStatus: I2C_BYTE_ACKNOWLEDGE"); break;
+    }
+}

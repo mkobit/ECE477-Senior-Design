@@ -5,7 +5,7 @@
 
 #pragma config FNOSC = PRIPLL	// Primary Osc w/PLL (XT+,HS+,EC+PLL)
 #pragma config POSCMOD = HS		// HS osc mode
-#pragma config FPLLMUL = MUL_29	// PLL Multiplier
+#pragma config FPLLMUL = MUL_20	// PLL Multiplier
 #pragma config FPLLIDIV = DIV_2	// PLL Input Divider
 // 8 MHz * 20 / 2 = 80 MHz
 #pragma config FPBDIV = DIV_2
@@ -56,25 +56,26 @@ int main(void)
         lcd_pairs[10].bitnum, lcd_pairs[10].port_id,
         LCD_DOTS_5x8);   // Using a wide selection of pins in lab with these ports connected
   // Test shiting and other options
-  LcdInstrSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_ON, LCD_CURSOR_BLINK_ON);
-  LcdDisplayData("LEFT SIDE!\nwe are on left");
+  LcdInstrSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_OFF, LCD_CURSOR_BLINK_ON);
+  LcdDisplayData("LEFT SIDE!\non left");
   LcdInstrSetDDRAMAddress(LINE_1 + 21);
   LcdDisplayData("RIGHT SIDE!");
-  LcdInstrSetDDRAMAddress(LINE_2 + 21);
-  LcdDisplayData("we are on right");
+  LcdInstrSetDDRAMAddress(LINE_2 + 22);
+  LcdDisplayData("on right");
   DelayS(3);    // check where cursor is
   LcdInstrSetDDRAMAddress(LINE_2 + 12);
   
   while(1) {
     for (i = 0; i < 16; i++) {
-      LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_DISPLAY, LCD_SHIFT_DIRECTION_RIGHT);
+      LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_DISPLAY, LCD_SHIFT_DIRECTION_LEFT);
       DelayMs(150);
     }
     DelayS(1);
     for (i = 0; i < 16; i++) {
-      LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_DISPLAY, LCD_SHIFT_DIRECTION_LEFT);
+      LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_DISPLAY, LCD_SHIFT_DIRECTION_RIGHT);
       DelayMs(150);
     }
+    DelayS(1);
   }
   return 0;
 }

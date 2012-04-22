@@ -12,9 +12,6 @@
 #define SQUARE(x) (x*x)
 #define SYSTEM_FREQUENCY 72000000L
 
-#define TEST_PIN BIT_11
-#define TEST_PORT IOPORT_B
-
 #define TEST_SIZE 11
 
 typedef struct TEST_PAIR {

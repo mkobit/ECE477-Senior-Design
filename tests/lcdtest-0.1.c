@@ -9,6 +9,8 @@
 #pragma config FPLLIDIV = DIV_2	// PLL Input Divider
 #pragma config FPBDIV = DIV_2
 #pragma config FPLLODIV = DIV_1
+#pragma config FWDTEN = OFF
+
 
 #define SYSTEM_FREQUENCY 72000000L
 #define LCDS_IN 11
@@ -19,7 +21,7 @@ typedef struct TEST_PAIR {
     IoPortId port_id;
 } TEST_PAIR;
 
-
+// pins and ports to be used for testing
 TEST_PAIR lcd_pairs[LCDS_IN] = {
         {BIT_2, IOPORT_B}, \
         {BIT_6, IOPORT_F}, \
@@ -32,6 +34,8 @@ TEST_PAIR lcd_pairs[LCDS_IN] = {
         {BIT_13, IOPORT_G}, \
         {BIT_14, IOPORT_G}, \
         {BIT_4, IOPORT_C}};
+
+
 
 int main(void)
 {

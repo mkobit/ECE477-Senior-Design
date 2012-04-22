@@ -16,6 +16,7 @@
 #define SYSTEM_FREQUENCY 80000000L
 #define LCDS_IN 11
 
+void CrazyCursor(char offset);
 
 typedef struct TEST_PAIR {
     unsigned int bitnum;
@@ -24,7 +25,7 @@ typedef struct TEST_PAIR {
 
 // pins and ports to be used for testing
 TEST_PAIR lcd_pairs[LCDS_IN] = {
-        {BIT_2, IOPORT_B}, \
+        {BIT_7, IOPORT_F}, \
         {BIT_6, IOPORT_F}, \
         {BIT_9, IOPORT_E}, \
         {BIT_14, IOPORT_D}, \
@@ -35,6 +36,8 @@ TEST_PAIR lcd_pairs[LCDS_IN] = {
         {BIT_13, IOPORT_G}, \
         {BIT_14, IOPORT_G}, \
         {BIT_4, IOPORT_C}};
+
+
 int main(void)
 {
   int i;
@@ -60,22 +63,75 @@ int main(void)
   LcdDisplayData("LEFT SIDE!\non left");
   LcdInstrSetDDRAMAddress(LINE_1 + 21);
   LcdDisplayData("RIGHT SIDE!");
-  LcdInstrSetDDRAMAddress(LINE_2 + 22);
+  LcdInstrSetDDRAMAddress(LINE_2 + 24);
   LcdDisplayData("on right");
-  DelayS(3);    // check where cursor is
-  LcdInstrSetDDRAMAddress(LINE_2 + 12);
+  DelayS(2);
+  LcdInstrReturnHome();
+  LcdInstrSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_OFF, LCD_CURSOR_BLINK_OFF);
   
   while(1) {
     for (i = 0; i < 16; i++) {
       LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_DISPLAY, LCD_SHIFT_DIRECTION_LEFT);
-      DelayMs(150);
+      DelayMs(175);
     }
-    DelayS(1);
+    // at the right side of the screen
+    CrazyCursor(16);
     for (i = 0; i < 16; i++) {
       LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_DISPLAY, LCD_SHIFT_DIRECTION_RIGHT);
-      DelayMs(150);
+      DelayMs(175);
     }
-    DelayS(1);
+    // back on left side of screen
+    CrazyCursor(0);
   }
   return 0;
+}
+
+void CrazyCursor(char offset) {
+    int i;
+    LcdInstrSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_ON, LCD_CURSOR_BLINK_ON);
+
+    // Send cursor across top and bottom going right 2 times
+    LcdInstrSetDDRAMAddress(offset);
+    for (i = 0; i < 16; i++) {
+        LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_CURSOR, LCD_SHIFT_DIRECTION_RIGHT);
+        DelayMs(95);
+    }
+    LcdInstrSetDDRAMAddress(LINE_2 + offset);
+    for (i = 0; i < 16; i++) {
+        LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_CURSOR, LCD_SHIFT_DIRECTION_RIGHT);
+        DelayMs(95);
+    }
+    LcdInstrSetDDRAMAddress(offset);
+    for (i = 0; i < 16; i++) {
+        LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_CURSOR, LCD_SHIFT_DIRECTION_RIGHT);
+        DelayMs(95);
+    }
+    LcdInstrSetDDRAMAddress(LINE_2 + offset);
+    for (i = 0; i < 16; i++) {
+        LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_CURSOR, LCD_SHIFT_DIRECTION_RIGHT);
+        DelayMs(95);
+    }
+
+    // send cursor from bottom to top left 2 times
+     LcdInstrSetDDRAMAddress(LINE_2 + offset + 16);
+    for (i = 0; i < 16; i++) {
+        LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_CURSOR, LCD_SHIFT_DIRECTION_LEFT);
+        DelayMs(95);
+    }
+    LcdInstrSetDDRAMAddress(offset + 16);
+    for (i = 0; i < 16; i++) {
+        LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_CURSOR, LCD_SHIFT_DIRECTION_LEFT);
+        DelayMs(95);
+    }
+    LcdInstrSetDDRAMAddress(LINE_2 + offset + 16);
+    for (i = 0; i < 16; i++) {
+        LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_CURSOR, LCD_SHIFT_DIRECTION_LEFT);
+        DelayMs(95);
+    }
+    LcdInstrSetDDRAMAddress(offset + 16);
+    for (i = 0; i < 16; i++) {
+        LcdInstrShiftCursorOrDisplay(LCD_SHIFT_SELECT_CURSOR, LCD_SHIFT_DIRECTION_LEFT);
+        DelayMs(95);
+    }
+    LcdInstrSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_OFF, LCD_CURSOR_BLINK_OFF);
 }

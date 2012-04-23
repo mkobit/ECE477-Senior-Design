@@ -5,7 +5,7 @@
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, char sample_rate_div, char power_mgmt_sel)
+    GYRO_RESULT GyroInit(I2C_MODULE i2c, unsigned char dlpf_lpf, unsigned char sample_rate_div, unsigned char power_mgmt_sel)
 
   Author(s):
     mkobit
@@ -21,8 +21,8 @@
 
   Parameters:
     I2C_MODULE i2c - I2C module to connect with
-    char dlpf_lpf - low pass filter configuration for sensor acquisition
-        GYRO_DLPF_LPF_256HZ    - results in 8 kHz sample rate
+    unsigned char dlpf_lpf - low pass filter configuration for sensor acquisition
+        GYRO_DLPF_LPF_256HZ   - results in 8 kHz sample rate
         GYRO_DLPF_LPF_188HZ   - results in 1 kHz sample rate
         GYRO_DLPF_LPF_98HZ    - *
         GYRO_DLPF_LPF_42HZ    - *
@@ -31,7 +31,7 @@
         GYRO_DLPF_LPF_5HZ     - *
     unsigned char sample_rate_div - sample rate divider, F = F_internal / (sample_rate_div + 1)
       E.g. -> 1kHz sample rate from dlpf_lpf, sample_rate_div = 9, F = 1 kHz / (9 _ 1) = 100 Hz 
-    char power_mgmt_sel - device clock selector
+    unsigned char power_mgmt_sel - device clock selector
       GYRO_PWR_MGM_CLK_SEL_INTERNAL - internal oscillator
       GYRO_PWR_MGM_CLK_SEL_X        - X as clock reference
       GYRO_PWR_MGM_CLK_SEL_Y        - Y as clock reference
@@ -51,12 +51,12 @@
     I2C bus is in idle state
 
 **************************************************************************************************/
-GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, unsigned char sample_rate_div, char power_mgmt_sel) {
+GYRO_RESULT GyroInit(I2C_MODULE i2c, unsigned char dlpf_lpf, unsigned char sample_rate_div, unsigned char power_mgmt_sel) {
 
   // OR the low pass frequency passed with dflp_config with full scale operation and write it to the gyro
   // Set internal clock and full scale operation
   if (GyroWrite(i2c, GYRO_DLPF_FS, dlpf_lpf | GYRO_DLPF_FS_ON) == GYRO_FAIL) {
-    DBPRINTF("GyroInit: Error, could not write 0x%c to register GYRO_DLPF_FS (0x%c\n", dflp_config | GYRO_DLPF_FS_ON, GYRO_DLPF_FS);
+    printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (unsigned char) dlpf_lpf | GYRO_DLPF_FS_ON, (unsigned char) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
   
@@ -64,13 +64,13 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, unsigned char sample_rate_di
   // If dlpf_lpf == GYRO_DLPF_LPF_256HZ, sample rate = 8 kHz / sample_rate_div
   // Else, sample rate = 1 kHz / (sample_rate_div + 1)
   if (GyroWrite(i2c, GYRO_SMPLRT_DIV, sample_rate_div) == GYRO_FAIL) {
-    DBPRINTF("GyroInit: Error, could not write 0x%c to register GYRO_DLPF_FS (0x%c\n", dflp_config | GYRO_DLPF_FS_ON, GYRO_DLPF_FS);
+    printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (unsigned char) dlpf_lpf | GYRO_DLPF_FS_ON, (unsigned char) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
   
   // Select a gyro PLL for clock source (more stable)
   if (GyroWrite(i2c, GYRO_PWR_MGM, power_mgmt_sel) == GYRO_FAIL) {
-    DBPRINTF("GyroInit: Error, could not write 0x%c to register GYRO_DLPF_FS (0x%c\n", dflp_config | GYRO_DLPF_FS_ON, GYRO_DLPF_FS);
+    printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (unsigned char) dlpf_lpf | GYRO_DLPF_FS_ON, (unsigned char) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
   
@@ -81,7 +81,7 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, unsigned char sample_rate_di
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data)
+    GYRO_RESULT GyroWrite(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char data)
 
   Author(s):
     mkobit
@@ -97,8 +97,8 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, unsigned char sample_rate_di
 
   Parameters:
     I2C_MODULE i2c - I2C module to connect with
-    char i2c_reg - register to write to
-    BYTE data - data to be written
+    unsigned char i2c_reg - register to write to
+    unsigned char data - data to be written
 
   Returns:
     GYRO_SUCCESS - If successful
@@ -113,7 +113,7 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, unsigned char sample_rate_di
     
 
 **************************************************************************************************/
-GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
+GYRO_RESULT GyroWrite(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char data) {
   if (I2CShared_WriteByte(i2c, GYRO_WRITE, i2c_reg, data)) {
     return GYRO_SUCCESS;
   } else {
@@ -123,7 +123,7 @@ GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer)
+    GYRO_RESULT GyroRead(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char *buffer)
 
   Author(s):
     mkobit
@@ -139,8 +139,8 @@ GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
 
   Parameters:
     I2C_MODULE i2c - I2C module to connect with
-    char i2c_reg - register to read from
-    char *buffer - buffer to place read byte into
+    unsigned char i2c_reg - register to read from
+    unsigned char *buffer - buffer to place read byte into
 
   Returns:
     GYRO_SUCCESS - If successful
@@ -156,7 +156,7 @@ GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
     
 
 **************************************************************************************************/
-GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
+GYRO_RESULT GyroRead(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char *buffer) {
   if (I2CShared_ReadByte(i2c, GYRO_WRITE,GYRO_READ, i2c_reg, buffer)) {
     return GYRO_SUCCESS;
   } else {
@@ -198,10 +198,10 @@ GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
 
 **************************************************************************************************/
 GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
-  char reading_rainbow[8];
+  unsigned char reading_rainbow[8];
   int nDataToRead;
   int offsetForTemp;
-  char startReadI2CReg;
+  unsigned char startReadI2CReg;
   
   nDataToRead = 6 + (readTemp ? 2 : 0);
   offsetForTemp = 0 + (readTemp ? 2 : 0);

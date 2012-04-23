@@ -506,7 +506,7 @@ static void LcdSetDataOutputs(unsigned char data) {
 
 /************************************************************************************************** 
   Function: 
-    
+    void LcdDisplayData(unsigned char *data)
   
   Author(s):
     mkobit

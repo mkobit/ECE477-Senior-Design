@@ -7,7 +7,8 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data);
 static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart);
 static void I2CShared_StopTransfer(I2C_MODULE i2c);
 
-static void I2CShared_DebugStatus(I2C_STATUS status);
+static void I2CShared_DebugStatus(I2C_MODULE i2c);
+
 /************************************************************************************************** 
   Function: 
     BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigned int i2c_speed)
@@ -55,8 +56,12 @@ BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigne
   }
   // Enable I2C
   I2CEnable(i2c, TRUE);
+  
+  //Debug
+  //printf("I2CShared_Init status print\n");
+  //I2CShared_DebugStatus(i2c);
 
-  I2CClearStatus(i2c, I2C_TRANSMITTER_FULL);
+  I2CClearStatus(i2c, I2C_START | I2C_STOP | I2C_ARBITRATION_LOSS);
   
   return TRUE;
 }
@@ -106,11 +111,19 @@ static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart) {
   }
   else {
     // Wait for the bus to be idle, then start the transfer
-    while(!I2CBusIsIdle(i2c));
+    while(!I2CBusIsIdle(i2c)){
+        //printf("I2CShared_StartTransfer: Waiting for bus to be idle\n");
+        //I2CShared_DebugStatus(i2c);
+        //I2CShared_ResetBus(i2c);
+        I2CShared_StopTransfer(i2c);
+    }
 
+    //printf("I2CShared_StartTransfer\n");
+    //I2CShared_DebugStatus(i2c);
     if(I2CStart(i2c) != I2C_SUCCESS)
     {
       printf("I2CShared_StartTransfer: Bus collision during transfer Start\n");
+      //I2CShared_DebugStatus(i2c);
       return FALSE;
     }
   }
@@ -122,14 +135,14 @@ static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart) {
         printf("I2CShared_StartTransfer: lost arbitration on i2c bus\n");
         return FALSE;
     }
-  } while (status & I2C_START);
+  } while (!(status & I2C_START));
 
 return TRUE;
 }
 
 /************************************************************************************************** 
   Function: 
-    static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data)
+    static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, unsigned char data)
     
   Author(s): 
     mkobit
@@ -147,7 +160,7 @@ return TRUE;
   
   Parameters: 
     I2C_MODULE i2c - I2C module to be used for this transaction
-    BYTE data - to be transmitted
+    unsigned char data - to be transmitted
   
   Returns: 
     TRUE - If successful
@@ -163,26 +176,29 @@ return TRUE;
     I2C bus waiting for next action
   
 **************************************************************************************************/
-static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data) {
-    I2C_STATUS status;
+static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, unsigned char data) {
+
     // Wait for the transmitter to be ready
-    while(!I2CTransmitterIsReady(i2c) && !I2CBusIsIdle(i2c)); // TODO testing the !I2CBusIsIdle(i2c) to see if that helps
+    while(!I2CTransmitterIsReady(i2c));
 
     // Transmit the byte
-    status = I2CSendByte(i2c, data);
-    I2CShared_DebugStatus(status);
-    if(status == I2C_MASTER_BUS_COLLISION)
+    //I2CShared_DebugStatus(status);
+    if(I2CSendByte(i2c, data) == I2C_MASTER_BUS_COLLISION)
     {
-        printf("I2CShared_TransmitOneByte: Error, I2C Master Bus Collision , status = %d\n", status);
+        printf("I2CShared_TransmitOneByte: Error, I2C Master Bus Collision , status = 0x%x\n", I2CGetStatus(i2c));
         return FALSE;
     }
-
+    //I2CShared_DebugStatus(i2c);
     // Wait for the transmission to finish
     while(!I2CTransmissionHasCompleted(i2c));
-    
+
+    //printf("I2CShared_TransmitOneByte: after transmission complete, before ackknowledged\n");
+    //I2CShared_DebugStatus(i2c);
+
     if(!I2CByteWasAcknowledged(i2c))
     {
-        printf("I2CShared_TransmitOneByte: Error, sent byte was not acknowledged\n");
+        printf("I2CShared_TransmitOneByte: Error, sent byte was not acknowledged, status = 0x%x\n", I2CGetStatus(i2c));
+        I2CShared_DebugStatus(i2c);
         return FALSE;
     }
     return TRUE;
@@ -190,7 +206,7 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data) {
 
 /************************************************************************************************** 
   Function: 
-    BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE data)
+    BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_addr, unsigned char i2c_register, unsigned char data)
   
   Author(s):
     mkobit
@@ -206,9 +222,9 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data) {
   
   Parameters: 
     I2C_MODULE i2c - I2C module to be used for this transaction
-    char i2c_addr - write address of I2C device
-    char i2c_register - I2C register to write to
-    BYTE data - data to be written
+    unsigned char i2c_addr - write address of I2C device
+    unsigned char i2c_register - I2C register to write to
+    unsigned char data - data to be written
   
   Returns: 
     TRUE - write succesful
@@ -224,10 +240,10 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data) {
     
   
 **************************************************************************************************/
-BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE data) {
+BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_register, unsigned char data) {
 
   // Wait until bus is open
-  while(!I2CBusIsIdle(i2c));  
+  //while(!I2CBusIsIdle(i2c));
   
   // START TRANSACTION
   if(!I2CShared_StartTransfer(i2c, FALSE)) {
@@ -237,8 +253,8 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE 
 
   // SEND ADDRESS
   // Send address for transaction, address is expected to already be formatted
-  if (!I2CShared_TransmitOneByte(i2c, i2c_addr)) {
-    printf("I2CShared_Write: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
+  if (!I2CShared_TransmitOneByte(i2c, i2c_write_addr)) {
+    printf("I2CShared_Write: Error, could not send address 0x%c to I2C=%d\n", i2c_write_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
@@ -261,12 +277,15 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE 
   I2CShared_StopTransfer(i2c);
   
   // Transaction complete
+  // DEBUG TODO remove this after
+  //printf("END OF Write: status\n");
+  //I2CShared_DebugStatus(i2c);
   return TRUE;
 }
 
 /************************************************************************************************** 
   Function:
-    BOOL I2CShared_ReadByte(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read, char i2c_register, char *buffer)
+    BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register, char *buffer)
 
   Author(s): 
     mkobit
@@ -283,10 +302,10 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE 
   
   Parameters: 
     I2C_MODULE i2c - I2C module to be used for this transaction
-    char i2c_addr_write - write address of I2C device
-    char i2c_addr_read - read address of I2C device
-    char i2c_register - I2C register to read from 
-    char *buffer - buffer to place read byte into
+    unsigned char i2c_write_addr - write address of I2C device
+    unsigned char i2c_read_addr - read address of I2C device
+    unsigned char i2c_register - I2C register to read from
+    unsigned char *buffer - buffer to place read byte into
   
   Returns: 
     TRUE - read succesful
@@ -303,10 +322,10 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, char i2c_addr, char i2c_register, BYTE 
     I2C bus idle
   
 **************************************************************************************************/
-BOOL I2CShared_ReadByte(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read, char i2c_register, char *buffer) {
+BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register, unsigned char *buffer) {
 
   // Wait until bus is idle
-  while(!I2CBusIsIdle(i2c));  
+  //while(!I2CBusIsIdle(i2c));
   
   // START TRANSACTION
   if(!I2CShared_StartTransfer(i2c, FALSE)) {
@@ -316,15 +335,15 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read,
     
   // SEND ADDRESS
   // Send write address for transaction, address is expected to already be formatted
-  if (!I2CShared_TransmitOneByte(i2c, i2c_addr_write)) {
-    printf("I2CShared_Read: Error, could not send write address 0x%c to I2C=%d\n", i2c_addr_write, i2c);
+  if (!I2CShared_TransmitOneByte(i2c, i2c_write_addr)) {
+    printf("I2CShared_Read: Error, could not send write address 0x%x to I2C=%d\n", (unsigned char) i2c_write_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
   
   // SEND INTERNAL REGISTER
   if (!I2CShared_TransmitOneByte(i2c, i2c_register)) {
-    printf("I2CShared_Read: Error, could not send i2c_register 0x%x to I2C=%d\n", i2c_register, i2c);
+    printf("I2CShared_Read: Error, could not send i2c_register 0x%x to I2C=%d\n", (unsigned char) i2c_register, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
@@ -336,8 +355,8 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read,
     return FALSE;
   }
 
-  if (!I2CShared_TransmitOneByte(i2c, i2c_addr_read)) {
-    printf("I2CShared_Read: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_addr_read, i2c);
+  if (!I2CShared_TransmitOneByte(i2c, i2c_read_addr)) {
+    printf("I2CShared_Read: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_read_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
@@ -350,21 +369,27 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read,
     return FALSE;
   }
   while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
+  //printf("Before getbyte\n");
+  //I2CShared_DebugStatus(i2c);
   *buffer = I2CGetByte(i2c);
   I2CAcknowledgeByte(i2c, FALSE); // send nack on last byte
-  I2CStop(i2c);
+  while(!I2CAcknowledgeHasCompleted(i2c));
+  I2CShared_StopTransfer(i2c);
+  // DEBUG TODO remove this after
+  //printf("END OF read: status\n");
+  //I2CShared_DebugStatus(i2c);
   return TRUE;
 }
 
 /************************************************************************************************** 
   Function:
-    BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read, char i2c_register_start, int nbytes, char *buffer)
+    BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register_start, int nbytes, unsigned char *buffer)
 
   Author(s):
     mkobit
 
   Summary:
-    Reads (nbytes) from the (i2c) module starting from (i2c_addr_read)  and places in (buffer)
+    Reads (nbytes) from the (i2c) module starting from (i2c_read_addr)  and places in (buffer)
 
   Description:
     Waits until (i2c) bus is idle and then uses I2C protocol to start a transaction, write to the device and its register, restart with the read address
@@ -375,11 +400,11 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read,
 
   Parameters:
     I2C_MODULE i2c - I2C module to be used for this transaction
-    char i2c_addr_write - write address of I2C device
-    char i2c_addr_read - read address of I2C device
-    char i2c_register_start - I2C register to begin reading from
+    unsigned char i2c_write_addr - write address of I2C device
+    unsigned char i2c_read_addr - read address of I2C device
+    unsigned char i2c_register_start - I2C register to begin reading from
     int nbytes - how many bytes to be read
-    char *buffer - buffer to place read bytes
+    unsigned char *buffer - buffer to place read bytes
 
   Returns:
     TRUE - reads were successful
@@ -396,14 +421,12 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read,
     I2C bus idle
 
 **************************************************************************************************/
-BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_addr_read, char i2c_register_start, int nbytes, char *buffer) {
+BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register_start, int nbytes, unsigned char *buffer) {
   int i;
-  BOOL trans;
-  char temp;
-  I2C_RESULT result;
+  unsigned char temp;
 
   // Wait until bus is open
-  while(!I2CBusIsIdle(i2c));  
+  //while(!I2CBusIsIdle(i2c));
   
   // START TRANSACTION
   if(!I2CShared_StartTransfer(i2c, FALSE)) {
@@ -412,16 +435,14 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_a
   }
     
   // SEND ADDRESS
-  trans = I2CShared_TransmitOneByte(i2c, i2c_addr_write);
-  if (!trans) {
-    printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_addr_write, i2c);
+  if (!I2CShared_TransmitOneByte(i2c, i2c_write_addr)) {
+    printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_write_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
   
   // SEND INTERNAL REGISTER
-  trans = I2CShared_TransmitOneByte(i2c, i2c_register_start);
-  if (!trans) {
+  if (!I2CShared_TransmitOneByte(i2c, i2c_register_start)) {
     printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_register 0x%x to I2C=%d\n", i2c_register_start, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
@@ -433,18 +454,18 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_a
     printf("I2CShared_ReadMultipleBytes: Error, bus collision during transfer REstart to I2C=%d\n", i2c);
     return FALSE;
   }
-  trans = I2CShared_TransmitOneByte(i2c, i2c_addr_read);
-  if (!trans) {
-    printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%c to I2C=%d\n", i2c_addr_read, i2c);
+
+  if (!I2CShared_TransmitOneByte(i2c, i2c_read_addr)) {
+    printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%c to I2C=%d\n", i2c_read_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
   
   // START READING
   // read all the data bytes and place them into the buffer
-  for (i = 0; i < nbytes; i++) {
-    result = I2CReceiverEnable(i2c, TRUE);  // configure i2c module to receive
-    if (result != I2C_SUCCESS) {
+  for (i = 0; i < nbytes - 1; i++) {
+    // configure i2c module to receive
+    if (I2CReceiverEnable(i2c, TRUE) != I2C_SUCCESS) {
       printf("I2CShared_ReadMultipleBytes: Error, could not configure I2C=%d to be a receiver\n", i2c);
       //I2CShared_StopTransfer(i2c);
       return FALSE;
@@ -452,13 +473,26 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, char i2c_addr_write, char i2c_a
     while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
     temp = I2CGetByte(i2c);
     I2CAcknowledgeByte(i2c, TRUE);
+    while(!I2CAcknowledgeHasCompleted(i2c));
     // place read data in buffer
     buffer[i] = temp;
     // END READ
   }
-  
+
+  // Read last byte and send nack
+  if (I2CReceiverEnable(i2c, TRUE) != I2C_SUCCESS) {
+    printf("I2CShared_ReadMultipleBytes: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    //I2CShared_StopTransfer(i2c);
+    return FALSE;
+  }
+  while (!I2CReceivedDataIsAvailable(i2c)); // loop until data is ready to be read
+  temp = I2CGetByte(i2c);
+  I2CAcknowledgeByte(i2c, FALSE);
+  while(!I2CAcknowledgeHasCompleted(i2c));
+  buffer[i] = temp;
+
   // Stop the transation
-  I2CStop(i2c);
+  I2CShared_StopTransfer(i2c);
   return TRUE;
 }
 
@@ -506,20 +540,24 @@ static void I2CShared_StopTransfer(I2C_MODULE i2c) {
   } while (!(status & I2C_STOP));
 }
 
-static void I2CShared_DebugStatus(I2C_STATUS status) {
-    switch(status) {
-        case I2C_TRANSMITTER_FULL: printf("I2CShared_DebugStatus: I2C_TRANSMITTER_FULL"); break;
-        case I2C_DATA_AVAILABLE: printf("I2CShared_DebugStatus: I2C_DATA_AVAILABLE"); break;
-        case I2C_SLAVE_READ: printf("I2CShared_DebugStatus: I2C_SLAVE_READ"); break;
-        case I2C_START: printf("I2CShared_DebugStatus: I2C_START"); break;
-        case I2C_STOP: printf("I2CShared_DebugStatus: I2C_STOP"); break;
-        case I2C_SLAVE_DATA: printf("I2CShared_DebugStatus: I2C_SLAVE_DATA"); break;
-        case I2C_RECEIVER_OVERFLOW: printf("I2CShared_DebugStatus: I2C_RECEIVER_OVERFLOW"); break;
-        case I2C_TRANSMITTER_OVERFLOW: printf("I2CShared_DebugStatus: I2C_TRANSMITTER_OVERFLOW"); break;
-        case I2C_10BIT_ADDRESS: printf("I2CShared_DebugStatus: I2C_10BIT_ADDRESS"); break;
-        case I2C_GENERAL_CALL: printf("I2CShared_DebugStatus: I2C_GENERAL_CALL"); break;
-        case I2C_ARBITRATION_LOSS: printf("I2CShared_DebugStatus: I2C_ARBITRATION_LOSS"); break;
-        case I2C_TRANSMITTER_BUSY: printf("I2CShared_DebugStatus: I2C_TRANSMITTER_BUSY"); break;
-        case I2C_BYTE_ACKNOWLEDGED: printf("I2CShared_DebugStatus: I2C_BYTE_ACKNOWLEDGE"); break;
-    }
+static void I2CShared_DebugStatus(I2C_MODULE i2c) {
+    I2C_STATUS status;
+    status = I2CGetStatus(i2c);
+    if (I2C_TRANSMITTER_FULL & status) printf("I2CShared_DebugStatus: I2C_TRANSMITTER_FULL, 0x%x\n", I2C_TRANSMITTER_FULL & status);
+    if (I2C_DATA_AVAILABLE & status) printf("I2CShared_DebugStatus:) I2C_DATA_AVAILABLE, 0x%x\n", I2C_DATA_AVAILABLE & status);
+    if (I2C_SLAVE_READ & status) printf("I2CShared_DebugStatus:) I2C_SLAVE_READ, 0x%x\n", I2C_SLAVE_READ & status);
+    if (I2C_START & status) printf("I2CShared_DebugStatus: I2C_START, 0x%x\n", I2C_START & status);
+    if (I2C_STOP & status) printf("I2CShared_DebugStatus: I2C_STOP, 0x%x\n", I2C_STOP & status);
+    if (I2C_SLAVE_DATA & status) printf("I2CShared_DebugStatus: I2C_SLAVE_DATA, 0x%x\n", I2C_SLAVE_DATA & status);
+    if (I2C_RECEIVER_OVERFLOW & status) printf("I2CShared_DebugStatus: I2C_RECEIVER_OVERFLOW, 0x%x\n", I2C_RECEIVER_OVERFLOW & status);
+    if (I2C_TRANSMITTER_OVERFLOW & status) printf("I2CShared_DebugStatus: I2C_TRANSMITTER_OVERFLOW, 0x%x\n", I2C_TRANSMITTER_FULL & status);
+    if (I2C_10BIT_ADDRESS & status) printf("I2CShared_DebugStatus: I2C_10BIT_ADDRESS, 0x%x\n", I2C_10BIT_ADDRESS & status);
+    if (I2C_GENERAL_CALL & status) printf("I2CShared_DebugStatus: I2C_GENERAL_CALL, 0x%x\n", I2C_GENERAL_CALL & status);
+    if (I2C_ARBITRATION_LOSS & status) printf("I2CShared_DebugStatus: I2C_ARBITRATION_LOSS, 0x%x\n", I2C_ARBITRATION_LOSS & status);
+    if (I2C_TRANSMITTER_BUSY & status) printf("I2CShared_DebugStatus: I2C_TRANSMITTER_BUSY, 0x%x\n", I2C_TRANSMITTER_BUSY & status);
+    if (I2C_BYTE_ACKNOWLEDGED & status) printf("I2CShared_DebugStatus: I2C_BYTE_ACKNOWLEDGE, 0x%x\n", I2C_BYTE_ACKNOWLEDGED & status);
+}
+
+inline void I2CShared_ResetBus(I2C_MODULE i2c) {
+    I2CClearStatus(i2c, I2C_START | I2C_STOP | I2C_ARBITRATION_LOSS | I2C_BYTE_ACKNOWLEDGED);
 }

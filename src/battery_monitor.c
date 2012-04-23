@@ -6,13 +6,13 @@
 static unsigned int _bmon_pin;
 static IoPortId _bmon_port;
 
-static unsigned char BatteryMonitorReset();
+static BATTMON_RESULT BatteryMonitorReset();
 static void BatteryMonitor_drive_low();
 static void BatteryMonitor_drive_high();
 static unsigned char BatteryMonitor_read_onewire();
 static unsigned char BatteryMonitor_read_bit();
 static void BatteryMonitor_write_bit(unsigned char bit);
-static unsigned char BatteryMonitorReset();
+static BATTMON_RESULT BatteryMonitorReset();
 static unsigned char BatteryMonitorReadByte();
 static void BatteryMonitorWriteByte(unsigned char c);
 
@@ -70,7 +70,8 @@ void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port) {
                     unsigned char *data, 
                     int nitems)
   
-  Author(s):    mkobit
+  Author(s):
+    mkobit
   
   Summary: 
     Reads (nitems) bytes into (data) from the battery monitor
@@ -147,7 +148,8 @@ BATTMON_RESULT BatteryMonitorReadBytes(unsigned char net_address_command,
                     unsigned char *data, 
                     int nitems)
   
-  Author(s):    mkobit
+  Author(s):
+    mkobit
   
   Summary: 
     Writes several bytes to the battery monitor 
@@ -213,7 +215,8 @@ BATTMON_RESULT BatteryMonitorWriteBytes(unsigned char net_address_command,
   Function: 
     static BATTMON_RESULT BatteryMonitorReset()
   
-  Author(s):    mkobit
+  Author(s):
+    mkobit
   
   Summary: 
     Resets the one wire bus and detects the presence
@@ -311,7 +314,8 @@ static unsigned char BatteryMonitorReadByte() {
   Function: 
     static void BatteryMonitorWriteByte(unsigned char c)
   
-  Author(s):    mkobit
+  Author(s):
+    mkobit
   
   Summary: 
     Writes an entire byte to the one wire battery monitor device
@@ -353,7 +357,8 @@ static void BatteryMonitorWriteByte(unsigned char c) {
   Function: 
     static void BatteryMonitor_drive_low()
   
-  Author(s):    mkobit
+  Author(s):
+    mkobit
   
   Summary: 
     Configures the 1-wire port pin as an output and drives the port pin low
@@ -389,7 +394,8 @@ static void BatteryMonitor_drive_low() {
   Function: 
     static void BatteryMonitor_drive_high()
   
-  Author(s):    mkobit
+  Author(s):
+    mkobit
   
   Summary: 
     Configures the 1-wire port pin as an output and drives the port pin high
@@ -425,7 +431,8 @@ static void BatteryMonitor_drive_high() {
   Function: 
     static unsigned char BatteryMonitor_read_onewire()
   
-  Author(s):    mkobit
+  Author(s):
+    mkobit
   
   Summary: 
     Configures one wire interface as input and samples the line
@@ -469,7 +476,8 @@ static unsigned char BatteryMonitor_read_onewire(void) {
   Function: 
     static unsigned char BatteryMonitor_read_bit()
   
-  Author(s):    mkobit
+  Author(s):
+    mkobit
   
   Summary: 
     Describes read protocol for one-wire device
@@ -514,7 +522,8 @@ static unsigned char BatteryMonitor_read_bit() {
   Function: 
     static void BatteryMonitor_write_bit(unsigned char bit)
   
-  Author(s):    mkobit
+  Author(s):
+    mkobit
   
   Summary: 
     Describes write protocol for one-wire device

@@ -113,7 +113,7 @@ static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart) {
     // Wait for the bus to be idle, then start the transfer
     while(!I2CBusIsIdle(i2c)){
         //printf("I2CShared_StartTransfer: Waiting for bus to be idle\n");
-        I2CShared_DebugStatus(i2c);
+        //I2CShared_DebugStatus(i2c);
         I2CShared_ResetBus(i2c);
     }
 
@@ -122,7 +122,7 @@ static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart) {
     if(I2CStart(i2c) != I2C_SUCCESS)
     {
       printf("I2CShared_StartTransfer: Bus collision during transfer Start\n");
-      I2CShared_DebugStatus(i2c);
+      //I2CShared_DebugStatus(i2c);
       return FALSE;
     }
   }
@@ -197,7 +197,7 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, unsigned char data) {
     if(!I2CByteWasAcknowledged(i2c))
     {
         printf("I2CShared_TransmitOneByte: Error, sent byte was not acknowledged, status = 0x%x\n", I2CGetStatus(i2c));
-        I2CShared_DebugStatus(i2c);
+        //I2CShared_DebugStatus(i2c);
         return FALSE;
     }
     return TRUE;

@@ -101,11 +101,17 @@ IMU_RESULT ImuInit(imu_t* imu,
   GYRO_RESULT gyro_init_result;
   
   if (!I2CShared_Init(i2c, peripheral_clock_speed, i2c_speed)) {
-    DBPRINTF("AccelInitI2C: Error, I2C could not be initted\n", actualClock); 
+    printf("AccelInitI2C: Error, I2C could not be initted\n", actualClock);
     return IMU_FAIL;
   }
   // Init both modules of the imu
   accel_init_result = AccelInit(i2c, accel_range, accel_bandwidth, &imu->accel_raw);
+  if (accel_init_result != ACCEL_SUCCESS) {
+      // accel failure, don't try to read line
+    imu->isOn = FALSE;
+    printf("ImuInit: Error, could not complete initialization due to accel fail.\n");
+    return IMU_FAIL;
+  }
   gyro_init_result = GyroInit(i2c, gyro_dlpf_lpf, gyro_sample_rate_div, gyro_power_mgmt_sel);
   
   // Give a semi-random true/false to read accelerometer first  
@@ -121,7 +127,7 @@ IMU_RESULT ImuInit(imu_t* imu,
   } else {
     // failure initializing, do not use this IMU
     imu->isOn = FALSE;
-    DBPRINTF("ImuInit: Error, could not complete initialization. Results->(accel, gyro) = (%d, %d)\n", accel_init_result, gyro_init_result);
+    printf("ImuInit: Error, could not complete initialization. Results->(accel, gyro) = (%d, %d)\n", accel_init_result, gyro_init_result);
     return IMU_FAIL;
   }
 }
@@ -165,7 +171,7 @@ IMU_RESULT ImuUpdate(imu_t *imu) {
   
   // Check if device is on first
   if (!ImuIsOn(imu)) {
-    DBPRINTF("ImuUpdate: Error, device with I2C=%d is not on\n", imu->i2c);
+    printf("ImuUpdate: Error, device with I2C=%d is not on\n", imu->i2c);
     return IMU_FAIL;
   }
   
@@ -185,7 +191,7 @@ IMU_RESULT ImuUpdate(imu_t *imu) {
     return IMU_SUCCESS;
   } else {
     // failure updating, do not use this IMU
-    DBPRINTF("ImuUpdate: Error, could not update both accel and gyro at I2C=%d. Results->(accel, gyro) = (%d, %d)\n", imu->i2c, a_result, g_result);
+    printf("ImuUpdate: Error, could not update both accel and gyro at I2C=%d. Results->(accel, gyro) = (%d, %d)\n", imu->i2c, a_result, g_result);
     return IMU_FAIL;
   }
 }

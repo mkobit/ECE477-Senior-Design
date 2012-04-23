@@ -58,10 +58,10 @@ ACCEL_RESULT AccelInit(I2C_MODULE i2c, unsigned char range, unsigned char bandwi
   
   // Determine which scaling to use when getting the values
   switch(range) {
-    case ACCEL_RANGE_2G: raw->scale_ind = ACCEL_SCALE_2G; break;
-    case ACCEL_RANGE_4G: raw->scale_ind = ACCEL_SCALE_4G; break;
-    case ACCEL_RANGE_8G: raw->scale_ind = ACCEL_SCALE_8G; break;
-    case ACCEL_RANGE_16G: raw->scale_ind = ACCEL_SCALE_16G; break;
+    case ACCEL_RANGE_2G: raw->scale_ind = ACCEL_RANGE_2G; break;
+    case ACCEL_RANGE_4G: raw->scale_ind = ACCEL_RANGE_4G; break;
+    case ACCEL_RANGE_8G: raw->scale_ind = ACCEL_RANGE_8G; break;
+    case ACCEL_RANGE_16G: raw->scale_ind = ACCEL_RANGE_16G; break;
     default: printf("AccelInitI2C: Error, 0x%c not a valid range for data format for adxl345\n", range); return ACCEL_FAIL;
   }
   

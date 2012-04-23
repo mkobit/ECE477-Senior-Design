@@ -239,7 +239,7 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, unsigned char data) {
     
   
 **************************************************************************************************/
-BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_addr, unsigned char i2c_register, unsigned char data) {
+BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_register, unsigned char data) {
 
   // Wait until bus is open
   //while(!I2CBusIsIdle(i2c));
@@ -252,8 +252,8 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_addr, unsigned char i
 
   // SEND ADDRESS
   // Send address for transaction, address is expected to already be formatted
-  if (!I2CShared_TransmitOneByte(i2c, i2c_addr)) {
-    printf("I2CShared_Write: Error, could not send address 0x%c to I2C=%d\n", i2c_addr, i2c);
+  if (!I2CShared_TransmitOneByte(i2c, i2c_write_addr)) {
+    printf("I2CShared_Write: Error, could not send address 0x%c to I2C=%d\n", i2c_write_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
@@ -281,7 +281,7 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_addr, unsigned char i
 
 /************************************************************************************************** 
   Function:
-    BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_addr_write, unsigned char i2c_addr_read, unsigned char i2c_register, char *buffer)
+    BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register, char *buffer)
 
   Author(s): 
     mkobit
@@ -298,8 +298,8 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_addr, unsigned char i
   
   Parameters: 
     I2C_MODULE i2c - I2C module to be used for this transaction
-    unsigned char i2c_addr_write - write address of I2C device
-    unsigned char i2c_addr_read - read address of I2C device
+    unsigned char i2c_write_addr - write address of I2C device
+    unsigned char i2c_read_addr - read address of I2C device
     unsigned char i2c_register - I2C register to read from
     unsigned char *buffer - buffer to place read byte into
   
@@ -318,7 +318,7 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_addr, unsigned char i
     I2C bus idle
   
 **************************************************************************************************/
-BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_addr_write, unsigned char i2c_addr_read, unsigned char i2c_register, unsigned char *buffer) {
+BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register, unsigned char *buffer) {
 
   // Wait until bus is idle
   //while(!I2CBusIsIdle(i2c));
@@ -331,8 +331,8 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_addr_write, unsigned c
     
   // SEND ADDRESS
   // Send write address for transaction, address is expected to already be formatted
-  if (!I2CShared_TransmitOneByte(i2c, i2c_addr_write)) {
-    printf("I2CShared_Read: Error, could not send write address 0x%c to I2C=%d\n", i2c_addr_write, i2c);
+  if (!I2CShared_TransmitOneByte(i2c, i2c_write_addr)) {
+    printf("I2CShared_Read: Error, could not send write address 0x%c to I2C=%d\n", i2c_write_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
@@ -351,8 +351,8 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_addr_write, unsigned c
     return FALSE;
   }
 
-  if (!I2CShared_TransmitOneByte(i2c, i2c_addr_read)) {
-    printf("I2CShared_Read: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_addr_read, i2c);
+  if (!I2CShared_TransmitOneByte(i2c, i2c_read_addr)) {
+    printf("I2CShared_Read: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_read_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
@@ -376,13 +376,13 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_addr_write, unsigned c
 
 /************************************************************************************************** 
   Function:
-    BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, unsigned char i2c_addr_write, unsigned char i2c_addr_read, unsigned char i2c_register_start, int nbytes, unsigned char *buffer)
+    BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register_start, int nbytes, unsigned char *buffer)
 
   Author(s):
     mkobit
 
   Summary:
-    Reads (nbytes) from the (i2c) module starting from (i2c_addr_read)  and places in (buffer)
+    Reads (nbytes) from the (i2c) module starting from (i2c_read_addr)  and places in (buffer)
 
   Description:
     Waits until (i2c) bus is idle and then uses I2C protocol to start a transaction, write to the device and its register, restart with the read address
@@ -393,8 +393,8 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_addr_write, unsigned c
 
   Parameters:
     I2C_MODULE i2c - I2C module to be used for this transaction
-    unsigned char i2c_addr_write - write address of I2C device
-    unsigned char i2c_addr_read - read address of I2C device
+    unsigned char i2c_write_addr - write address of I2C device
+    unsigned char i2c_read_addr - read address of I2C device
     unsigned char i2c_register_start - I2C register to begin reading from
     int nbytes - how many bytes to be read
     unsigned char *buffer - buffer to place read bytes
@@ -414,7 +414,7 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_addr_write, unsigned c
     I2C bus idle
 
 **************************************************************************************************/
-BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, unsigned char i2c_addr_write, unsigned char i2c_addr_read, unsigned char i2c_register_start, int nbytes, unsigned char *buffer) {
+BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register_start, int nbytes, unsigned char *buffer) {
   int i;
   unsigned char temp;
 
@@ -428,8 +428,8 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, unsigned char i2c_addr_write, u
   }
     
   // SEND ADDRESS
-  if (!I2CShared_TransmitOneByte(i2c, i2c_addr_write)) {
-    printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_addr_write, i2c);
+  if (!I2CShared_TransmitOneByte(i2c, i2c_write_addr)) {
+    printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_write_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
@@ -448,8 +448,8 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, unsigned char i2c_addr_write, u
     return FALSE;
   }
 
-  if (!I2CShared_TransmitOneByte(i2c, i2c_addr_read)) {
-    printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%c to I2C=%d\n", i2c_addr_read, i2c);
+  if (!I2CShared_TransmitOneByte(i2c, i2c_read_addr)) {
+    printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%c to I2C=%d\n", i2c_read_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }

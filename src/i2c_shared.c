@@ -166,7 +166,7 @@ return TRUE;
 static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data) {
     I2C_STATUS status;
     // Wait for the transmitter to be ready
-    while(!I2CTransmitterIsReady(i2c) && !I2CBusIsIdle(i2c)); // TODO testing the !I2CBusIsIdle(i2c) to see if that helps
+    while(!I2CTransmitterIsReady(i2c)); // TODO testing the !I2CBusIsIdle(i2c) to see if that helps
 
     // Transmit the byte
     status = I2CSendByte(i2c, data);

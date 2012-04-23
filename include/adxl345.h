@@ -79,12 +79,6 @@
 #define ACCEL_SPI    (1 << 6)
 #define ACCEL_SELF_TEST  (1 << 7)
 
-// Sensitivity indices for the static array in adxl.c for 10-bit resolution
-#define ACCEL_SCALE_2G 0
-#define ACCEL_SCALE_4G 1
-#define ACCEL_SCALE_8G 2
-#define ACCEL_SCALE_16G 3
-
 typedef enum {
   ACCEL_SUCCESS = 0,
   ACCEL_FAIL

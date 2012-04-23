@@ -122,7 +122,7 @@ static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart) {
         printf("I2CShared_StartTransfer: lost arbitration on i2c bus\n");
         return FALSE;
     }
-  } while (status & I2C_START);
+  } while (!(status & I2C_START));
 
 return TRUE;
 }

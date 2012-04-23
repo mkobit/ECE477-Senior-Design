@@ -544,18 +544,18 @@ static void I2CShared_DebugStatus(I2C_MODULE i2c) {
     I2C_STATUS status;
     status = I2CGetStatus(i2c);
     if (I2C_TRANSMITTER_FULL & status) printf("I2CShared_DebugStatus: I2C_TRANSMITTER_FULL, 0x%x\n", I2C_TRANSMITTER_FULL & status);
-    if (I2C_DATA_AVAILABLE & status) printf("I2CShared_DebugStatus & status) I2C_DATA_AVAILABLE, 0x%x\n", I2C_DATA_AVAILABLE & status);
-    if (I2C_SLAVE_READ & status) printf("I2CShared_DebugStatus & status) I2C_SLAVE_READ, 0x%x\n", I2C_SLAVE_READ & status);
-    if (I2C_START & status) printf("I2CShared_DebugStatus & status) I2C_START, 0x%x\n", I2C_START & status);
-    if (I2C_STOP & status) printf("I2CShared_DebugStatus & status) I2C_STOP, 0x%x\n", I2C_STOP & status);
-    if (I2C_SLAVE_DATA & status) printf("I2CShared_DebugStatus & status) I2C_SLAVE_DATA, 0x%x\n", I2C_SLAVE_DATA & status);
-    if (I2C_RECEIVER_OVERFLOW & status) printf("I2CShared_DebugStatus & status) I2C_RECEIVER_OVERFLOW, 0x%x\n", I2C_RECEIVER_OVERFLOW & status);
-    if (I2C_TRANSMITTER_OVERFLOW & status) printf("I2CShared_DebugStatus & status) I2C_TRANSMITTER_OVERFLOW, 0x%x\n", I2C_TRANSMITTER_FULL & status);
-    if (I2C_10BIT_ADDRESS & status) printf("I2CShared_DebugStatus & status) I2C_10BIT_ADDRESS, 0x%x\n", I2C_10BIT_ADDRESS & status);
-    if (I2C_GENERAL_CALL & status) printf("I2CShared_DebugStatus & status) I2C_GENERAL_CALL, 0x%x\n", I2C_GENERAL_CALL & status);
-    if (I2C_ARBITRATION_LOSS & status) printf("I2CShared_DebugStatus & status) I2C_ARBITRATION_LOSS, 0x%x\n", I2C_ARBITRATION_LOSS & status);
-    if (I2C_TRANSMITTER_BUSY & status) printf("I2CShared_DebugStatus & status) I2C_TRANSMITTER_BUSY, 0x%x\n", I2C_TRANSMITTER_BUSY & status);
-    if (I2C_BYTE_ACKNOWLEDGED & status) printf("I2CShared_DebugStatus & status) I2C_BYTE_ACKNOWLEDGE, 0x%x\n", I2C_BYTE_ACKNOWLEDGED & status);
+    if (I2C_DATA_AVAILABLE & status) printf("I2CShared_DebugStatus:) I2C_DATA_AVAILABLE, 0x%x\n", I2C_DATA_AVAILABLE & status);
+    if (I2C_SLAVE_READ & status) printf("I2CShared_DebugStatus:) I2C_SLAVE_READ, 0x%x\n", I2C_SLAVE_READ & status);
+    if (I2C_START & status) printf("I2CShared_DebugStatus: I2C_START, 0x%x\n", I2C_START & status);
+    if (I2C_STOP & status) printf("I2CShared_DebugStatus: I2C_STOP, 0x%x\n", I2C_STOP & status);
+    if (I2C_SLAVE_DATA & status) printf("I2CShared_DebugStatus: I2C_SLAVE_DATA, 0x%x\n", I2C_SLAVE_DATA & status);
+    if (I2C_RECEIVER_OVERFLOW & status) printf("I2CShared_DebugStatus: I2C_RECEIVER_OVERFLOW, 0x%x\n", I2C_RECEIVER_OVERFLOW & status);
+    if (I2C_TRANSMITTER_OVERFLOW & status) printf("I2CShared_DebugStatus: I2C_TRANSMITTER_OVERFLOW, 0x%x\n", I2C_TRANSMITTER_FULL & status);
+    if (I2C_10BIT_ADDRESS & status) printf("I2CShared_DebugStatus: I2C_10BIT_ADDRESS, 0x%x\n", I2C_10BIT_ADDRESS & status);
+    if (I2C_GENERAL_CALL & status) printf("I2CShared_DebugStatus: I2C_GENERAL_CALL, 0x%x\n", I2C_GENERAL_CALL & status);
+    if (I2C_ARBITRATION_LOSS & status) printf("I2CShared_DebugStatus: I2C_ARBITRATION_LOSS, 0x%x\n", I2C_ARBITRATION_LOSS & status);
+    if (I2C_TRANSMITTER_BUSY & status) printf("I2CShared_DebugStatus: I2C_TRANSMITTER_BUSY, 0x%x\n", I2C_TRANSMITTER_BUSY & status);
+    if (I2C_BYTE_ACKNOWLEDGED & status) printf("I2CShared_DebugStatus: I2C_BYTE_ACKNOWLEDGE, 0x%x\n", I2C_BYTE_ACKNOWLEDGED & status);
 }
 
 inline void I2CShared_ResetBus(I2C_MODULE i2c) {

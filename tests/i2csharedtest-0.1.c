@@ -2,6 +2,7 @@
 #include <p32xxxx.h>
 //#include <stdio.h>
 #include "delay.h"
+#include "i2c_shared.h"
 //#include "i2c_shared.h"
 //#include "lcd_16x2.h"
 
@@ -47,15 +48,15 @@ int main() {
   init_res = I2CShared_Init(TEST_I2C_BUS_ID, GetPeripheralClock(), TEST_I2C_BUS_SPEED);
   
   printf("Starting -> init_res = %d\n", (int) init_res);
+  // accelerometer ID
   result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x00, &data);
-  DelayMs(500);
-  //printf("Result = %d\r\n", (int)result);
   if (!result) {
       printf("Error in result: Delay to see if it fixes bus\n");
       DelayUs(500);
   } else {
       printf("Result: accel ID = 0x%x\n", (unsigned char) data);
   }
+  // gyroscope ID
   result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x00, &data);
   if (!result) {
       printf("Error in result: Delay to see if it fixes bus\n");
@@ -63,6 +64,41 @@ int main() {
   } else {
       printf("Result: gyro ID = 0x%x\n", (unsigned char) data);
   }
+  // accelerometer default baud
+  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x2C, &data);
+  if (!result) {
+      printf("Error in result: Delay to see if it fixes bus\n");
+      DelayUs(500);
+  } else {
+      printf("Result: accel default buad = 0x%x\n", (unsigned char) data);
+
+  }
+  printf("Testing writing\n");
+  // write to config register and say if success or not
+  // accel configs
+  result = I2CShared_WriteByte(TEST_I2C_BUS_ID, 0xA6, 0x2C, (1 << 3));  // put accel in measure mode
+  if (!result) {
+      printf("Could not write to accel and put it in measure mode\n");
+      DelayUs(500);
+  } else {
+      printf("Success: put accel in measure mode\n");
+  }
+  result = I2CShared_WriteByte(TEST_I2C_BUS_ID, 0xA6, 0x31, 0x01);  // put accel in 4g mode
+  if (!result) {
+      printf("Could not write to accel and put it in measure mode\n");
+      DelayUs(500);
+  } else {
+      printf("Success: put accel in 4g mode\n");
+  }
+  result = I2CShared_WriteByte(TEST_I2C_BUS_ID, 0xA6, 0x2C, 0x0B);  // set bandwidth to 100 hz
+  if (!result) {
+      printf("Could not write to accel and put it in measure mode\n");
+      DelayUs(500);
+  } else {
+      printf("Success: set accel bandwidth to 100 Hz\n");
+  }
+  // gyro configs
+  DelayS(1);
   while(1) {}
   return 0;
 }

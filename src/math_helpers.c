@@ -1,6 +1,6 @@
 #include <p32xxxx.h>
 #include <plib.h>
-#include "tracking.h"
+#include "math_helpers.h"
 
 // Floating point support for various calculations
 #include <math.h>

@@ -1,5 +1,5 @@
-#ifndef TRACKING_H
-#define TRACKING_H
+#ifndef MATH_HELPERS_H
+#define MATH_HELPERS_H
 
 typedef struct EULER_ANGLES {
   float roll;   // rotation about the X-axis

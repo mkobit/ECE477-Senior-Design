@@ -21,10 +21,14 @@
 
 #define TEST_I2C_BUS_ID              I2C1
 #define TEST_I2C_BUS_SPEED           (100000)
-#define BAUDRATE 9600
+#define BAUDRATE 57600
 
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
+
+#ifndef int16_t
+typedef short int int16_t;
+#endif
 
 void OPENDEBUG();
 
@@ -33,7 +37,9 @@ int main() {
   long int delayed = 0;
   BOOL result = TRUE;
   BOOL init_res;
-  char data = 0xFF;
+  unsigned char data = 0xFF;
+  int16_t ax,ay,z;
+  int16_t gx,gy,gz;
 
   SYSTEMConfig(GetSystemClock(), SYS_CFG_ALL);
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
@@ -85,20 +91,49 @@ int main() {
   }
   result = I2CShared_WriteByte(TEST_I2C_BUS_ID, 0xA6, 0x31, 0x01);  // put accel in 4g mode
   if (!result) {
-      printf("Could not write to accel and put it in measure mode\n");
+      printf("Could not write to accel and put it in 4g mode\n");
       DelayUs(500);
   } else {
       printf("Success: put accel in 4g mode\n");
   }
   result = I2CShared_WriteByte(TEST_I2C_BUS_ID, 0xA6, 0x2C, 0x0B);  // set bandwidth to 100 hz
   if (!result) {
-      printf("Could not write to accel and put it in measure mode\n");
+      printf("Could not write to accel and set accel bandwidth\n");
       DelayUs(500);
   } else {
       printf("Success: set accel bandwidth to 100 Hz\n");
   }
   // gyro configs
-  DelayS(1);
+  result = I2CShared_WriteByte(TEST_I2C_BUS_ID, 0xD0, 0x16, 0x18 | 3);  // turn gyro on, let lpf
+  if (!result) {
+      printf("Could not write to gyro and set its LPF\n");
+      DelayUs(500);
+  } else {
+      printf("Success: set gyro LPF to 42 Hz, and 2000 degrees/s\n");
+  }
+  result = I2CShared_WriteByte(TEST_I2C_BUS_ID, 0xD0, 0x15, 9);  // turn gyro on, let lpf
+  if (!result) {
+      printf("Could not write to gyro and set its sample rate\n");
+      DelayUs(500);
+  } else {
+      printf("Success: set gyro sample rate to 1kHz/(9+1) == 100 Hz/s\n");
+  }
+  result = I2CShared_WriteByte(TEST_I2C_BUS_ID, 0xD0, 0x3E, 1);  // turn gyro on, let lpf
+  if (!result) {
+      printf("Could not write to gyro and set GYRO_PWR_MGM X-axis (roll)\n");
+      DelayUs(500);
+  } else {
+      printf("Success: set gyro GYRO_PWR_MGM X-axis (roll)\n");
+  }
+  // end configs, read some data and test ReadMultBytes
+  printf("Done reading device ID and setting configs, time to read...\n");
+  DelayS(4);
+  do {
+      putsUART2(CLEAR_VT);
+      DelayMs(400);
+
+  }while(1);
+
   while(1) {}
   return 0;
 }

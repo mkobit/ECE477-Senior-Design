@@ -3,7 +3,7 @@
 #include "adxl345.h"
 #include "i2c_shared.h"
 
-static double SCALES[4] = { .0039, .0078, .0156, .0312};  // from datasheet
+static double SCALES[4] = { .0039f, .0078f, .0156f, .0312f};  // from datasheet
 
 /************************************************************************************************** 
   Function:

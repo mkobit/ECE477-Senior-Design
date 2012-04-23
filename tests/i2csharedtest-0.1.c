@@ -20,7 +20,7 @@
 #define GetInstructionClock()       (SYS_CLOCK)
 
 #define TEST_I2C_BUS_ID              I2C1
-#define TEST_I2C_BUS_SPEED           (100000)
+#define TEST_I2C_BUS_SPEED           (400000)
 #define BAUDRATE 57600
 
 #define CLEAR_VT "\033[2J"
@@ -38,7 +38,7 @@ int main() {
   BOOL result = TRUE;
   BOOL init_res;
   unsigned char data = 0xFF;
-  int16_t ax,ay,z;
+  int16_t ax,ay,az;
   int16_t gx,gy,gz;
 
   SYSTEMConfig(GetSystemClock(), SYS_CFG_ALL);
@@ -129,10 +129,25 @@ int main() {
   printf("Done reading device ID and setting configs, time to read...\n");
   DelayS(4);
   do {
+      ax = 0; ay = 0; az = 0; gx = 0; gy = 0; gz = 0;
+      DelayMs(100);
       putsUART2(CLEAR_VT);
-      DelayMs(400);
-
-  }while(1);
+      // clear terminal before reading and updating
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x33, &data);   // X MSB
+      ax = ax | (data << 8);
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x32, &data);   // X LSB
+      ax = ax | data;
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x35, &data);   // Y MSB
+      ax = ax | (data << 8);
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x34, &data);   // Y LSB
+      ax = ax | data;
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x37, &data);   // Z MSB
+      ax = ax | (data << 8);
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x36, &data);   // Z LSB
+      ax = ax | data;
+      printf()
+      delayed++;
+  } while(delayed < 100);
 
   while(1) {}
   return 0;

@@ -29,12 +29,12 @@
 #define ACCEL_INT_MAP    0x2F  //Interrupt Mapping Control
 #define ACCEL_INT_SOURCE    0x30  //Source of interrupts
 #define ACCEL_DATA_FORMAT  0x31  //Data format control
-#define ACCEL_DATAX0      0x32  //X-Axis Data 0 LSB
-#define ACCEL_DATAX1      0x33  //X-Axis Data 1 MSB
-#define ACCEL_DATAY0      0x34  //Y-Axis Data 0 LSB
-#define ACCEL_DATAY1      0x35  //Y-Axis Data 1 MSB
-#define ACCEL_DATAZ0      0x36  //Z-Axis Data 0 LSB
-#define ACCEL_DATAZ1      0x37  //Z-Axis Data 1 MSB
+#define ACCEL_DATAX0      0x32  //X-Axis Data LSB
+#define ACCEL_DATAX1      0x33  //X-Axis Data MSB
+#define ACCEL_DATAY0      0x34  //Y-Axis Data LSB
+#define ACCEL_DATAY1      0x35  //Y-Axis Data MSB
+#define ACCEL_DATAZ0      0x36  //Z-Axis Data LSB
+#define ACCEL_DATAZ1      0x37  //Z-Axis Data MSB
 #define  ACCEL_FIFO_CTL    0x38  //FIFO control
 #define  ACCEL_FIFO_STATUS  0x39  //FIFO status
 

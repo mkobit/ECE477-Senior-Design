@@ -20,7 +20,7 @@
 #define GetInstructionClock()       (SYS_CLOCK)
 
 #define TEST_I2C_BUS_ID              I2C1
-#define TEST_I2C_BUS_SPEED           (400000)
+#define TEST_I2C_BUS_SPEED           (100000)
 #define BAUDRATE 57600
 
 #define CLEAR_VT "\033[2J"
@@ -39,7 +39,7 @@ int main() {
   BOOL init_res;
   unsigned char data = 0xFF;
   int16_t ax,ay,az;
-  int16_t gx,gy,gz;
+  int16_t gx,gy,gz,gt;
 
   SYSTEMConfig(GetSystemClock(), SYS_CFG_ALL);
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
@@ -57,7 +57,7 @@ int main() {
   // accelerometer ID
   result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x00, &data);
   if (!result) {
-      printf("Error in result: Delay to see if it fixes bus\n");
+      printf("Error in result: could not read accel ID\n");
       DelayUs(500);
   } else {
       printf("Result: accel ID = 0x%x\n", (unsigned char) data);
@@ -65,7 +65,7 @@ int main() {
   // gyroscope ID
   result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x00, &data);
   if (!result) {
-      printf("Error in result: Delay to see if it fixes bus\n");
+      printf("Error in result: could not read gyro ID\n");
       DelayUs(500);
   } else {
       printf("Result: gyro ID = 0x%x\n", (unsigned char) data);
@@ -73,7 +73,7 @@ int main() {
   // accelerometer default baud
   result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x2C, &data);
   if (!result) {
-      printf("Error in result: Delay to see if it fixes bus\n");
+      printf("Error in result: could not read default accel baud\n");
       DelayUs(500);
   } else {
       printf("Result: accel default buad = 0x%x\n", (unsigned char) data);
@@ -82,12 +82,20 @@ int main() {
   printf("Testing writing\n");
   // write to config register and say if success or not
   // accel configs
-  result = I2CShared_WriteByte(TEST_I2C_BUS_ID, 0xA6, 0x2C, (1 << 3));  // put accel in measure mode
+  result = I2CShared_WriteByte(TEST_I2C_BUS_ID, 0xA6, 0x2D, (1 << 3));  // put accel in measure mode
   if (!result) {
       printf("Could not write to accel and put it in measure mode\n");
       DelayUs(500);
   } else {
       printf("Success: put accel in measure mode\n");
+  }
+  // check measure register
+  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x31, &data);
+  if (!result) {
+      printf("Could not read accel ACCEL_DATA_FORMAT\n");
+      DelayUs(500);
+  } else {
+      printf("Success: read ACCEL_DATA_FORMAT, value = 0x%x\n", (unsigned char) data);
   }
   result = I2CShared_WriteByte(TEST_I2C_BUS_ID, 0xA6, 0x31, 0x01);  // put accel in 4g mode
   if (!result) {
@@ -129,10 +137,11 @@ int main() {
   printf("Done reading device ID and setting configs, time to read...\n");
   DelayS(4);
   do {
-      ax = 0; ay = 0; az = 0; gx = 0; gy = 0; gz = 0;
+      ax = 0; ay = 0; az = 0; gx = 0; gy = 0; gz = 0; gt = 0;
       DelayMs(200);
       putsUART2(CLEAR_VT);
       // clear terminal before reading and updating
+      // accel
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x33, &data);   // X MSB
       ax = ax | (data << 8);
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x32, &data);   // X LSB
@@ -145,7 +154,26 @@ int main() {
       az = az | (data << 8);
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x36, &data);   // Z LSB
       az = az | data;
-      printf("ax = %d, ay = %d, az = %d\n", ax,ay,az);
+      // gyro
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1B, &data);   // T MSB
+      gx = gx | (data << 8);
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1C, &data);   // T LSB
+      gx = gx | data;
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1D, &data);   // X MSB
+      gx = gx | (data << 8);
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1E, &data);   // X LSB
+      gx = gx | data;
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1F, &data);   // Y MSB
+      gy = gy | (data << 8);
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x20, &data);   // Y LSB
+      gy = gy | data;
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x21, &data);   // Z MSB
+      gz = gz | (data << 8);
+      I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x22, &data);   // Z LSB
+      gz = gz | data;
+      // print results
+      printf("ax = %5d, ay = %5d, az = %5d\n", ax,ay,az);
+      printf("gx = %5d, gy = %5d, gz = %5d, gt = %5d\n", gx, gy, gz, gt);
       delayed++;
   } while(delayed < 300);
 

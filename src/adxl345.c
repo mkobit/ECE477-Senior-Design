@@ -80,7 +80,7 @@ ACCEL_RESULT AccelInit(I2C_MODULE i2c, unsigned char range, unsigned char bandwi
 
   // Set Bandwidth
   if (AccelWrite(i2c, ACCEL_BW_RATE, bandwidth) == ACCEL_FAIL) {
-    printf("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c);
+    printf("AccelInitI2C: Error, could not write to ACCEL_BW_RATE to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
   

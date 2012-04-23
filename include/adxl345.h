@@ -34,7 +34,7 @@
 #define ACCEL_DATAY0      0x34  //Y-Axis Data LSB
 #define ACCEL_DATAY1      0x35  //Y-Axis Data MSB
 #define ACCEL_DATAZ0      0x36  //Z-Axis Data LSB
-#define ACCEL_DATAZ1      0x37  //Z-Axis Data MSB
+#define ACCEL_DATAZ1      0x37  //Z-Axis Data  MSB
 #define  ACCEL_FIFO_CTL    0x38  //FIFO control
 #define  ACCEL_FIFO_STATUS  0x39  //FIFO status
 

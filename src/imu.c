@@ -419,7 +419,7 @@ double ImuGetGyroX(imu_t *imu) {
 **************************************************************************************************/
 double ImuGetGyroY(imu_t *imu) {
   double gy;
-  gy = GyroGetX(&imu->gyro_raw);
+  gy = GyroGetY(&imu->gyro_raw);
   return gy;
 }
 
@@ -458,7 +458,7 @@ double ImuGetGyroY(imu_t *imu) {
 **************************************************************************************************/
 double ImuGetGyroZ(imu_t *imu) {
   double gz;
-  gz = GyroGetX(&imu->gyro_raw);
+  gz = GyroGetZ(&imu->gyro_raw);
   return gz;
 }
 
@@ -497,7 +497,7 @@ double ImuGetGyroZ(imu_t *imu) {
 **************************************************************************************************/
 double ImuGetAccelX(imu_t *imu) {
   double ax;
-  ax = AccelGetZ(&imu->accel_raw);
+  ax = AccelGetX(&imu->accel_raw);
   return ax;
 }
 
@@ -536,7 +536,7 @@ double ImuGetAccelX(imu_t *imu) {
 **************************************************************************************************/
 double ImuGetAccelY(imu_t *imu) {
   double ay;
-  ay = AccelGetZ(&imu->accel_raw);
+  ay = AccelGetY(&imu->accel_raw);
   return ay;
 }
 

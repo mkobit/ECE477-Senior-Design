@@ -13,8 +13,8 @@
 #define SQUARE(x) (x*x)
 #define SYSTEM_FREQUENCY 72000000L
 
-#define TEST_PIN BIT_2
-#define TEST_PORT IOPORT_B
+#define TEST_PIN BIT_0
+#define TEST_PORT IOPORT_F
 
 int main(void)
 {

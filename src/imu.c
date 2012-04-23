@@ -11,10 +11,10 @@ static inline void ImuToggleSelector(imu_t* imu);
           I2C_MODULE i2c,
           unsigned int peripheral_clock_speed, 
           unsigned int i2c_speed, 
-          char accel_resolution, 
-          char accel_bandwidth, 
-          char gyro_dlpf_lpf, 
-          char gyro_sample_rate_div, 
+          unsigned char accel_resolution,
+          unsigned char accel_bandwidth,
+          unsigned char gyro_dlpf_lpf,
+          unsigned char gyro_sample_rate_div,
 
   Author(s):
     mkobit
@@ -34,12 +34,12 @@ static inline void ImuToggleSelector(imu_t* imu);
     I2C_MODULE i2c - I2C module to associate with this IMU
     unsigned int peripheral_clock_speed - peripheral bus speed
     unsigned int i2c_speed - target I2C bus speed
-    char accel_range - range of accelerometer
+    unsigned char accel_range - range of accelerometer
       ACCEL_SCALE_2G  - 2 G's (gravity)
       ACCEL_SCALE_4G  - 4 G's
       ACCEL_SCALE_8G  - 8 G's
       ACCEL_SCALE_16G - 16 G's
-    char accel_bandwidth - bandwidth of accelerometer
+    unsigned char accel_bandwidth - bandwidth of accelerometer
       ACCEL_BW_1600   - 1600 Hz
       ACCEL_BW_800    - 800 Hz
       ACCEL_BW_400    - 400 Hz
@@ -47,7 +47,7 @@ static inline void ImuToggleSelector(imu_t* imu);
       ACCEL_BW_100    - 100 Hz
       ACCEL_BW_50     - 50 Hz
       ACCEL_BW_25     - 25 Hz
-    char dlpf_lpf - low pass filter configuration for sensor acquisition
+    unsigned char dlpf_lpf - low pass filter configuration for sensor acquisition
       GYRO_DLPF_LPF_256HZ    - results in 8 kHz sample rate
       GYRO_DLPF_LPF_188HZ   - results in 1 kHz sample rate
       GYRO_DLPF_LPF_98HZ    - *
@@ -57,7 +57,7 @@ static inline void ImuToggleSelector(imu_t* imu);
       GYRO_DLPF_LPF_5HZ     - *
     unsigned char sample_rate_div - sample rate divider, F = F_internal / (sample_rate_div + 1)
       e.g. -> 1kHz sample rate from dlpf_lpf, sample_rate_div = 9, F = 1 kHz / (9 _ 1) = 100 Hz 
-    char power_mgmt_sel - device clock selector
+    unsigned char power_mgmt_sel - device clock selector
       GYRO_PWR_MGM_CLK_SEL_INTERNAL - internal oscillator
       GYRO_PWR_MGM_CLK_SEL_X        - X as clock reference
       GYRO_PWR_MGM_CLK_SEL_Y        - Y as clock reference
@@ -90,11 +90,11 @@ IMU_RESULT ImuInit(imu_t* imu,
           I2C_MODULE i2c,
           unsigned int peripheral_clock_speed, 
           unsigned int i2c_speed, 
-          char accel_range, 
-          char accel_bandwidth, 
-          char gyro_dlpf_lpf, 
+          unsigned char accel_range,
+          unsigned char accel_bandwidth,
+          unsigned char gyro_dlpf_lpf,
           unsigned char gyro_sample_rate_div, 
-          char gyro_power_mgmt_sel) {
+          unsigned char gyro_power_mgmt_sel) {
                                     
   unsigned int actualClock;
   ACCEL_RESULT accel_init_result;

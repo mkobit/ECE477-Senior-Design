@@ -7,7 +7,7 @@ static double SCALES[4] = { .0039, .0078, .0156, .0312};  // from datasheet
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelInit(I2C_MODULE i2c, char resolution, char bandwidth, accel_raw_t *raw)
+    ACCEL_RESULT AccelInit(I2C_MODULE i2c, unsigned char resolution, unsigned char bandwidth, accel_raw_t *raw)
     
   Author(s):
     mkobit
@@ -23,12 +23,12 @@ static double SCALES[4] = { .0039, .0078, .0156, .0312};  // from datasheet
 
   Parameters: 
     I2C_MODULE i2c - I2C module associated with this accelerometer
-    char range - constant for the range of gravity
+    unsigned char range - constant for the range of gravity
       ACCEL_SCALE_2G  - 2 G's (gravity)
       ACCEL_SCALE_4G  - 4 G's
       ACCEL_SCALE_8G  - 8 G's
       ACCEL_SCALE_16G - 16 G's
-    char bandwidth - device bandwidth and output data rate
+    unsigned char bandwidth - device bandwidth and output data rate
       ACCEL_BW_1600   - 1600 Hz
       ACCEL_BW_800    - 800 Hz
       ACCEL_BW_400    - 400 Hz
@@ -52,7 +52,7 @@ static double SCALES[4] = { .0039, .0078, .0156, .0312};  // from datasheet
     I2C bus is in idle state
 
 **************************************************************************************************/
-ACCEL_RESULT AccelInit(I2C_MODULE i2c, char range, char bandwidth, accel_raw_t *raw) {
+ACCEL_RESULT AccelInit(I2C_MODULE i2c, unsigned char range, unsigned char bandwidth, accel_raw_t *raw) {
 
   // I2C should already be enabled
   
@@ -89,7 +89,7 @@ ACCEL_RESULT AccelInit(I2C_MODULE i2c, char range, char bandwidth, accel_raw_t *
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data)
+    ACCEL_RESULT AccelWrite(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char data)
 
   Author(s):
     mkobit
@@ -121,7 +121,7 @@ ACCEL_RESULT AccelInit(I2C_MODULE i2c, char range, char bandwidth, accel_raw_t *
     I2C bus is in idle state
 
 **************************************************************************************************/
-ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
+ACCEL_RESULT AccelWrite(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char data) {
   if (I2CShared_WriteByte(i2c, ACCEL_WRITE, i2c_reg, data)) {
     return ACCEL_SUCCESS;
   } else {
@@ -131,7 +131,7 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer)
+    ACCEL_RESULT AccelRead(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char *buffer)
 
   Author(s):
     mkobit
@@ -147,8 +147,8 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
 
   Parameters:
     I2C_MODULE i2c - I2C module to connect with
-    char i2c_reg - register to read from
-    char *buffer - buffer to place read byte into
+    unsigned char i2c_reg - register to read from
+    unsigned char *buffer - buffer to place read byte into
 
   Returns:
     ACCEL_SUCCESS - If successful
@@ -164,7 +164,7 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, char i2c_reg, BYTE data) {
     I2C bus is in idle state
 
 **************************************************************************************************/
-ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
+ACCEL_RESULT AccelRead(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char *buffer) {
   if (I2CShared_ReadByte(i2c, ACCEL_WRITE, ACCEL_READ, i2c_reg, buffer)) {
     return ACCEL_SUCCESS;
   } else {
@@ -206,7 +206,7 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, char i2c_reg, char *buffer) {
 
 **************************************************************************************************/
 ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
-  char reading_rainbow[6];  // placeholder for read data
+  unsigned char reading_rainbow[6];  // placeholder for read data
   
   // read x,y, and z data into buffer
   if (I2CShared_ReadMultipleBytes(i2c, ACCEL_WRITE, ACCEL_READ, ACCEL_DATAX0, 6, reading_rainbow)) {
@@ -339,4 +339,3 @@ double AccelGetZ(accel_raw_t *raw) {
   zf = (double) raw->z * SCALES[raw->scale_ind];
   return zf;
 }
-

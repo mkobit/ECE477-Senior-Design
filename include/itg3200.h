@@ -77,9 +77,9 @@ typedef struct gyro_raw_t {
   short int temp;
 } gyro_raw_t;
 
-GYRO_RESULT GyroInit(I2C_MODULE i2c, char dlpf_lpf, unsigned char sample_rate_div, char power_mgmt_sel);
-GYRO_RESULT GyroWrite(I2C_MODULE i2c, char i2c_reg, BYTE data);
-GYRO_RESULT GyroRead(I2C_MODULE i2c, char i2c_reg, char *buffer);
+GYRO_RESULT GyroInit(I2C_MODULE i2c, unsigned char dlpf_lpf, unsigned char sample_rate_div, unsigned char power_mgmt_sel);
+GYRO_RESULT GyroWrite(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char data);
+GYRO_RESULT GyroRead(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char *buffer);
 GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp);
 double GyroGetTemp(gyro_raw_t *raw);
 double GyroGetX(gyro_raw_t *raw);   // X === Roll

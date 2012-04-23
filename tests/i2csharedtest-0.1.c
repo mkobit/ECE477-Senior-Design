@@ -130,7 +130,7 @@ int main() {
   DelayS(4);
   do {
       ax = 0; ay = 0; az = 0; gx = 0; gy = 0; gz = 0;
-      DelayMs(100);
+      DelayMs(200);
       putsUART2(CLEAR_VT);
       // clear terminal before reading and updating
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x33, &data);   // X MSB
@@ -138,16 +138,16 @@ int main() {
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x32, &data);   // X LSB
       ax = ax | data;
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x35, &data);   // Y MSB
-      ax = ax | (data << 8);
+      ay = ay | (data << 8);
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x34, &data);   // Y LSB
-      ax = ax | data;
+      ay = ay | data;
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x37, &data);   // Z MSB
-      ax = ax | (data << 8);
+      az = az | (data << 8);
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x36, &data);   // Z LSB
-      ax = ax | data;
-      printf()
+      az = az | data;
+      printf("ax = %d, ay = %d, az = %d\n", ax,ay,az);
       delayed++;
-  } while(delayed < 100);
+  } while(delayed < 300);
 
   while(1) {}
   return 0;

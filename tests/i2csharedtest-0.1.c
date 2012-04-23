@@ -5,9 +5,13 @@
 //#include "i2c_shared.h"
 //#include "lcd_16x2.h"
 
-#pragma config FPLLMUL = MUL_20, FPLLIDIV = DIV_2
-#pragma config FPLLODIV = DIV_1, FWDTEN = OFF
-#pragma config POSCMOD = HS, FNOSC = PRIPLL
+#pragma config FPLLMUL = MUL_20
+#pragma config FPLLIDIV = DIV_2
+#pragma config FPLLODIV = DIV_1
+#pragma config POSCMOD = HS
+#pragma config FNOSC = PRIPLL
+#pragma config FWDTEN = OFF // watchdog off
+#pragma config FPBDIV = DIV_2
 
 #define SYS_CLOCK (80000000L)
 #define GetSystemClock()            (SYS_CLOCK)
@@ -16,7 +20,7 @@
 
 #define TEST_I2C_BUS_ID              I2C1
 #define TEST_I2C_BUS_SPEED           (100000)
-#define BAUDRATE 57600
+#define BAUDRATE 9600
 
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
@@ -30,6 +34,7 @@ int main() {
   BOOL init_res;
   char data = 0xFF;
 
+  SYSTEMConfig(GetSystemClock(), SYS_CFG_ALL);
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
   
   //OPENDEBUG();
@@ -38,13 +43,25 @@ int main() {
 
   DelayInit(GetSystemClock());
   ///UARTSendData(UART2, CLEAR_VT);
-  init_res = I2CShared_Init(TEST_I2C_BUS_ID, pbFreq, TEST_I2C_BUS_SPEED);
   putsUART2(CLEAR_VT);
-  printf("Starting -> init_res = %d, lowest enum status for i2c I2C_TRANSMITTER_FULL = %d\r\n", (int) init_res, I2C_TRANSMITTER_FULL);
-  while(1) {
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA7, 0xA6, 0x00, &data);
-      DelayMs(500);
-      printf("Result = %d\r\n", (int)result);
+  init_res = I2CShared_Init(TEST_I2C_BUS_ID, GetPeripheralClock(), TEST_I2C_BUS_SPEED);
+  
+  printf("Starting -> init_res = %d\n", (int) init_res);
+  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x00, &data);
+  DelayMs(500);
+  //printf("Result = %d\r\n", (int)result);
+  if (!result) {
+      printf("Error in result: Delay to see if it fixes bus\n");
+      DelayUs(500);
+  } else {
+      printf("Result: accel ID = 0x%x\n", (unsigned char) data);
+  }
+  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x00, &data);
+  if (!result) {
+      printf("Error in result: Delay to see if it fixes bus\n");
+      DelayUs(500);
+  } else {
+      printf("Result: gyro ID = 0x%x\n", (unsigned char) data);
   }
   while(1) {}
   return 0;

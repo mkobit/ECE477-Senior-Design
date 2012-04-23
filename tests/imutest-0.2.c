@@ -75,7 +75,7 @@ int main() {
       ImuUpdate(p_imu);
       putsUART2(CLEAR_VT);
       printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
-      printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f\n", ImuGetGyroX(p_imu), ImuGetGyroX(p_imu), ImuGetGyroX(p_imu));
+      printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
       DelayMs(200);
   }
   while(1);

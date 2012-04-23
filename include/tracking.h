@@ -22,6 +22,7 @@ typedef struct ROTATION_AXIS {
 
 void Tracking_ConvertDegreesToRPYQuat(float roll, float pitch, float yaw, YAW_PITCH_ROLL_QUAT *quat);
 void Tracking_FindRotationAxis(YAW_PITCH_ROLL_QUAT *quat, ROTATION_AXIS *axis);
+float Tracking_FastInvSqrt(float x);
 float Tracking_DegreesToRadians(float degrees);
 
 #endif

@@ -34,7 +34,19 @@ void Tracking_FindRotationAxis(YAW_PITCH_ROLL_QUAT *quat, ROTATION_AXIS *axis) {
   axis->axis_y = cosf(quat->beta_y);
   axis->axis_z = cosf(quat->beta_z);
 }
-  
+
+
+
+float Tracking_FastInvSqrt(float x) {
+  // Source: http://en.wikipedia.org/wiki/Fast_inverse_square_root
+	float halfx = 0.5f * x;
+	float y = x;
+	long i = *(long*)&y;
+	i = 0x5f3759df - (i>>1);
+	y = *(float*)&i;
+	y = y * (1.5f - (halfx * y * y));
+	return y;
+}
 
 float Tracking_DegreesToRadians(float degrees) {
   return degrees * PI / 180;

@@ -24,10 +24,10 @@ static double SCALES[4] = { .0039, .0078, .0156, .0312};  // from datasheet
   Parameters: 
     I2C_MODULE i2c - I2C module associated with this accelerometer
     unsigned char range - constant for the range of gravity
-      ACCEL_SCALE_2G  - 2 G's (gravity)
-      ACCEL_SCALE_4G  - 4 G's
-      ACCEL_SCALE_8G  - 8 G's
-      ACCEL_SCALE_16G - 16 G's
+      ACCEL_RANGE_2G  - 2 G's (gravity)
+      ACCEL_RANGE_4G  - 4 G's
+      ACCEL_RANGE_8G  - 8 G's
+      ACCEL_RANGE_16G - 16 G's
     unsigned char bandwidth - device bandwidth and output data rate
       ACCEL_BW_1600   - 1600 Hz
       ACCEL_BW_800    - 800 Hz

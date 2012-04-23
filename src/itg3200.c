@@ -22,7 +22,7 @@
   Parameters:
     I2C_MODULE i2c - I2C module to connect with
     unsigned char dlpf_lpf - low pass filter configuration for sensor acquisition
-        GYRO_DLPF_LPF_256HZ    - results in 8 kHz sample rate
+        GYRO_DLPF_LPF_256HZ   - results in 8 kHz sample rate
         GYRO_DLPF_LPF_188HZ   - results in 1 kHz sample rate
         GYRO_DLPF_LPF_98HZ    - *
         GYRO_DLPF_LPF_42HZ    - *
@@ -56,7 +56,7 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, unsigned char dlpf_lpf, unsigned char sampl
   // OR the low pass frequency passed with dflp_config with full scale operation and write it to the gyro
   // Set internal clock and full scale operation
   if (GyroWrite(i2c, GYRO_DLPF_FS, dlpf_lpf | GYRO_DLPF_FS_ON) == GYRO_FAIL) {
-    DBPRINTF("GyroInit: Error, could not write 0x%c to register GYRO_DLPF_FS (0x%c\n", dflp_config | GYRO_DLPF_FS_ON, GYRO_DLPF_FS);
+    DBPRINTF("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (unsigned char) dflp_config | GYRO_DLPF_FS_ON, (unsigned char) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
   
@@ -64,13 +64,13 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, unsigned char dlpf_lpf, unsigned char sampl
   // If dlpf_lpf == GYRO_DLPF_LPF_256HZ, sample rate = 8 kHz / sample_rate_div
   // Else, sample rate = 1 kHz / (sample_rate_div + 1)
   if (GyroWrite(i2c, GYRO_SMPLRT_DIV, sample_rate_div) == GYRO_FAIL) {
-    DBPRINTF("GyroInit: Error, could not write 0x%c to register GYRO_DLPF_FS (0x%c\n", dflp_config | GYRO_DLPF_FS_ON, GYRO_DLPF_FS);
+    DBPRINTF("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (unsigned char) dflp_config | GYRO_DLPF_FS_ON, (unsigned char) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
   
   // Select a gyro PLL for clock source (more stable)
   if (GyroWrite(i2c, GYRO_PWR_MGM, power_mgmt_sel) == GYRO_FAIL) {
-    DBPRINTF("GyroInit: Error, could not write 0x%c to register GYRO_DLPF_FS (0x%c\n", dflp_config | GYRO_DLPF_FS_ON, GYRO_DLPF_FS);
+    DBPRINTF("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (unsigned char) dflp_config | GYRO_DLPF_FS_ON, (unsigned char) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
   

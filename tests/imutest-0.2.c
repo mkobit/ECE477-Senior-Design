@@ -12,23 +12,13 @@
 // PBCLK = 40 MHz
 // WDT OFF
 
-#pragma config FPLLMUL  = MUL_20        // PLL Multiplier
-#pragma config FPLLIDIV = DIV_2         // PLL Input Divider
-#pragma config FPLLODIV = DIV_1         // PLL Output Divider
-
-/*#pragma config FPBDIV   = DIV_1         // Peripheral Clock divisor
-#pragma config WDTPS    = PS1           // Watchdog Timer Postscale
-#pragma config FWDTEN   = OFF           // Watchdog Timer
-#pragma config FCKSM    = CSDCMD        // Clock Switching & Fail Safe Clock Monitor
-#pragma config OSCIOFNC = OFF           // CLKO Enable
-#pragma config POSCMOD  = HS            // Primary Oscillator
-#pragma config IESO     = OFF           // Internal/External Switch-over
-#pragma config FSOSCEN  = OFF           // Secondary Oscillator Enable
-#pragma config FNOSC    = PRIPLL        // Oscillator Selection
-#pragma config CP       = OFF           // Code Protect
-#pragma config BWP      = OFF           // Boot Flash Write Protect
-#pragma config PWP      = OFF           // Program Flash Write Protect
-#pragma config ICESEL   = ICS_PGx2      // ICE/ICD Comm Channel Select*/
+#pragma config FPLLMUL = MUL_20
+#pragma config FPLLIDIV = DIV_2
+#pragma config FPLLODIV = DIV_1
+#pragma config POSCMOD = HS
+#pragma config FNOSC = PRIPLL
+#pragma config FWDTEN = OFF // watchdog off
+#pragma config FPBDIV = DIV_2
 
 // Clock Constants
 #define SYS_CLOCK (80000000L)
@@ -46,9 +36,10 @@
 void OPENDEBUG();
 
 int main() {
-    long int pbFreq;
-    long int delayed = 0;
+  long int pbFreq;
+  long int delayed = 0;
   imu_t imu;
+  imu_t *p_imu;
   IMU_RESULT imu_res = IMU_SUCCESS;
   BOOL result;
   BOOL init_res;
@@ -56,25 +47,38 @@ int main() {
   // initialize debug messages
   
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
-  OPENDEBUG();
+  //OPENDEBUG();
+  OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
+            (pbFreq/16/BAUDRATE) - 1);
   
   DelayInit(GetSystemClock());
+  putsUART2(CLEAR_VT);
   //DBINIT();
-  UARTSendData(UART2, CLEAR_VT);
-  imu_res = ImuInit(&imu,
+  p_imu = &imu;
+  //UARTSendData(UART2, CLEAR_VT);
+  imu_res = ImuInit(p_imu,
           TEST_I2C_BUS_ID,
-          pbFreq,
+          GetPeripheralClock(),
           TEST_I2C_BUS_SPEED,
-          ACCEL_SCALE_4G,
+          ACCEL_RANGE_4G,
           ACCEL_BW_100,
           GYRO_DLPF_LPF_98HZ,
           9,
           GYRO_PWR_MGM_CLK_SEL_X);
   init_res = I2CShared_Init(TEST_I2C_BUS_ID, pbFreq, TEST_I2C_BUS_SPEED);
   if (imu_res == IMU_FAIL) {
+    printf("Fail\n");
     while(1) {}
   }
-  while(1) {}
+  printf("Success\n");
+  while(1) {
+      printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
+      printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f\n", ImuGetGyroX(p_imu), ImuGetGyroX(p_imu), ImuGetGyroX(p_imu));
+      DelayMs(300);
+      ImuUpdate(p_imu);
+      putsUART2(CLEAR_VT);
+  }
+  while(1);
   return 0;
 }
 

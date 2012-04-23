@@ -171,7 +171,7 @@ IMU_RESULT ImuUpdate(imu_t *imu) {
   
   // Check if device is on first
   if (!ImuIsOn(imu)) {
-    printf("ImuUpdate: Error, device with I2C=%d is not on\n", imu->i2c);
+    printf("ImuUpdate: Error, device with I2C=%d is not on\n", imu->i2c_module);
     return IMU_FAIL;
   }
   
@@ -191,7 +191,7 @@ IMU_RESULT ImuUpdate(imu_t *imu) {
     return IMU_SUCCESS;
   } else {
     // failure updating, do not use this IMU
-    printf("ImuUpdate: Error, could not update both accel and gyro at I2C=%d. Results->(accel, gyro) = (%d, %d)\n", imu->i2c, a_result, g_result);
+    printf("ImuUpdate: Error, could not update both accel and gyro at I2C=%d. Results->(accel, gyro) = (%d, %d)\n", imu->i2c_module, a_result, g_result);
     return IMU_FAIL;
   }
 }

@@ -79,7 +79,7 @@ void DelayS(const UINT s) {
   UINT core_time;
 
   ticks_to_wait = s * _core_hz;
-  WriteCoreTimer(0);  // clear timer
+  //WriteCoreTimer(0);  // clear timer
   start = ReadCoreTimer();
   do {
     core_time = ReadCoreTimer();

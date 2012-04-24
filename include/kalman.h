@@ -3,10 +3,9 @@
 
 #include "imu.h"
 
-void Kalman_MadgwickUpdate(imu_t *p_imu);
-void Kalman_MahonyUpdate(imu_t *p_imu);
+void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE *const q, const float sampleFreq);
+void Kalman_MahonyUpdate(const imu_t *const p_imu, KALMAN_STATE_MADGWICK *madgwick, const float sampleFreq)
 
-typedef struct kalman_state {
-} kalman_state;
+typedef QUATERNION KALMAN_STATE;
 
 #endif

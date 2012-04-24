@@ -27,8 +27,8 @@
 #define GetInstructionClock()       (SYS_CLOCK)
 
 #define TEST_I2C_BUS_ID              I2C1
-#define TEST_I2C_BUS_SPEED           (100000)
-#define BAUDRATE 9600
+#define TEST_I2C_BUS_SPEED           (400000)
+#define BAUDRATE 57600
 
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
@@ -44,6 +44,7 @@ int main() {
   BOOL result;
   BOOL init_res;
   char data;
+  us_t start, end;
   // initialize debug messages
   
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
@@ -62,21 +63,46 @@ int main() {
           TEST_I2C_BUS_SPEED,
           ACCEL_RANGE_4G,
           ACCEL_BW_100,
-          GYRO_DLPF_LPF_98HZ,
+          GYRO_DLPF_LPF_42HZ,
           9,
           GYRO_PWR_MGM_CLK_SEL_X);
-  init_res = I2CShared_Init(TEST_I2C_BUS_ID, pbFreq, TEST_I2C_BUS_SPEED);
-  if (imu_res == IMU_FAIL) {
-    printf("Fail\n");
-    while(1) {}
+  //init_res = I2CShared_Init(TEST_I2C_BUS_ID, pbFreq, TEST_I2C_BUS_SPEED);
+  DelayS(2);
+  while (imu_res == IMU_FAIL) {
+    printf("\nFail, retrying...\n");
+    DelayS(3);
+    putsUART2(CLEAR_VT);
+    printf("Resetting here\n");
+    ImuResetI2CBus(p_imu);
+    DelayS(2);
+    printf("\n");
+    imu_res = ImuInit(p_imu,
+          TEST_I2C_BUS_ID,
+          GetPeripheralClock(),
+          TEST_I2C_BUS_SPEED,
+          ACCEL_RANGE_4G,
+          ACCEL_BW_100,
+          GYRO_DLPF_LPF_42HZ,
+          9,
+          GYRO_PWR_MGM_CLK_SEL_X);
   }
-  printf("Success\n");
+  printf("\nSuccess\n");
+  DelayS(3);
   while(1) {
-      ImuUpdate(p_imu);
+      start = DelayUtilGetUs();
+      imu_res = ImuUpdate(p_imu);
+      end = DelayUtilGetUs();
+      if (imu_res == IMU_FAIL) {
+          printf("Error, IMU fail, delaying for 1s and trying to reset I2C bus\n");
+          ImuResetI2CBus(p_imu);
+          DelayS(2);
+          continue;
+      }
       putsUART2(CLEAR_VT);
       printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
       printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
-      //DelayMs(200);
+      printf("Us for update = %d\n", DelayUtilElapsedUs(start, end));
+      DelayMs(100);
   }
   while(1);
   return 0;

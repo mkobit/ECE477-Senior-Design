@@ -85,15 +85,15 @@ typedef enum {
 } ACCEL_RESULT;
 
 typedef struct accel_raw_t {
-  short int x;
-  short int y;
-  short int z;
+  INT16 x;
+  INT16 y;
+  INT16 z;
   int scale_ind;
 } accel_raw_t;
 
-ACCEL_RESULT AccelInit(I2C_MODULE i2c, unsigned char range, unsigned char bandwidth, accel_raw_t *raw);
-ACCEL_RESULT AccelWrite(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char data);
-ACCEL_RESULT AccelRead(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char *buffer);
+ACCEL_RESULT AccelInit(I2C_MODULE i2c, UINT8 range, UINT8 bandwidth, accel_raw_t *raw);
+ACCEL_RESULT AccelWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data);
+ACCEL_RESULT AccelRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer);
 ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw);
 float AccelGetX(accel_raw_t *raw);
 float AccelGetY(accel_raw_t *raw);

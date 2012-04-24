@@ -3,22 +3,22 @@
 #include "battery_monitor.h"
 #include "delay.h"
 
-static unsigned int _bmon_pin;
+static UINT _bmon_pin;
 static IoPortId _bmon_port;
 
 static BATTMON_RESULT BatteryMonitorReset();
 static void BatteryMonitor_drive_low();
 static void BatteryMonitor_drive_high();
-static unsigned char BatteryMonitor_read_onewire();
-static unsigned char BatteryMonitor_read_bit();
-static void BatteryMonitor_write_bit(unsigned char bit);
+static UINT8 BatteryMonitor_read_onewire();
+static UINT8 BatteryMonitor_read_bit();
+static void BatteryMonitor_write_bit(UINT8 bit);
 static BATTMON_RESULT BatteryMonitorReset();
-static unsigned char BatteryMonitorReadByte();
-static void BatteryMonitorWriteByte(unsigned char c);
+static UINT8 BatteryMonitorReadByte();
+static void BatteryMonitorWriteByte(UINT8 c);
 
 /************************************************************************************************** 
   Function: 
-    void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port)
+    void BatteryMonitorInit(UINT batt_mon_pin, IoPortId batt_mon_port)
   
   Author(s): 
     mkobit
@@ -34,7 +34,7 @@ static void BatteryMonitorWriteByte(unsigned char c);
     Pin and port provided not being used for anything else
   
   Parameters: 
-    unsigned int batt_mon_pin - pin number of the battery monitor pin, should only be 1 pin
+    UINT batt_mon_pin - pin number of the battery monitor pin, should only be 1 pin
     IoPortId batt_mon_port - port of the battery monitor pin
   
   Returns: 
@@ -49,7 +49,7 @@ static void BatteryMonitorWriteByte(unsigned char c);
     Port (_bmon_port), pin (_bmon_pin) configured as open-drain pin
   
 **************************************************************************************************/
-void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port) {
+void BatteryMonitorInit(UINT batt_mon_pin, IoPortId batt_mon_port) {
   _bmon_port = batt_mon_port;
   _bmon_pin = batt_mon_pin;
   switch(_bmon_port) {
@@ -65,9 +65,9 @@ void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port) {
 
 /************************************************************************************************** 
   Function: 
-    BATTMON_RESULT BatteryMonitorReadBytes(unsigned char net_address_command, 
-                    unsigned char start_addr, 
-                    unsigned char *data, 
+    BATTMON_RESULT BatteryMonitorReadBytes(UINT8 net_address_command, 
+                    UINT8 start_addr, 
+                    UINT8 *data, 
                     int nitems)
   
   Author(s):
@@ -86,8 +86,8 @@ void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port) {
     (_bmon_pin) and (_bmon_port) have not been reconfigured or other use
   
   Parameters: 
-    unsigned char net_address_command - command for how the bus master will interact with the slaves
-    unsigned char start_addr - starting address for function
+    UINT8 net_address_command - command for how the bus master will interact with the slaves
+    UINT8 start_addr - starting address for function
     char *data - pointer for data to be read into
     int nitems - number of bytes to read from the battery monitor
   
@@ -110,13 +110,13 @@ void BatteryMonitorInit(unsigned int batt_mon_pin, IoPortId batt_mon_port) {
       which means that only 1 device can be on the 1 wire bus
   
 **************************************************************************************************/
-BATTMON_RESULT BatteryMonitorReadBytes(unsigned char net_address_command, 
-                    unsigned char start_addr, 
-                    unsigned char *data, 
+BATTMON_RESULT BatteryMonitorReadBytes(UINT8 net_address_command, 
+                    UINT8 start_addr, 
+                    UINT8 *data, 
                     int nitems) {
   int i;
   BATTMON_RESULT presence_detect;
-  unsigned char data_read;
+  UINT8 data_read;
   if (net_address_command == BATTERY_MONITOR_NET_SKIP_ADDR) {
     // saves time by not using net_address, assuming only 1 one-wire device on the bus
     presence_detect = BatteryMonitorReset();
@@ -143,9 +143,9 @@ BATTMON_RESULT BatteryMonitorReadBytes(unsigned char net_address_command,
 
 /************************************************************************************************** 
   Function: 
-    BATTMON_RESULT BatteryMonitorWriteBytes(unsigned char net_address_command, 
-                    unsigned char start_addr, 
-                    unsigned char *data, 
+    BATTMON_RESULT BatteryMonitorWriteBytes(UINT8 net_address_command, 
+                    UINT8 start_addr, 
+                    UINT8 *data, 
                     int nitems)
   
   Author(s):
@@ -164,9 +164,9 @@ BATTMON_RESULT BatteryMonitorReadBytes(unsigned char net_address_command,
     (_bmon_pin) and (_bmon_port) have not been reconfigured or other use
   
   Parameters: 
-    unsigned char net_address_command - command for how the bus master will interact with the slaves
-    unsigned char function - the feature of the battery monitor to execute 
-    unsigned char start_addr - starting address for function
+    UINT8 net_address_command - command for how the bus master will interact with the slaves
+    UINT8 function - the feature of the battery monitor to execute 
+    UINT8 start_addr - starting address for function
   
   Returns: 
     BATTMON_SUCCESS - If transaction was successful
@@ -183,9 +183,9 @@ BATTMON_RESULT BatteryMonitorReadBytes(unsigned char net_address_command,
     One-wire bus idle
   
 **************************************************************************************************/
-BATTMON_RESULT BatteryMonitorWriteBytes(unsigned char net_address_command, 
-                    unsigned char start_addr, 
-                    unsigned char *data, 
+BATTMON_RESULT BatteryMonitorWriteBytes(UINT8 net_address_command, 
+                    UINT8 start_addr, 
+                    UINT8 *data, 
                     int nitems) {
   int i;
   BATTMON_RESULT presence_detect;
@@ -264,7 +264,7 @@ static BATTMON_RESULT BatteryMonitorReset() {
 
 /************************************************************************************************** 
   Function: 
-    static unsigned char BatteryMonitorReadByte()
+    static UINT8 BatteryMonitorReadByte()
   
   Author(s):
     mkobit
@@ -285,11 +285,11 @@ static BATTMON_RESULT BatteryMonitorReset() {
     None
   
   Returns: 
-    unsigned char result - byte read from one-wire bus
+    UINT8 result - byte read from one-wire bus
   
   Example: 
     <code>
-    unsigned char c
+    UINT8 c
     c = BatteryMonitorReadByte()
     </code>
   
@@ -297,9 +297,9 @@ static BATTMON_RESULT BatteryMonitorReset() {
     One-wire bus still in transaction, waiting for next action
   
 **************************************************************************************************/
-static unsigned char BatteryMonitorReadByte() {
-  unsigned char loop;
-  unsigned char result = 0;
+static UINT8 BatteryMonitorReadByte() {
+  UINT8 loop;
+  UINT8 result = 0;
   
   for (loop = 0; loop < 8; loop++) {
     result >>= 1;
@@ -312,7 +312,7 @@ static unsigned char BatteryMonitorReadByte() {
 
 /************************************************************************************************** 
   Function: 
-    static void BatteryMonitorWriteByte(unsigned char c)
+    static void BatteryMonitorWriteByte(UINT8 c)
   
   Author(s):
     mkobit
@@ -330,7 +330,7 @@ static unsigned char BatteryMonitorReadByte() {
     (_bmon_pin) and (_bmon_port) have not been reconfigured or other use
   
   Parameters: 
-    unsigned char c - character to be written to the one wire bus, least significant bit first
+    UINT8 c - character to be written to the one wire bus, least significant bit first
   
   Returns: 
     void
@@ -344,8 +344,8 @@ static unsigned char BatteryMonitorReadByte() {
     One-wire bus still in transaction, waiting for next action
   
 **************************************************************************************************/
-static void BatteryMonitorWriteByte(unsigned char c) {
-  unsigned char loop;
+static void BatteryMonitorWriteByte(UINT8 c) {
+  UINT8 loop;
   
   for (loop = 0; loop < 8; loop++) {
     BatteryMonitor_write_bit(c & LSBIT_MASK);
@@ -429,7 +429,7 @@ static void BatteryMonitor_drive_high() {
 
 /************************************************************************************************** 
   Function: 
-    static unsigned char BatteryMonitor_read_onewire()
+    static UINT8 BatteryMonitor_read_onewire()
   
   Author(s):
     mkobit
@@ -448,11 +448,11 @@ static void BatteryMonitor_drive_high() {
     None
   
   Returns: 
-    unsigned char read_data - 1 if pin read high, 0 if pin read low
+    UINT8 read_data - 1 if pin read high, 0 if pin read low
   
   Example: 
     <code>
-    unsigned char bit
+    UINT8 bit
     bit = BatteryMonitor_read_onewire()
     </code>
   
@@ -460,8 +460,8 @@ static void BatteryMonitor_drive_high() {
     (_bmon_pin) and (_bmon_port) configured as input
   
 **************************************************************************************************/
-static unsigned char BatteryMonitor_read_onewire(void) {
-  unsigned char read_data = 0;
+static UINT8 BatteryMonitor_read_onewire(void) {
+  UINT8 read_data = 0;
   
   PORTSetPinsDigitalIn(_bmon_port, _bmon_pin);
   if(PORTReadBits(_bmon_port, _bmon_pin)) {
@@ -474,7 +474,7 @@ static unsigned char BatteryMonitor_read_onewire(void) {
 
 /************************************************************************************************** 
   Function: 
-    static unsigned char BatteryMonitor_read_bit()
+    static UINT8 BatteryMonitor_read_bit()
   
   Author(s):
     mkobit
@@ -493,11 +493,11 @@ static unsigned char BatteryMonitor_read_onewire(void) {
     void
   
   Returns: 
-    unsigned char result - 0 or 1 for what was read on the data line
+    UINT8 result - 0 or 1 for what was read on the data line
   
   Example: 
     <code>
-    unsigned char c
+    UINT8 c
     c = BatteryMonitor_read_bit()
     </code>
   
@@ -505,8 +505,8 @@ static unsigned char BatteryMonitor_read_onewire(void) {
     BatteryMonitor_drive_high called to leave pin as an output and high
   
 **************************************************************************************************/
-static unsigned char BatteryMonitor_read_bit() {
-  unsigned char result;
+static UINT8 BatteryMonitor_read_bit() {
+  UINT8 result;
   
   BatteryMonitor_drive_low();
   DelayUs(3);  // minimum 1 us
@@ -520,7 +520,7 @@ static unsigned char BatteryMonitor_read_bit() {
 
 /************************************************************************************************** 
   Function: 
-    static void BatteryMonitor_write_bit(unsigned char bit)
+    static void BatteryMonitor_write_bit(UINT8 bit)
   
   Author(s):
     mkobit
@@ -537,7 +537,7 @@ static unsigned char BatteryMonitor_read_bit() {
     (_bmon_pin) and (_bmon_port) have not been reconfigured or other use
   
   Parameters: 
-    unsigned char bit - 0 or !0, determines which protocol to use to write a 1 or 0 to one-wire bus
+    UINT8 bit - 0 or !0, determines which protocol to use to write a 1 or 0 to one-wire bus
   
   Returns: 
     void
@@ -552,7 +552,7 @@ static unsigned char BatteryMonitor_read_bit() {
     BatteryMonitor_drive_high called to leave pin as an output and high
   
 **************************************************************************************************/
-static void BatteryMonitor_write_bit(unsigned char bit) {
+static void BatteryMonitor_write_bit(UINT8 bit) {
   if (bit) {
     // write 1 bit
     BatteryMonitor_drive_low();

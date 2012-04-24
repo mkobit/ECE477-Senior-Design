@@ -11,7 +11,7 @@ static void I2CShared_DebugStatus(I2C_MODULE i2c);
 
 /************************************************************************************************** 
   Function: 
-    BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigned int i2c_speed)
+    BOOL I2CShared_Init(I2C_MODULE i2c, UINT peripheral_clock_speed, UINT i2c_speed)
   
   Authors(s):
     mkobit
@@ -27,8 +27,8 @@ static void I2CShared_DebugStatus(I2C_MODULE i2c);
   
   Parameters: 
     I2C_MODULE i2c - I2C module to be used for initialization
-    unsigned int peripheral_clock_speed - clock speed of peripheral bus
-    unsigned int i2c_speed - target speed of I2C module
+    UINT peripheral_clock_speed - clock speed of peripheral bus
+    UINT i2c_speed - target speed of I2C module
   
   Returns: 
     TRUE - successfully enabled I2C on this module
@@ -43,8 +43,8 @@ static void I2CShared_DebugStatus(I2C_MODULE i2c);
     I2C module (i2c) configured for use as an I2C bus
   
 **************************************************************************************************/
-BOOL I2CShared_Init(I2C_MODULE i2c, unsigned int peripheral_clock_speed, unsigned int i2c_speed) {
-  unsigned int actualClock;
+BOOL I2CShared_Init(I2C_MODULE i2c, UINT peripheral_clock_speed, UINT i2c_speed) {
+  UINT actualClock;
   
   I2CConfigure(i2c, I2C_ENABLE_HIGH_SPEED);
 
@@ -142,7 +142,7 @@ return TRUE;
 
 /************************************************************************************************** 
   Function: 
-    static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, unsigned char data)
+    static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, UINT8 data)
     
   Author(s): 
     mkobit
@@ -160,7 +160,7 @@ return TRUE;
   
   Parameters: 
     I2C_MODULE i2c - I2C module to be used for this transaction
-    unsigned char data - to be transmitted
+    UINT8 data - to be transmitted
   
   Returns: 
     TRUE - If successful
@@ -176,7 +176,7 @@ return TRUE;
     I2C bus waiting for next action
   
 **************************************************************************************************/
-static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, unsigned char data) {
+static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, UINT8 data) {
 
     // Wait for the transmitter to be ready
     while(!I2CTransmitterIsReady(i2c));
@@ -206,7 +206,7 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, unsigned char data) {
 
 /************************************************************************************************** 
   Function: 
-    BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_addr, unsigned char i2c_register, unsigned char data)
+    BOOL I2CShared_WriteByte(I2C_MODULE i2c, UINT8 i2c_addr, UINT8 i2c_register, UINT8 data)
   
   Author(s):
     mkobit
@@ -222,9 +222,9 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, unsigned char data) {
   
   Parameters: 
     I2C_MODULE i2c - I2C module to be used for this transaction
-    unsigned char i2c_addr - write address of I2C device
-    unsigned char i2c_register - I2C register to write to
-    unsigned char data - data to be written
+    UINT8 i2c_addr - write address of I2C device
+    UINT8 i2c_register - I2C register to write to
+    UINT8 data - data to be written
   
   Returns: 
     TRUE - write succesful
@@ -240,7 +240,7 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, unsigned char data) {
     
   
 **************************************************************************************************/
-BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_register, unsigned char data) {
+BOOL I2CShared_WriteByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_register, UINT8 data) {
 
   // Wait until bus is open
   //while(!I2CBusIsIdle(i2c));
@@ -285,7 +285,7 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned 
 
 /************************************************************************************************** 
   Function:
-    BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register, char *buffer)
+    BOOL I2CShared_ReadByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_read_addr, UINT8 i2c_register, char *buffer)
 
   Author(s): 
     mkobit
@@ -302,10 +302,10 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned 
   
   Parameters: 
     I2C_MODULE i2c - I2C module to be used for this transaction
-    unsigned char i2c_write_addr - write address of I2C device
-    unsigned char i2c_read_addr - read address of I2C device
-    unsigned char i2c_register - I2C register to read from
-    unsigned char *buffer - buffer to place read byte into
+    UINT8 i2c_write_addr - write address of I2C device
+    UINT8 i2c_read_addr - read address of I2C device
+    UINT8 i2c_register - I2C register to read from
+    UINT8 *buffer - buffer to place read byte into
   
   Returns: 
     TRUE - read succesful
@@ -322,7 +322,7 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned 
     I2C bus idle
   
 **************************************************************************************************/
-BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register, unsigned char *buffer) {
+BOOL I2CShared_ReadByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_read_addr, UINT8 i2c_register, UINT8 *buffer) {
 
   // Wait until bus is idle
   //while(!I2CBusIsIdle(i2c));
@@ -336,14 +336,14 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned c
   // SEND ADDRESS
   // Send write address for transaction, address is expected to already be formatted
   if (!I2CShared_TransmitOneByte(i2c, i2c_write_addr)) {
-    printf("I2CShared_Read: Error, could not send write address 0x%x to I2C=%d\n", (unsigned char) i2c_write_addr, i2c);
+    printf("I2CShared_Read: Error, could not send write address 0x%x to I2C=%d\n", (UINT8) i2c_write_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
   
   // SEND INTERNAL REGISTER
   if (!I2CShared_TransmitOneByte(i2c, i2c_register)) {
-    printf("I2CShared_Read: Error, could not send i2c_register 0x%x to I2C=%d\n", (unsigned char) i2c_register, i2c);
+    printf("I2CShared_Read: Error, could not send i2c_register 0x%x to I2C=%d\n", (UINT8) i2c_register, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
@@ -383,7 +383,7 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned c
 
 /************************************************************************************************** 
   Function:
-    BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register_start, int nbytes, unsigned char *buffer)
+    BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_read_addr, UINT8 i2c_register_start, int nbytes, UINT8 *buffer)
 
   Author(s):
     mkobit
@@ -400,11 +400,11 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned c
 
   Parameters:
     I2C_MODULE i2c - I2C module to be used for this transaction
-    unsigned char i2c_write_addr - write address of I2C device
-    unsigned char i2c_read_addr - read address of I2C device
-    unsigned char i2c_register_start - I2C register to begin reading from
+    UINT8 i2c_write_addr - write address of I2C device
+    UINT8 i2c_read_addr - read address of I2C device
+    UINT8 i2c_register_start - I2C register to begin reading from
     int nbytes - how many bytes to be read
-    unsigned char *buffer - buffer to place read bytes
+    UINT8 *buffer - buffer to place read bytes
 
   Returns:
     TRUE - reads were successful
@@ -421,9 +421,9 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned c
     I2C bus idle
 
 **************************************************************************************************/
-BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, unsigned char i2c_write_addr, unsigned char i2c_read_addr, unsigned char i2c_register_start, int nbytes, unsigned char *buffer) {
+BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_read_addr, UINT8 i2c_register_start, int nbytes, UINT8 *buffer) {
   int i;
-  unsigned char temp;
+  UINT8 temp;
 
   // Wait until bus is open
   //while(!I2CBusIsIdle(i2c));

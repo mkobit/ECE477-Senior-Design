@@ -71,15 +71,15 @@ typedef enum {
 } GYRO_RESULT;
 
 typedef struct gyro_raw_t {
-  short int x;
-  short int y;
-  short int z;
-  short int temp;
+  INT16 x;
+  INT16 y;
+  INT16 z;
+  INT16 temp;
 } gyro_raw_t;
 
-GYRO_RESULT GyroInit(I2C_MODULE i2c, unsigned char dlpf_lpf, unsigned char sample_rate_div, unsigned char power_mgmt_sel);
-GYRO_RESULT GyroWrite(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char data);
-GYRO_RESULT GyroRead(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char *buffer);
+GYRO_RESULT GyroInit(I2C_MODULE i2c, UINT8 dlpf_lpf, UINT8 sample_rate_div, UINT8 power_mgmt_sel);
+GYRO_RESULT GyroWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data);
+GYRO_RESULT GyroRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer);
 GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp);
 float GyroGetTemp(gyro_raw_t *raw);
 float GyroGetX(gyro_raw_t *raw);   // X === Roll

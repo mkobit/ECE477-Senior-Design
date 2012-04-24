@@ -6,10 +6,10 @@
 
 typedef unsigned int us_t;
 
-void DelayInit(unsigned int clock_hz);
-void DelayS(unsigned int s);
-void DelayMs(unsigned int ms);
-void DelayUs(unsigned int us);
+void DelayInit(UINT clock_hz);
+void DelayS(UINT s);
+void DelayMs(UINT ms);
+void DelayUs(UINT us);
 us_t DelayUtilGetUs(void);
 us_t DelayUtilElapsedUs(us_t start, us_t end);
 

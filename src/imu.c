@@ -30,7 +30,7 @@ static inline void ImuToggleSelector(imu_t* imu);
     I2C not previously configure
 
   Parameters:
-    imu_t *const imu - reference to IMU to be initialized
+    imu_t *const p_imu - reference to IMU to be initialized
     const I2C_MODULE i2c - I2C module to associate with this IMU
     const UINT peripheral_clock_speed - peripheral bus speed
     const UINT i2c_speed - target I2C bus speed
@@ -84,9 +84,10 @@ static inline void ImuToggleSelector(imu_t* imu);
     I2C module initialized
     Accelerometer initialized
     Gyroscope initialized
+    *Even on failure, the IMU is associated with the (i2c) provided to this function
 
 **************************************************************************************************/
-IMU_RESULT ImuInit(imu_t *const imu,
+IMU_RESULT ImuInit(imu_t *const p_imu,
           const I2C_MODULE i2c,
           const UINT peripheral_clock_speed, 
           const UINT i2c_speed, 
@@ -100,33 +101,37 @@ IMU_RESULT ImuInit(imu_t *const imu,
   ACCEL_RESULT accel_init_result;
   GYRO_RESULT gyro_init_result;
   
+  // Associate i2c with this IMU
+  p_imu->i2c_module = i2c;
+
   if (!I2CShared_Init(i2c, peripheral_clock_speed, i2c_speed)) {
     printf("AccelInitI2C: Error, I2C could not be initted\n", actualClock);
     return IMU_FAIL;
   }
   // Init both modules of the imu
-  accel_init_result = AccelInit(i2c, accel_range, accel_bandwidth, &imu->accel_raw);
+  accel_init_result = AccelInit(i2c, accel_range, accel_bandwidth, &p_imu->accel_raw);
   if (accel_init_result != ACCEL_SUCCESS) {
       // accel failure, don't try to read line
-    imu->isOn = FALSE;
+    p_imu->isOn = FALSE;
     printf("ImuInit: Error, could not complete initialization due to accel fail.\n");
     return IMU_FAIL;
   }
   gyro_init_result = GyroInit(i2c, gyro_dlpf_lpf, gyro_sample_rate_div, gyro_power_mgmt_sel);
   
   // Give a semi-random true/false to read accelerometer first  
-  imu->updateAccelFirst = ReadCoreTimer() % 2 == 0;
+  p_imu->updateAccelFirst = ReadCoreTimer() % 2 == 0;
   
   // Check if both succeeded in initializing
   if (accel_init_result == ACCEL_SUCCESS && gyro_init_result == GYRO_SUCCESS) {
-    imu->isOn = TRUE;
+    p_imu->isOn = TRUE;
     // Assign the IMU an ID and increment the ID
-    imu->id = IMU_ID; // TODO if this does not work move responsibility to main program to initialize the ID
+    p_imu->id = IMU_ID; // TODO if this does not work move responsibility to main program to initialize the ID
     IMU_ID++;
+
     return IMU_SUCCESS;
   } else {
     // failure initializing, do not use this IMU
-    imu->isOn = FALSE;
+    p_imu->isOn = FALSE;
     printf("ImuInit: Error, could not complete initialization. Results->(accel, gyro) = (%d, %d)\n", accel_init_result, gyro_init_result);
     return IMU_FAIL;
   }
@@ -170,35 +175,47 @@ IMU_RESULT ImuUpdate(imu_t *const p_imu) {
   GYRO_RESULT g_result;
   
   // Check if device is on first
-  if (!ImuIsOn(imu)) {
-    printf("ImuUpdate: Error, device with I2C=%d is not on\n", imu->i2c_module);
+  if (!ImuIsOn(p_imu)) {
+    printf("ImuUpdate: Error, device with I2C=%d is not on\n", p_imu->i2c_module);
     return IMU_FAIL;
   }
   
-  if (imu->updateAccelFirst) {
-    a_result = AccelReadAllAxes(imu->i2c_module, &imu->accel_raw);
-    g_result = GyroReadAllAxes(imu->i2c_module, &imu->gyro_raw, TRUE);
+  if (p_imu->updateAccelFirst) {
+    a_result = AccelReadAllAxes(p_imu->i2c_module, &p_imu->accel_raw);
+    if (a_result == ACCEL_FAIL) {
+      printf("ImuUpdate: Error, could not update accel at I2C=%d\n", p_imu->i2c_module);
+      return IMU_FAIL;
+    }
+    g_result = GyroReadAllAxes(p_imu->i2c_module, &p_imu->gyro_raw, TRUE);
   } else {
-    g_result = GyroReadAllAxes(imu->i2c_module, &imu->gyro_raw, TRUE);
-    a_result = AccelReadAllAxes(imu->i2c_module, &imu->accel_raw);
+    g_result = GyroReadAllAxes(p_imu->i2c_module, &p_imu->gyro_raw, TRUE);
+    if (g_result == GYRO_FAIL) {
+      printf("ImuUpdate: Error, could not update gyro at I2C=%d\n", p_imu->i2c_module);
+      return IMU_FAIL;
+    }
+    a_result = AccelReadAllAxes(p_imu->i2c_module, &p_imu->accel_raw);
   }
   
   // Toggle which is updated first for next time
-  ImuToggleSelector(imu);
+  ImuToggleSelector(p_imu);
   
   // Check for any errors
  if (a_result == ACCEL_SUCCESS && g_result == GYRO_SUCCESS) {
     return IMU_SUCCESS;
   } else {
     // failure updating, do not use this IMU
-    printf("ImuUpdate: Error, could not update both accel and gyro at I2C=%d. Results->(accel, gyro) = (%d, %d)\n", imu->i2c_module, a_result, g_result);
+    printf("ImuUpdate: Error, could not update both accel and gyro at I2C=%d. Results->(accel, gyro) = (%d, %d)\n", p_imu->i2c_module, a_result, g_result);
     return IMU_FAIL;
   }
 }
 
+void ImuResetI2CBus(const imu_t *p_imu) {
+    I2CShared_ResetBus(p_imu->i2c_module);
+}
+
 /************************************************************************************************** 
   Function:
-    accel_raw_t *p_imuGetRawAccel(const imu_t *const p_imu)
+    accel_raw_t *p_imuGetRawAccel(imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -214,7 +231,7 @@ IMU_RESULT ImuUpdate(imu_t *const p_imu) {
     ImuUpdate typically called
 
   Parameters:
-    const imu_t *const p_imu - reference to the IMU being looked at
+    imu_t *const p_imu - reference to the IMU being looked at
 
   Returns:
     accel_raw_t * - reference to imu's raw accelerometer data
@@ -229,13 +246,13 @@ IMU_RESULT ImuUpdate(imu_t *const p_imu) {
     None
 
 **************************************************************************************************/
-accel_raw_t *p_imuGetRawAccel(const imu_t *const p_imu) {
-  return &imu->accel_raw;
+accel_raw_t *ImuGetRawAccel(imu_t *const p_imu) {
+  return &(p_imu->accel_raw);
 }
 
 /************************************************************************************************** 
   Function:
-    gyro_raw_t *p_imuGetRawGyro(const imu_t *const p_imu)
+    gyro_raw_t *p_imuGetRawGyro(imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -251,7 +268,7 @@ accel_raw_t *p_imuGetRawAccel(const imu_t *const p_imu) {
     ImuUpdate typically called
     
   Parameters:
-    const imu_t *const p_imu - reference to the IMU being looked at
+    imu_t *const p_imu - reference to the IMU being looked at
 
   Returns:
     gyro_raw_t * - reference to imu's raw gyro data
@@ -266,8 +283,8 @@ accel_raw_t *p_imuGetRawAccel(const imu_t *const p_imu) {
     None
 
 **************************************************************************************************/
-gyro_raw_t *p_imuGetRawGyro(const imu_t *const p_imu) {
-  return &imu->gyro_raw;
+gyro_raw_t *ImuGetRawGyro(imu_t *const p_imu) {
+  return &(p_imu->gyro_raw);
 }
 
 /************************************************************************************************** 
@@ -303,7 +320,7 @@ gyro_raw_t *p_imuGetRawGyro(const imu_t *const p_imu) {
 
 **************************************************************************************************/
 BOOL ImuIsOn(const imu_t *const p_imu) {
-  return imu->isOn;
+  return p_imu->isOn;
 }
 
 /************************************************************************************************** 
@@ -341,7 +358,7 @@ BOOL ImuIsOn(const imu_t *const p_imu) {
 **************************************************************************************************/
 float ImuGetGyroTemp(const imu_t *const p_imu) {
   float gtemp;
-  gtemp = GyroGetTemp(&imu->gyro_raw);
+  gtemp = GyroGetTemp(&p_imu->gyro_raw);
   return gtemp;
 }
 
@@ -380,7 +397,7 @@ float ImuGetGyroTemp(const imu_t *const p_imu) {
 **************************************************************************************************/
 float ImuGetGyroX(const imu_t *const p_imu) {
   float gx;
-  gx = GyroGetX(&imu->gyro_raw);
+  gx = GyroGetX(&p_imu->gyro_raw);
   return gx;
 }
 
@@ -419,7 +436,7 @@ float ImuGetGyroX(const imu_t *const p_imu) {
 **************************************************************************************************/
 float ImuGetGyroY(const imu_t *const p_imu) {
   float gy;
-  gy = GyroGetY(&imu->gyro_raw);
+  gy = GyroGetY(&p_imu->gyro_raw);
   return gy;
 }
 
@@ -458,7 +475,7 @@ float ImuGetGyroY(const imu_t *const p_imu) {
 **************************************************************************************************/
 float ImuGetGyroZ(const imu_t *const p_imu) {
   float gz;
-  gz = GyroGetZ(&imu->gyro_raw);
+  gz = GyroGetZ(&p_imu->gyro_raw);
   return gz;
 }
 
@@ -497,7 +514,7 @@ float ImuGetGyroZ(const imu_t *const p_imu) {
 **************************************************************************************************/
 float ImuGetAccelX(const imu_t *const p_imu) {
   float ax;
-  ax = AccelGetX(&imu->accel_raw);
+  ax = AccelGetX(&p_imu->accel_raw);
   return ax;
 }
 
@@ -536,7 +553,7 @@ float ImuGetAccelX(const imu_t *const p_imu) {
 **************************************************************************************************/
 float ImuGetAccelY(const imu_t *const p_imu) {
   float ay;
-  ay = AccelGetY(&imu->accel_raw);
+  ay = AccelGetY(&p_imu->accel_raw);
   return ay;
 }
 
@@ -575,7 +592,7 @@ float ImuGetAccelY(const imu_t *const p_imu) {
 **************************************************************************************************/
 float ImuGetAccelZ(const imu_t *const p_imu) {
   float az;
-  az = AccelGetZ(&imu->accel_raw);
+  az = AccelGetZ(&p_imu->accel_raw);
   return az;
 }
 
@@ -596,7 +613,7 @@ float ImuGetAccelZ(const imu_t *const p_imu) {
     ImuInit called
 
   Parameters:
-    const imu_t *const p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
+    imu_t *p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
     void
@@ -610,6 +627,6 @@ float ImuGetAccelZ(const imu_t *const p_imu) {
     IMU will read the gyro/accel first next time
 
 **************************************************************************************************/
-static inline void ImuToggleSelector(const imu_t *const p_imu) {
-  imu->updateAccelFirst = !imu->updateAccelFirst;
+static inline void ImuToggleSelector(imu_t *p_imu) {
+  p_imu->updateAccelFirst = !p_imu->updateAccelFirst;
 }

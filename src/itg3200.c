@@ -262,7 +262,7 @@ GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_raw_t *const raw, const B
 **************************************************************************************************/
 float GyroGetTemp(const gyro_raw_t *const raw) {
   float temperature;
-  temperature = -GYRO_TEMP_OFFSET - raw->temp;
+  temperature = -GYRO_TEMP_OFFSET + raw->temp;
   temperature /= GYRO_TEMP_CONV_TO_DEGREES;
   temperature += GYRO_TEMP_OFFSET_DEGS;
   return temperature;

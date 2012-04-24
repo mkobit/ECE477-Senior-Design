@@ -40,10 +40,7 @@ int main() {
   long int delayed = 0;
   imu_t imu;
   imu_t *p_imu;
-  IMU_RESULT imu_res = IMU_SUCCESS;
-  BOOL result;
-  BOOL init_res;
-  char data;
+  IMU_RESULT imu_res = IMU_FAIL;
   us_t start, end;
   // initialize debug messages
   
@@ -89,20 +86,20 @@ int main() {
   printf("\nSuccess\n");
   DelayS(3);
   while(1) {
-      start = DelayUtilGetUs();
-      imu_res = ImuUpdate(p_imu);
-      end = DelayUtilGetUs();
-      if (imu_res == IMU_FAIL) {
-          printf("Error, IMU fail, delaying for 1s and trying to reset I2C bus\n");
-          ImuResetI2CBus(p_imu);
-          DelayS(2);
-          continue;
-      }
-      putsUART2(CLEAR_VT);
-      printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
-      printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
-      printf("Us for update = %d\n", DelayUtilElapsedUs(start, end));
-      DelayMs(100);
+    start = DelayUtilGetUs();
+    imu_res = ImuUpdate(p_imu);
+    end = DelayUtilGetUs();
+    if (imu_res == IMU_FAIL) {
+        printf("Error, IMU fail, delaying for 1s and trying to reset I2C bus\n");
+        ImuResetI2CBus(p_imu);
+        DelayS(2);
+        continue;
+    }
+    putsUART2(CLEAR_VT);
+    printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
+    printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
+    printf("Us for update = %d\n", DelayUtilElapsedUs(end, start));
+    DelayMs(100);
   }
   while(1);
   return 0;

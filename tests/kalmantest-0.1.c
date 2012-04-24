@@ -7,7 +7,7 @@
 #include "kalman.h"
 #include "math_helpers.h"
 
-#define TEST_UPDATE_FREQ 100
+#define TEST_UPDATE_FREQ 200
 
 // Configuration Bit settings
 //
@@ -44,6 +44,7 @@ int main() {
   us_t t1, t2, t3, t4, t5, t6;
   KALMAN_STATE_MADGWICK kmad;
   KALMAN_STATE_MAHONY kmah;
+  EULER_ANGLES e;
   QUATERNION *q;
 
 
@@ -94,13 +95,16 @@ int main() {
     printf("Madg Update: %u\n", DelayUtilElapsedUs(t3,t2));
     printf("Mah Update:  %u\n\n", DelayUtilElapsedUs(t4,t3));
 
-        printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
+    printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
     printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
     q = &(kmad.q);
     printf("\nMadg variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
+    MHelpers_QuaternionToEuler(q, &e);
+    printf("In Euler      : roll=%6.2f pitch=%6.2f yaw=%6.2f\n", e.pitch, e.roll, e.yaw);
     q = &(kmah.q);
     printf("\nMah  variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
-
+    MHelpers_QuaternionToEuler(q, &e);
+    printf("In Euler      : roll=%6.2f pitch=%6.2f yaw=%6.2f\n", e.pitch, e.roll, e.yaw);
   }
 
 

@@ -7,11 +7,12 @@ typedef struct EULER_ANGLES {
   float yaw;  // rotation about the Z-axis
 } EULER_ANGLES;
 
-typedef struct YAW_PITCH_ROLL_QUAT {
-  float alpha;
-  float beta_x;
-  float beta_y;
-  float beta_z;
+// quaternion of sensor frame relative to auxiliary frame
+typedef struct SENSOR_FRAME_QUAT {
+  float q0;
+  float q1;
+  float q2;
+  float q3;
 } YAW_PITCH_ROLL_QUAT;
 
 typedef struct ROTATION_AXIS {

@@ -16,19 +16,19 @@ Math lib for pic32 - http://tigcc.ticalc.org/doc/math.html
 Euler angles and quats - http://forum.onlineconversion.com/showthread.php?t=5408
 */
 
-void Tracking_ConvertDegreesToRPYQuat(float roll, float pitch, float yaw, YAW_PITCH_ROLL_QUAT *quat) {
+void MHelpers_ConvertDegreesToRPYQuat(float roll, float pitch, float yaw, YAW_PITCH_ROLL_QUAT *quat) {
   // Source: http://forum.onlineconversion.com/showthread.php?t=5408
   quat->alpha = 2 * acosf( cosf(roll / 2) * cosf(pitch / 2) * cosf(yaw / 2) + \
       sinf(roll / 2) * sinf(pitch / 2 ) * sinf(yaw / 2) );
   quat->beta_x = acosf( (sinf(roll / 2) * cosf(pitch / 2) * cosf(yaw/2) - \
-      cosf(roll / 2) * sinf(pitch / 2) * sinf(yaw / 2) ) / sinf(quat->alpha/2));
+      cosf(roll / 2) * sinf(pitch / 2) * sinf(yaw / 2) ) / sinf(quat->alpha / 2));
   quat->beta_y = acosf( (cosf(roll / 2) * sinf(pitch / 2) * cosf(yaw/2) + \
-      sinf(roll / 2) * cosf(pitch / 2) * sinf(yaw / 2) ) / sinf(quat->alpha/2));
+      sinf(roll / 2) * cosf(pitch / 2) * sinf(yaw / 2) ) / sinf(quat->alpha / 2));
   quat->beta_z = acosf( (cosf(roll / 2) * cosf(pitch / 2) * sinf(yaw / 2) - \
-      sinf(roll / 2) * sinf(pitch / 2) * cosf(yaw / 2) ) / sinf(quat->alpha/2));
+      sinf(roll / 2) * sinf(pitch / 2) * cosf(yaw / 2) ) / sinf(quat->alpha / 2));
 }
 
-void Tracking_FindRotationAxis(YAW_PITCH_ROLL_QUAT *quat, ROTATION_AXIS *axis) {
+void MHelpers_FindRotationAxis(YAW_PITCH_ROLL_QUAT *quat, ROTATION_AXIS *axis) {
   // Source: http://forum.onlineconversion.com/showthread.php?t=5408
   axis->axis_x = cosf(quat->beta_x);
   axis->axis_y = cosf(quat->beta_y);
@@ -37,7 +37,7 @@ void Tracking_FindRotationAxis(YAW_PITCH_ROLL_QUAT *quat, ROTATION_AXIS *axis) {
 
 
 
-float Tracking_FastInvSqrt(float x) {
+float MHelpers_FastInvSqrt(float x) {
   // Source: http://en.wikipedia.org/wiki/Fast_inverse_square_root
 	float halfx = 0.5f * x;
 	float y = x;
@@ -48,6 +48,6 @@ float Tracking_FastInvSqrt(float x) {
 	return y;
 }
 
-float Tracking_DegreesToRadians(float degrees) {
+float MHelpers_DegreesToRadians(float degrees) {
   return degrees * PI / 180;
 }

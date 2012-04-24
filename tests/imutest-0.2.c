@@ -28,7 +28,7 @@
 
 #define TEST_I2C_BUS_ID              I2C1
 #define TEST_I2C_BUS_SPEED           (100000)
-#define BAUDRATE 57600
+#define BAUDRATE 9600
 
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
@@ -76,7 +76,7 @@ int main() {
       putsUART2(CLEAR_VT);
       printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
       printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
-      DelayMs(200);
+      //DelayMs(200);
   }
   while(1);
   return 0;

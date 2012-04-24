@@ -2,7 +2,6 @@
 #include <plib.h>
 #include "imu.h"
 
-static imu_id IMU_ID = 0;     // Assign a unique ID to each imu that calls init
 static inline void ImuToggleSelector(imu_t* imu);
 
 /************************************************************************************************** 
@@ -124,9 +123,6 @@ IMU_RESULT ImuInit(imu_t *const p_imu,
   // Check if both succeeded in initializing
   if (accel_init_result == ACCEL_SUCCESS && gyro_init_result == GYRO_SUCCESS) {
     p_imu->isOn = TRUE;
-    // Assign the IMU an ID and increment the ID
-    p_imu->id = IMU_ID; // TODO if this does not work move responsibility to main program to initialize the ID
-    IMU_ID++;
 
     return IMU_SUCCESS;
   } else {
@@ -209,8 +205,14 @@ IMU_RESULT ImuUpdate(imu_t *const p_imu) {
   }
 }
 
+// TODO doc
+void ImuSetID(imu_t *const p_imu, const imu_id id) {
+    p_imu->id = id;
+}
+
+// TODO doc
 void ImuResetI2CBus(const imu_t *p_imu) {
-    I2CShared_ResetBus(p_imu->i2c_module);
+  I2CShared_ResetBus(p_imu->i2c_module);
 }
 
 /************************************************************************************************** 

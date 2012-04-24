@@ -6,6 +6,6 @@ BOOL I2CShared_WriteByte(const I2C_MODULE i2c, const UINT8 i2c_addr, const UINT8
 BOOL I2CShared_ReadByte(const I2C_MODULE i2c, UINT8 i2c_addr_write, const UINT8 i2c_addr_read, const UINT8 i2c_register, UINT8 *const buffer);
 BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_addr_write, const UINT8 i2c_addr_read, 
     const UINT8 i2c_register_start, const int nbytes, UINT8 *buffer);
-inline void I2CShared_ResetBus(const I2C_MODULE i2c);
+void I2CShared_ResetBus(const I2C_MODULE i2c);
 
 #endif

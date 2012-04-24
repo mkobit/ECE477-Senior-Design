@@ -592,6 +592,12 @@ static void I2CShared_DebugStatus(const I2C_MODULE i2c) {
     if (I2C_BYTE_ACKNOWLEDGED & status) printf("I2CShared_DebugStatus: I2C_BYTE_ACKNOWLEDGE, 0x%x\n", I2C_BYTE_ACKNOWLEDGED & status);
 }
 
-inline void I2CShared_ResetBus(I2C_MODULE i2c) {
-    I2CClearStatus(i2c, I2C_START | I2C_STOP | I2C_ARBITRATION_LOSS | I2C_BYTE_ACKNOWLEDGED);
+void I2CShared_ResetBus(const I2C_MODULE i2c) {
+  printf("Before reset:\n");
+  I2CShared_DebugStatus(i2c);
+  I2CClearStatus(i2c, I2C_TRANSMITTER_FULL | I2C_DATA_AVAILABLE | \
+  I2C_SLAVE_READ | I2C_START | I2C_STOP | I2C_SLAVE_DATA | I2C_RECEIVER_OVERFLOW | I2C_TRANSMITTER_OVERFLOW | \
+  I2C_10BIT_ADDRESS | I2C_GENERAL_CALL | I2C_ARBITRATION_LOSS | I2C_TRANSMITTER_BUSY | I2C_BYTE_ACKNOWLEDGED);
+  printf("After reset:\n");
+  I2CShared_DebugStatus(i2c);
 }

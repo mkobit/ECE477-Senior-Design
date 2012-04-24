@@ -11,6 +11,6 @@ void DelayS(const UINT s);
 void DelayMs(const UINT ms);
 void DelayUs(const UINT us);
 us_t DelayUtilGetUs(void);
-us_t DelayUtilElapsedUs(const us_t start, const us_t end);
+us_t DelayUtilElapsedUs(const us_t end, const us_t start);
 
 #endif

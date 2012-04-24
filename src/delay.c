@@ -214,7 +214,7 @@ us_t DelayUtilGetUs(void) {
 
 /************************************************************************************************** 
   Function: 
-    us_t DelayUtilElapsedUs(const us_t start, const us_t end)
+    us_t DelayUtilElapsedUs(const us_t end, const us_t start)
   
   Author(s): 
     mkobit
@@ -247,6 +247,6 @@ us_t DelayUtilGetUs(void) {
     None
   
 **************************************************************************************************/
-us_t DelayUtilElapsedUs(const us_t start, const us_t end) {
+us_t DelayUtilElapsedUs(const us_t end, const us_t start) {
   return end - start;
 }

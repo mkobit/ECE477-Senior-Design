@@ -14,7 +14,7 @@ volatile static float twoKi = TWOKIDEF;     // 2 * integral gain (Ki)
 
 /************************************************************************************************** 
   Function: 
-    void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE *const q, const float sampleFreq)
+    void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE_MADGWICK *const kmadg, const float sampleFreq)
   
   Author(s): 
     mkobit, taken from Source: http://www.x-io.co.uk/node/8#open_source_imu_and_ahrs_algorithms
@@ -31,7 +31,7 @@ volatile static float twoKi = TWOKIDEF;     // 2 * integral gain (Ki)
   
   Parameters: 
     const imu_t *const p_imu - pointer to the IMU updated to use for this Kalman state
-    KALMAN_STATE *const q - pointer to the kalman state to be updated 
+    KALMAN_STATE_MADGWICK *const kmadg - pointer to the kalman state to be updated
     const float sampleFreq - sample frequency in Hz
   
   Returns: 
@@ -47,10 +47,13 @@ volatile static float twoKi = TWOKIDEF;     // 2 * integral gain (Ki)
     Kalman updated to newest state
   
 **************************************************************************************************/
-void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE *const q, const float sampleFreq) {
+void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE_MADGWICK *const kmadg, const float sampleFreq) {
   // Local gyro and accel values
   float gx, gy, gz;
   float ax, ay, az;
+
+  // A local pointer to the quaternion
+  QUATERNION *q;
   
   // Store quaternion variables locally for readability
   float q0, q1, q2, q3;
@@ -72,10 +75,12 @@ void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE *const q, cons
   gz = MHelpers_DegreesToRadians(ImuGetGyroYaw(p_imu));
   
   // Store locally for readability
+  q = &kmadg->q;
   q0 = q->q0;
   q1 = q->q1;
   q2 = q->q2;
   q3 = q->q3;
+  
   
   // START MADGWICK KALMAN ALGORITHM
   // Rate of change of quaternion from gyroscope
@@ -146,7 +151,7 @@ void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE *const q, cons
 
 /************************************************************************************************** 
   Function: 
-    void Kalman_MadgwickInit(KALMAN_STATE *const q)
+    void Kalman_MadgwickInit(KALMAN_STATE_MADGWICK *const kmadg)
   
   Author(s): 
     mkobit, taken from Source: http://www.x-io.co.uk/node/8#open_source_imu_and_ahrs_algorithms
@@ -161,7 +166,7 @@ void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE *const q, cons
     None
   
   Parameters: 
-    KALMAN_STATE *const q - pointer to the kalman state to be initialized
+    KALMAN_STATE_MADGWICK *const kmadg - pointer to the kalman state to be initialized
   
   Returns: 
     void
@@ -176,9 +181,9 @@ void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE *const q, cons
     Kalman filter put into an initial state
   
 **************************************************************************************************/
-void Kalman_MadgwickInit(KALMAN_STATE *const q) {
+void Kalman_MadgwickInit(KALMAN_STATE_MADGWICK *const kmadg) {
   // Initilization taken from http://www.x-io.co.uk/node/8#open_source_imu_and_ahrs_algorithms
-  MHelpers_FillInQuat(1.0f, 0.0f, 0.0f, 0.0f, q);
+  MHelpers_FillInQuat(1.0f, 0.0f, 0.0f, 0.0f, &kmadg->q);
 }
 
 /************************************************************************************************** 
@@ -200,7 +205,7 @@ void Kalman_MadgwickInit(KALMAN_STATE *const q) {
   
   Parameters: 
     const imu_t *const p_imu - pointer to the IMU updated to use for this Kalman state
-    KALMAN_STATE *const q - pointer to the kalman state to be updated
+    KALMAN_STATE_MAHONY *const kmah - pointer to the kalman state to be updated
     const float sampleFreq - sample frequency in Hz
   
   Returns: 
@@ -216,12 +221,20 @@ void Kalman_MadgwickInit(KALMAN_STATE *const q) {
     Kalman updated to newest state
   
 **************************************************************************************************/
-void Kalman_MahonyUpdate(const imu_t *const p_imu, KALMAN_STATE *q, const float sampleFreq) {
+void Kalman_MahonyUpdate(const imu_t *const p_imu, KALMAN_STATE_MAHONY *const kmah, const float sampleFreq) {
   // Local gyro and accel values
   float gx, gy, gz;
   float ax, ay, az;
+
+  // Local pointer to the quaternion
+  QUATERNION *q;
+
+  // Local integral error terms scaled by Ki
+  float integralFBx;
+  float integralFBy;
+  float integralFBz;
   
-  // Store quaternion variables locally for readability
+  // Local quaternion variables for readability
   float q0, q1, q2, q3;
   
   // Variables used by Mahony Kalman algorithm
@@ -232,6 +245,7 @@ void Kalman_MahonyUpdate(const imu_t *const p_imu, KALMAN_STATE *q, const float 
   
   
   // Acquire the readings from the IMU
+
   // acceleration in terms of g's
   ax = ImuGetAccelX(p_imu);
   ay = ImuGetAccelY(p_imu);
@@ -240,8 +254,13 @@ void Kalman_MahonyUpdate(const imu_t *const p_imu, KALMAN_STATE *q, const float 
   gx = MHelpers_DegreesToRadians(ImuGetGyroRoll(p_imu));
   gy = MHelpers_DegreesToRadians(ImuGetGyroPitch(p_imu));
   gz = MHelpers_DegreesToRadians(ImuGetGyroYaw(p_imu));
-  
-  // Store locally for readability
+
+  // Store variables locally for readability
+  q = &kmah->q;
+  integralFBx = kmah->integralFBx;
+  integralFBy = kmah->integralFBy;
+  integralFBz = kmah->integralFBz;
+ 
   q0 = q->q0;
   q1 = q->q1;
   q2 = q->q2;
@@ -308,11 +327,16 @@ void Kalman_MahonyUpdate(const imu_t *const p_imu, KALMAN_STATE *q, const float 
   
   // Store variables back into state
   MHelpers_FillInQuat(q0, q1, q2, q3, q);
+
+  // Store integral feedbacks back into state
+  kmah->integralFBx = integralFBx;
+  kmah->integralFBy = integralFBy;
+  kmah->integralFBz = integralFBz;
 }
 
 /************************************************************************************************** 
   Function: 
-    void Kalman_MahonyInit(KALMAN_STATE *const q)
+    void Kalman_MahonyInit(KALMAN_STATE_MAHONY *const kmah)
   
   Author(s): 
     mkobit, taken from Source: http://www.x-io.co.uk/node/8#open_source_imu_and_ahrs_algorithms
@@ -327,7 +351,7 @@ void Kalman_MahonyUpdate(const imu_t *const p_imu, KALMAN_STATE *q, const float 
     None
   
   Parameters: 
-    KALMAN_STATE *const q - pointer to the kalman state to be initialized
+    KALMAN_STATE_MAHONY *const kmah - pointer to the kalman state to be initialized
   
   Returns: 
     void
@@ -342,7 +366,10 @@ void Kalman_MahonyUpdate(const imu_t *const p_imu, KALMAN_STATE *q, const float 
     Kalman filter put into an initial state
   
 **************************************************************************************************/
-void Kalman_MahonyInit(KALMAN_STATE *const q) {
+void Kalman_MahonyInit(KALMAN_STATE_MAHONY *const kmah) {
   // Initilization taken from http://www.x-io.co.uk/node/8#open_source_imu_and_ahrs_algorithms
-  MHelpers_FillInQuat(1.0f, 0.0f, 0.0f, 0.0f, q);
+  MHelpers_FillInQuat(1.0f, 0.0f, 0.0f, 0.0f, &kmah->q);
+  kmah->integralFBx = 0.0f;
+  kmah->integralFBy = 0.0f;
+  kmah->integralFBz = 0.0f;
 }

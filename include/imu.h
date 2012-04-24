@@ -24,7 +24,7 @@ typedef struct imu_t {
   imu_id id;
 } imu_t;
 
-IMU_RESULT ImuInit(imu_t *const imu, 
+IMU_RESULT ImuInit(imu_t *const p_imu,
           const I2C_MODULE i2c, 
           const UINT peripheral_clock_speed, 
           const UINT i2c_speed, 
@@ -34,9 +34,10 @@ IMU_RESULT ImuInit(imu_t *const imu,
           const UINT8 gyro_sample_rate_div, 
           const UINT8 gyro_power_mgmt_sel);
 IMU_RESULT ImuUpdate(imu_t *const p_imu);
-accel_raw_t *ImuGetRawAccel(const imu_t *const p_imu);
-gyro_raw_t *ImuGetRawGyro(const imu_t *const p_imu);
+accel_raw_t *ImuGetRawAccel(imu_t *const p_imu);
+gyro_raw_t *ImuGetRawGyro(imu_t *const p_imu);
 BOOL ImuIsOn(const imu_t *const p_imu);
+void ImuResetI2CBus(const imu_t *p_imu);
 float ImuGetGyroTemp(const imu_t *const p_imu);
 float ImuGetGyroX(const imu_t *const p_imu);       // X === Roll
 float ImuGetGyroY(const imu_t *const p_imu);       // Y === Pitch

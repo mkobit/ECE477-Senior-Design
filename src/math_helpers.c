@@ -288,5 +288,5 @@ float MHelpers_FastInvSqrt(const float x) {
   
 **************************************************************************************************/
 float MHelpers_DegreesToRadians(const float degrees) {
-  return degrees * (float) (PI / 180);
+  return degrees * (float) (PI / 180.0f);
 }

@@ -71,19 +71,19 @@ typedef enum {
 } GYRO_RESULT;
 
 typedef struct gyro_raw_t {
-  short int x;
-  short int y;
-  short int z;
-  short int temp;
+  INT16 x;
+  INT16 y;
+  INT16 z;
+  INT16 temp;
 } gyro_raw_t;
 
-GYRO_RESULT GyroInit(I2C_MODULE i2c, unsigned char dlpf_lpf, unsigned char sample_rate_div, unsigned char power_mgmt_sel);
-GYRO_RESULT GyroWrite(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char data);
-GYRO_RESULT GyroRead(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char *buffer);
-GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp);
-double GyroGetTemp(gyro_raw_t *raw);
-double GyroGetX(gyro_raw_t *raw);   // X === Roll
-double GyroGetY(gyro_raw_t *raw);   // Y === Pitch
-double GyroGetZ(gyro_raw_t *raw);   // Z === Yaw
+GYRO_RESULT GyroInit(const I2C_MODULE i2c, const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel);
+GYRO_RESULT GyroWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 data);
+GYRO_RESULT GyroRead(const I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *const buffer);
+GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_raw_t *const raw, const BOOL readTemp);
+float GyroGetTemp(const gyro_raw_t *const raw);
+float GyroGetX(const gyro_raw_t *const raw);   // X === Roll
+float GyroGetY(const gyro_raw_t *const raw);   // Y === Pitch
+float GyroGetZ(const gyro_raw_t *const raw);   // Z === Yaw
 
 #endif

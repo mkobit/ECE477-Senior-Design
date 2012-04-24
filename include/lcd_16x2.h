@@ -59,26 +59,26 @@ DDRAM Address:     40 41 42 43 44 45 46 47 48 49 4A 4B 4C 4D 4E 4F ... 67
 #define LINE_2 0x40
 
 
-void LcdInit(unsigned int rs, IoPortId rs_port,
-            unsigned int rw, IoPortId rw_port,
-            unsigned int en, IoPortId en_port,
-            unsigned int d0, IoPortId d0_port,
-            unsigned int d1, IoPortId d1_port,
-            unsigned int d2, IoPortId d2_port,
-            unsigned int d3, IoPortId d3_port,
-            unsigned int d4, IoPortId d4_port,
-            unsigned int d5, IoPortId d5_port,
-            unsigned int d6, IoPortId d6_port,
-            unsigned int d7, IoPortId d7_port,
-            unsigned char dots_display_control);
+void LcdInit(const UINT rs, const IoPortId rs_port,
+            const UINT rw, const IoPortId rw_port,
+            const UINT en, const IoPortId en_port,
+            const UINT d0, const IoPortId d0_port,
+            const UINT d1, const IoPortId d1_port,
+            const UINT d2, const IoPortId d2_port,
+            const UINT d3, const IoPortId d3_port,
+            const UINT d4, const IoPortId d4_port,
+            const UINT d5, const IoPortId d5_port,
+            const UINT d6, const IoPortId d6_port,
+            const UINT d7, const IoPortId d7_port,
+            const UINT8 dots_display_control);
 void LcdInstrClearDisplay();
 void LcdInstrReturnHome();
-void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_display); // TODO comeback to this
-void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_control, unsigned char cursor_blink_control);
-void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shift_direction);
-void LcdInstrSetCGRAMAddress(unsigned char address);
-void LcdInstrSetDDRAMAddress(unsigned char address);
-void LcdDisplayData(unsigned char *data);
-void LcdDisplayChar(unsigned char c);
+void LcdInstrSetEntryMode(const UINT8 ddram_address_gain, const UINT8 shift_display); // TODO comeback to this
+void LcdInstrSetDisplayMode(const UINT8 display_control, const UINT8 cursor_control, const UINT8 cursor_blink_control);
+void LcdInstrShiftCursorOrDisplay(const UINT8 shift_select, const UINT8 shift_direction);
+void LcdInstrSetCGRAMAddress(const UINT8 address);
+void LcdInstrSetDDRAMAddress(const UINT8 address);
+void LcdDisplayData(UINT8 *data);
+void LcdDisplayChar(const UINT8 c);
 
 #endif

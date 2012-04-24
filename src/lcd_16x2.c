@@ -4,33 +4,33 @@
 #include "delay.h"
 
 // Pin numbers
-static unsigned int _rs, _rw, _en;  
-static unsigned int _d0, _d1, _d2, _d3, _d4, _d5, _d6, _d7;
+static UINT _rs, _rw, _en;  
+static UINT _d0, _d1, _d2, _d3, _d4, _d5, _d6, _d7;
 
 // port IDs
 static IoPortId _rs_port, _rw_port, _en_port;  
 static IoPortId _d0_port, _d1_port, _d2_port, _d3_port, _d4_port, _d5_port, _d6_port, _d7_port;
 
 
-static void LcdSetOutputs(int rs, int rw, unsigned char c);
+static void LcdSetOutputs(const int rs, const int rw, const UINT8 c);
 static inline void LcdConfigAllAsOutputs();
 static void LcdToggleEnable();
-static void LcdSetDataOutputs(unsigned char data);
+static void LcdSetDataOutputs(const UINT8 data);
 
 /************************************************************************************************** 
   Function: 
-    void LcdInit(unsigned int rs, IoPortId rs_port,
-            unsigned int rw, IoPortId rw_port,
-            unsigned int en, IoPortId en_port,
-            unsigned int d0, IoPortId d0_port,
-            unsigned int d1, IoPortId d1_port,
-            unsigned int d2, IoPortId d2_port,
-            unsigned int d3, IoPortId d3_port,
-            unsigned int d4, IoPortId d4_port,
-            unsigned int d5, IoPortId d5_port,
-            unsigned int d6, IoPortId d6_port,
-            unsigned int d7, IoPortId d7_port,
-            unsigned char dots_display_control)
+    void LcdInit(const UINT rs, const IoPortId rs_port,
+        const UINT rw, const IoPortId rw_port,
+        const UINT en, const IoPortId en_port,
+        const UINT d0, const IoPortId d0_port,
+        const UINT d1, const IoPortId d1_port,
+        const UINT d2, const IoPortId d2_port,
+        const UINT d3, const IoPortId d3_port,
+        const UINT d4, const IoPortId d4_port,
+        const UINT d5, const IoPortId d5_port,
+        const UINT d6, const IoPortId d6_port,
+        const UINT d7, const IoPortId d7_port,
+        const UINT8 dots_display_control)
   
   Author(s):
     mkobit
@@ -46,29 +46,29 @@ static void LcdSetDataOutputs(unsigned char data);
     DelayInit called to setup Delay library. This is used for almost all functions, so it must be initialized.
   
   Parameters: 
-    unsigned int rs   - rs pin
-    IoPortId rs_port  - rs port
-    unsigned int rw   - rw pin
-    IoPortId rw_port  - rw port
-    unsigned int en   - en pin
-    IoPortId en_port  - en port
-    unsigned int d0   - data 0 pin
-    IoPortId d0_port  - data 0 port
-    unsigned int d1   - *
-    IoPortId d1_port  - *
-    unsigned int d2   - *
-    IoPortId d2_port  - *
-    unsigned int d3   - *
-    IoPortId d3_port  - *
-    unsigned int d4   - *
-    IoPortId d4_port  - *
-    unsigned int d5   - *
-    IoPortId d5_port  - *
-    unsigned int d6   - *
-    IoPortId d6_port  - *
-    unsigned int d7   - *
-    IoPortId d7_port  - *
-    unsigned char dots_display_control - constant from library to determine how many dots to display
+    const UINT rs   - rs pin
+    const IoPortId rs_port  - rs port
+    const UINT rw   - rw pin
+    const IoPortId rw_port  - rw port
+    const UINT en   - en pin
+    const IoPortId en_port  - en port
+    const UINT d0   - data 0 pin
+    const IoPortId d0_port  - data 0 port
+    const UINT d1   - *
+    const IoPortId d1_port  - *
+    const UINT d2   - *
+    const IoPortId d2_port  - *
+    const UINT d3   - *
+    const IoPortId d3_port  - *
+    const UINT d4   - *
+    const IoPortId d4_port  - *
+    const UINT d5   - *
+    const IoPortId d5_port  - *
+    const UINT d6   - *
+    const IoPortId d6_port  - *
+    const UINT d7   - *
+    const IoPortId d7_port  - *
+    const UINT8 dots_display_control - constant from library to determine how many dots to display
       LCD_DOTS_5x11
       LCD_DOTS_5x8
   
@@ -97,20 +97,20 @@ static void LcdSetDataOutputs(unsigned char data);
     Static variables set
   
 **************************************************************************************************/
-void LcdInit(unsigned int rs, IoPortId rs_port,
-            unsigned int rw, IoPortId rw_port,
-            unsigned int en, IoPortId en_port,
-            unsigned int d0, IoPortId d0_port,
-            unsigned int d1, IoPortId d1_port,
-            unsigned int d2, IoPortId d2_port,
-            unsigned int d3, IoPortId d3_port,
-            unsigned int d4, IoPortId d4_port,
-            unsigned int d5, IoPortId d5_port,
-            unsigned int d6, IoPortId d6_port,
-            unsigned int d7, IoPortId d7_port,
-            unsigned char dots_display_control) {
+void LcdInit(const UINT rs, const IoPortId rs_port,
+            const UINT rw, const IoPortId rw_port,
+            const UINT en, const IoPortId en_port,
+            const UINT d0, const IoPortId d0_port,
+            const UINT d1, const IoPortId d1_port,
+            const UINT d2, const IoPortId d2_port,
+            const UINT d3, const IoPortId d3_port,
+            const UINT d4, const IoPortId d4_port,
+            const UINT d5, const IoPortId d5_port,
+            const UINT d6, const IoPortId d6_port,
+            const UINT d7, const IoPortId d7_port,
+            const UINT8 dots_display_control) {
   
-  unsigned char disp_out;
+  UINT8 disp_out;
 
   _rs = rs;
   _rw = rw;
@@ -239,7 +239,7 @@ void LcdInstrReturnHome() {
 
 /************************************************************************************************** 
   Function: 
-    void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_display)
+    void LcdInstrSetEntryMode(const UINT8 ddram_address_gain, const UINT8 shift_display)
   
   Author(s):
     mkobit
@@ -255,10 +255,10 @@ void LcdInstrReturnHome() {
     None of the pins have been reconfigured or used for anything else
   
   Parameters: 
-    unsigned char ddram_address_gain - movement direction of DDRAM on read/write
+    const UINT8 ddram_address_gain - movement direction of DDRAM on read/write
       LCD_DDRAM_ADDRESS_INCR - increments DDRAM
       LCD_DDRAM_ADDRESS_DECR - decrements DDRAM
-    unsigned char shift_display - shifts entire screen on read/write according to (ddram_address_gain)
+    const UINT8 shift_display - shifts entire screen on read/write according to (ddram_address_gain)
       LCD_SHIFT_DISPLAY_ON    - shifts display left when (ddram_address_gain) is LCD_DDRAM_ADDRESS_INCR, shifts display right when 0 or LCD_DDRAM_ADDRESS_DECR
       LCD_SHIFT_DISPLAY_OFF   - do not shift display
 
@@ -274,8 +274,8 @@ void LcdInstrReturnHome() {
     Entry mode of the LCD is set to shift when data is written/read
   
 **************************************************************************************************/
-void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_display) {
-  unsigned char disp_out;
+void LcdInstrSetEntryMode(const UINT8 ddram_address_gain, const UINT8 shift_display) {
+  UINT8 disp_out;
   disp_out = 0x04 | ddram_address_gain | shift_display;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdToggleEnable();
@@ -284,7 +284,7 @@ void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_
 
 /************************************************************************************************** 
   Function: 
-    void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_control, unsigned char cursor_blink_control)
+    void LcdInstrSetDisplayMode(const UINT8 display_control, const UINT8 cursor_control, const UINT8 cursor_blink_control)
   
   Author(s):
     mkobit
@@ -300,13 +300,13 @@ void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_
     None of the pins have been reconfigured or used for anything else
   
   Parameters: 
-    unsigned char display_control - turn display on/off
+    const UINT8 display_control - turn display on/off
       LCD_DISPLAY_ON
       LCD_DISPLAY_OFF
-    unsigned char cursor_control - turn on/off cursor
+    const UINT8 cursor_control - turn on/off cursor
       LCD_CURSOR_ON
       LCD_CURSOR_OFF
-    unsigned char cursor_blink_control - turn on/off cursor blinking
+    const UINT8 cursor_blink_control - turn on/off cursor blinking
       LCD_CURSOR_BLINK_ON
       LCD_CURSOR_BLINK_OFF
   
@@ -322,8 +322,8 @@ void LcdInstrSetEntryMode(unsigned char ddram_address_gain, unsigned char shift_
     All display options set as per what the description and parameter states
   
 **************************************************************************************************/
-void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_control, unsigned char cursor_blink_control) {
-  unsigned char disp_out;
+void LcdInstrSetDisplayMode(const UINT8 display_control, const UINT8 cursor_control, const UINT8 cursor_blink_control) {
+  UINT8 disp_out;
   disp_out = 0x08 | display_control | cursor_control | cursor_blink_control;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdToggleEnable();
@@ -332,7 +332,7 @@ void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_
 
 /************************************************************************************************** 
   Function: 
-    void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shift_direction)
+    void LcdInstrShiftCursorOrDisplay(const UINT8 shift_select, const UINT8 shift_direction)
   
   Author(s):
     mkobit
@@ -348,10 +348,10 @@ void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_
     None of the pins have been reconfigured or used for anything else
   
   Parameters: 
-    unsigned char shift_select  - shift display/cursor
+    const UINT8 shift_select  - shift display/cursor
       LCD_SHIFT_SELECT_DISPLAY - shifts display, cursor follows shift
       LCD_SHIFT_SELECT_CURSOR
-    unsigned char shift_direction - direction to shift cursor/display
+    const UINT8 shift_direction - direction to shift cursor/display
       LCD_SHIFT_DIRECTION_RIGHT
       LCD_SHIFT_DIRECTION_LEFT
       
@@ -367,8 +367,8 @@ void LcdInstrSetDisplayMode(unsigned char display_control, unsigned char cursor_
     Shifts LCD/cursor in a certain direction
   
 **************************************************************************************************/
-void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shift_direction) {
-  unsigned char disp_out;
+void LcdInstrShiftCursorOrDisplay(UINT8 shift_select, UINT8 shift_direction) {
+  UINT8 disp_out;
   disp_out = 0x10 | shift_select | shift_direction;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdToggleEnable();
@@ -377,7 +377,7 @@ void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shif
 
 /************************************************************************************************** 
   Function: 
-    void LcdInstrSetCGRAMAddress(unsigned char address)
+    void LcdInstrSetCGRAMAddress(const UINT8 address)
   
   Author(s):
     mkobit
@@ -393,7 +393,7 @@ void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shif
     None of the pins have been reconfigured or used for anything else
   
   Parameters: 
-    unsigned char address - address for the CGRAM to be changed to
+    const UINT8 address - address for the CGRAM to be changed to
   
   Returns: 
     void
@@ -407,8 +407,8 @@ void LcdInstrShiftCursorOrDisplay(unsigned char shift_select, unsigned char shif
     LCD CGRAM address set to (address)
   
 **************************************************************************************************/
-void LcdInstrSetCGRAMAddress(unsigned char address) {
-  unsigned char disp_out;
+void LcdInstrSetCGRAMAddress(const UINT8 address) {
+  UINT8 disp_out;
   disp_out = address & LCD_CGRAM_MASK;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdToggleEnable();
@@ -417,7 +417,7 @@ void LcdInstrSetCGRAMAddress(unsigned char address) {
 
 /************************************************************************************************** 
   Function: 
-    void LcdInstrSetDDRAMAddress(unsigned char address)
+    void LcdInstrSetDDRAMAddress(const UINT8 address)
   
   Author(s):
     mkobit
@@ -433,7 +433,7 @@ void LcdInstrSetCGRAMAddress(unsigned char address) {
     None of the pins have been reconfigured or used for anything else
   
   Parameters: 
-    unsigned char address - address for the DDRAM to be changed to
+    const UINT8 address - address for the DDRAM to be changed to
   
   Returns: 
     void
@@ -450,8 +450,8 @@ void LcdInstrSetCGRAMAddress(unsigned char address) {
     4/17/12 - There is no protection guaranteed here from trying to set the address to some place that is out of bounds. User's responsibility for now
   
 **************************************************************************************************/
-void LcdInstrSetDDRAMAddress(unsigned char address) {
-  unsigned char disp_out;
+void LcdInstrSetDDRAMAddress(const UINT8 address) {
+  UINT8 disp_out;
   disp_out = address & LCD_DDRAM_MASK | 0x80;
   LcdSetOutputs(LCD_INSTR, LCD_WRITE, disp_out);
   LcdToggleEnable();
@@ -460,7 +460,7 @@ void LcdInstrSetDDRAMAddress(unsigned char address) {
 
 /************************************************************************************************** 
   Function: 
-    static void LcdSetDataOutputs(unsigned char data)
+    static void LcdSetDataOutputs(const UINT8 data)
   
   Author(s):
     mkobit
@@ -477,7 +477,7 @@ void LcdInstrSetDDRAMAddress(unsigned char address) {
     Static function, used by internal library
   
   Parameters: 
-    unsigned char data - character data to be used to set/clear digital output pins
+    const UINT8 data - character data to be used to set/clear digital output pins
   
   Returns: 
     void
@@ -492,7 +492,7 @@ void LcdInstrSetDDRAMAddress(unsigned char address) {
     (d0-d7) set/cleared based on input
   
 **************************************************************************************************/
-static void LcdSetDataOutputs(unsigned char data) {
+static void LcdSetDataOutputs(const UINT8 data) {
   // set each output pin or clear it
   data & 0x80 ? PORTSetBits(_d7_port, _d7) : PORTClearBits(_d7_port, _d7);
   data & 0x40 ? PORTSetBits(_d6_port, _d6) : PORTClearBits(_d6_port, _d6);
@@ -506,7 +506,7 @@ static void LcdSetDataOutputs(unsigned char data) {
 
 /************************************************************************************************** 
   Function: 
-    void LcdDisplayData(unsigned char *data)
+    void LcdDisplayData(UINT8 *data)
   
   Author(s):
     mkobit
@@ -522,7 +522,7 @@ static void LcdSetDataOutputs(unsigned char data) {
     None of the pins have been reconfigured or used for anything else
   
   Parameters: 
-    unsigned char *data
+    UINT8 *data
   
   Returns: 
     void
@@ -540,7 +540,7 @@ static void LcdSetDataOutputs(unsigned char data) {
     4/17/12 - It is the user's responsibility to make sure that the string is well formed
     
 **************************************************************************************************/
-void LcdDisplayData(unsigned char *data) {
+void LcdDisplayData(UINT8 *data) {
   while(*data) {
     switch (*data)
     {
@@ -563,7 +563,7 @@ void LcdDisplayData(unsigned char *data) {
 
 /************************************************************************************************** 
   Function: 
-    void LcdDisplayChar(unsigned char c)
+    void LcdDisplayChar(const UINT8 c)
   
   Author(s):
     mkobit
@@ -579,7 +579,7 @@ void LcdDisplayData(unsigned char *data) {
     None of the pins have been reconfigured or used for anything else
   
   Parameters: 
-    unsigned char c - character to write to the LCD
+    const UINT8 c - character to write to the LCD
   
   Returns: 
     void
@@ -594,7 +594,7 @@ void LcdDisplayData(unsigned char *data) {
     DDRAM of LCD increased by 1
   
 **************************************************************************************************/
-void LcdDisplayChar(unsigned char c) {
+void LcdDisplayChar(const UINT8 c) {
   LcdSetOutputs(LCD_DATA, LCD_WRITE, c);  // this requires delay
   LcdToggleEnable();
   DelayUs(50);// 43 us + 15%
@@ -602,7 +602,7 @@ void LcdDisplayChar(unsigned char c) {
 
 /************************************************************************************************** 
   Function: 
-    static void LcdSetOutputs(int rs, int rw, unsigned char c)
+    static void LcdSetOutputs(const int rs, const int rw, const UINT8 c)
   
   Author(s):
     mkobit
@@ -618,9 +618,9 @@ void LcdDisplayChar(unsigned char c) {
     None of the pins have been reconfigured or used for anything else
   
   Parameters: 
-    int rs - if register select should be enabled
-    int rw - if rw should be enabled 
-    unsigned char c - character to be written to LCD
+    const int rs - if register select should be enabled
+    const int rw - if rw should be enabled 
+    const UINT8 c - character to be written to LCD
   
   Returns: 
     void
@@ -634,7 +634,7 @@ void LcdDisplayChar(unsigned char c) {
     Digital output pins set/cleared for rs, rw, and d0-d7
   
 **************************************************************************************************/
-static void LcdSetOutputs(int rs, int rw, unsigned char c) {
+static void LcdSetOutputs(const int rs, const int rw, const UINT8 c) {
   rs ? PORTSetBits(_rs_port, _rs) : PORTClearBits(_rs_port, _rs);
   rw ? PORTSetBits(_rw_port, _rw) : PORTClearBits(_rw_port, _rw);
   LcdSetDataOutputs(c);

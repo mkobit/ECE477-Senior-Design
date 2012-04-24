@@ -2,13 +2,13 @@
 #include <plib.h>
 #include "delay.h"
 
-static unsigned int _core_hz;
-static unsigned int _core_ticks_in_us;  // stored locally so that these delays will be more accurate
-static unsigned int _core_ticks_in_ms;
+static UINT _core_hz;
+static UINT _core_ticks_in_us;  // stored locally so that these delays will be more accurate
+static UINT _core_ticks_in_ms;
 
 /************************************************************************************************** 
   Function: 
-    void DelayInit(unsigned int clock_hz)
+    void DelayInit(const UINT clock_hz)
   
   Author(s): 
     mkobit
@@ -23,7 +23,7 @@ static unsigned int _core_ticks_in_ms;
     Core timer configured
   
   Parameters: 
-    unsigned int clock_hz - clock speed of microcontroller
+    const UINT clock_hz - clock speed of microcontroller
   
   Returns: 
     void
@@ -37,7 +37,7 @@ static unsigned int _core_ticks_in_ms;
     Core timer reset, internal static variables set
   
 **************************************************************************************************/
-void DelayInit(unsigned int clock_hz) {
+void DelayInit(const UINT clock_hz) {
   _core_hz = clock_hz / 2;  // runs at half-speed of system clock
   _core_ticks_in_us = DELAY_US_TO_CT_TICKS(_core_hz);
   _core_ticks_in_ms = DELAY_MS_TO_CT_TICKS(_core_hz);
@@ -46,7 +46,7 @@ void DelayInit(unsigned int clock_hz) {
 
 /************************************************************************************************** 
   Function: 
-    void DelayS(unsigned int s)
+    void DelayS(const UINT s)
   
   Author(s): 
     mkobit
@@ -61,7 +61,7 @@ void DelayInit(unsigned int clock_hz) {
     DelayInit called previously, core timer configured
   
   Parameters: 
-    unsigned int s - seconds to delay: should not be an excessively high number
+    const UINT s - seconds to delay: should not be an excessively high number
   
   Returns: 
     void
@@ -73,10 +73,10 @@ void DelayInit(unsigned int clock_hz) {
     Core timer overwritten to 0 before delay, could be any number after
   
 **************************************************************************************************/
-void DelayS(unsigned int s) {
-  unsigned int start;
-  unsigned int ticks_to_wait;
-  unsigned int core_time;
+void DelayS(const UINT s) {
+  UINT start;
+  UINT ticks_to_wait;
+  UINT core_time;
 
   ticks_to_wait = s * _core_hz;
   WriteCoreTimer(0);  // clear timer
@@ -88,7 +88,7 @@ void DelayS(unsigned int s) {
 
 /************************************************************************************************** 
   Function: 
-    void DelayMs(unsigned int ms)
+    void DelayMs(const UINT ms)
   
   Author(s): 
     mkobit
@@ -103,7 +103,7 @@ void DelayS(unsigned int s) {
     DelayInit called previously, core timer configured
   
   Parameters: 
-    unsigned int ms - milliseconds to delay
+    const UINT ms - milliseconds to delay
   
   Returns: 
     void
@@ -117,10 +117,10 @@ void DelayS(unsigned int s) {
     None
   
 **************************************************************************************************/
-void DelayMs(unsigned int ms) {
-  unsigned int start;
-  unsigned int ticks_to_wait;
-  unsigned int core_time;
+void DelayMs(const UINT ms) {
+  UINT start;
+  UINT ticks_to_wait;
+  UINT core_time;
 
   ticks_to_wait = ms * _core_ticks_in_ms;
   //WriteCoreTimer(0);  // clear timer
@@ -128,12 +128,12 @@ void DelayMs(unsigned int ms) {
   do {
     core_time = ReadCoreTimer();
   } while((core_time - start) < ticks_to_wait);
-  //while ((unsigned int) (ReadCoreTimer() - start) < ticks_to_wait) {};
+  //while ((UINT) (ReadCoreTimer() - start) < ticks_to_wait) {};
 }
 
 /************************************************************************************************** 
   Function: 
-    void DelayUs(unsigned int us)
+    void DelayUs(const UINT us)
   
   Author(s): 
     mkobit
@@ -148,7 +148,7 @@ void DelayMs(unsigned int ms) {
     DelayInit called previously, core timer configured
   
   Parameters: 
-    unsigned int us - milliseconds to delay
+    const UINT us - milliseconds to delay
   
   Returns: 
     void
@@ -162,10 +162,10 @@ void DelayMs(unsigned int ms) {
     None
   
 **************************************************************************************************/
-void DelayUs(unsigned int us) {
-  unsigned int start;
-  unsigned int ticks_to_wait;
-  unsigned int core_time;
+void DelayUs(const UINT us) {
+  UINT start;
+  UINT ticks_to_wait;
+  UINT core_time;
 
   ticks_to_wait = us * _core_ticks_in_us;
   //WriteCoreTimer(0);  // clear timer
@@ -214,7 +214,7 @@ us_t DelayUtilGetUs(void) {
 
 /************************************************************************************************** 
   Function: 
-    us_t DelayUtilElapsedUs(us_t start, us_t end)
+    us_t DelayUtilElapsedUs(const us_t start, const us_t end)
   
   Author(s): 
     mkobit
@@ -230,8 +230,8 @@ us_t DelayUtilGetUs(void) {
     Must not have been an excessive amount of time in between start and end that results in an overlap
   
   Parameters: 
-    us_t start - start time in microseconds
-    us_t end - end time in microseconds
+    const us_t start - start time in microseconds
+    const us_t end - end time in microseconds
   
   Returns: 
     unsigned int elapsedUs - us between start and end
@@ -247,6 +247,6 @@ us_t DelayUtilGetUs(void) {
     None
   
 **************************************************************************************************/
-unsigned int DelayUtilElapsedUs(us_t start, us_t end) {
+us_t DelayUtilElapsedUs(const us_t start, const us_t end) {
   return end - start;
 }

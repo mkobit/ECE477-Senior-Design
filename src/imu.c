@@ -10,7 +10,7 @@ static inline void ImuToggleSelector(imu_t* imu);
           const I2C_MODULE i2c,
           const UINT peripheral_clock_speed, 
           const UINT i2c_speed, 
-          const UINT8 accel_resolution,
+          const UINT8 accel_range,
           const UINT8 accel_bandwidth,
           const UINT8 gyro_dlpf_lpf,
           const UINT8 gyro_sample_rate_div,

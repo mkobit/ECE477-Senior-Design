@@ -44,7 +44,13 @@
 #define ID_HAND 2
 #define I2C_HAND I2C3
 // I2C bus frequency to communicate with IMUs
-#define I2C_FREQUENCY 400000
+#define I2C_FREQ 400000
+// IMU acceleration and gyroscope settings being used
+#define ACC_RANG ACCEL_RANGE_4G         // accelerometer range
+#define ACC_BW ACCEL_BW_100             // accelerometer bandwidth
+#define GYR_DLPF GYRO_DLPF_LPF_42HZ     // gyro digital low pass filter setting
+#define GYR_SAMP_DIV 9                  // sample divider being used
+#define GYR_POW_SEL GYRO_PWR_MGM_CLK_SEL_X  // gyro clock selector
 
 /* BATTERY MONITOR DEFINES AND CONSTANTS */
 // *not incorporated
@@ -54,8 +60,7 @@
 
 /* LCD DEFINES AND CONSTANTS */
 #define LCD_INPUTS 11
-
-// Settings
+// Settings that are being used
 #define CURSOR_VAL LCD_CURSOR_OFF
 #define CURSOR_BLINK LCD_CURSOR_BLINK_OFF
 
@@ -87,6 +92,7 @@ LCD_PAIR lcd_pairs[LCD_INPUTS] = {  // TODO fix these for the actual project
     {BIT_14, IOPORT_G}, \
     {BIT_4, IOPORT_C}};
 
+
 // Pins and ports used for button reset TODO
 
 
@@ -95,11 +101,20 @@ BOOL ButtonReset();
 void UpdateLCDStatus(int signalPercent, int batteryPercent);
 
 int main() {
+  // IMUs to be used
   imu_t imu_upper_arm;
   imu_t imu_fore_arm;
   imu_t imu_hand;
-  unsigned int pbFreq;  // peripheral bus frequency
 
+  unsigned int pbFreq;  // Peripheral bus frequency
+
+  // Assign pointers to each IMU for readability and faster access
+  imu_t *const p_up_arm = &imu_upper_arm;
+  imu_t *const p_fore_arm = &imu_fore_arm;
+  imu_t *const p_hand = &imu_hand;
+
+  // Result variables to keep track
+  IMU_RESULT imu_res;
 
   // Initialize components needed
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
@@ -126,6 +141,13 @@ int main() {
 
   // Initialize IMUs
   // Set IMU IDs
+  ImuSetID(p_up_arm, ID_UPPER_ARM);
+  ImuSetID(p_fore_arm, ID_FORE_ARM);
+  ImuSetID(p_hand, ID_HAND);
+  // Initialize IMUs
+  imu_res = ImuInit(p_up_arm, I2C_UPPER_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
+  // TODO other imu results and also a printout for IMUs that fail and/or successful
+
 
 
   

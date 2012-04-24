@@ -24,25 +24,25 @@ typedef struct imu_t {
   imu_id id;
 } imu_t;
 
-IMU_RESULT ImuInit(imu_t* imu, 
-          I2C_MODULE i2c, 
-          UINT peripheral_clock_speed, 
-          UINT i2c_speed, 
-          UINT8 accel_range,
-          UINT8 accel_bandwidth,
-          UINT8 gyro_dlpf_lpf,
-          UINT8 gyro_sample_rate_div, 
-          UINT8 gyro_power_mgmt_sel);
-IMU_RESULT ImuUpdate(imu_t *p_imu);
-accel_raw_t *ImuGetRawAccel(imu_t *p_imu);
-gyro_raw_t *ImuGetRawGyro(imu_t *p_imu);
-BOOL ImuIsOn(imu_t *p_imu);
-float ImuGetGyroTemp(imu_t *p_imu);
-float ImuGetGyroX(imu_t *p_imu);       // X === Roll
-float ImuGetGyroY(imu_t *p_imu);       // Y === Pitch
-float ImuGetGyroZ(imu_t *p_imu);       // Z === Yaw
-float ImuGetAccelX(imu_t *p_imu);
-float ImuGetAccelY(imu_t *p_imu);
-float ImuGetAccelZ(imu_t *p_imu);
+IMU_RESULT ImuInit(imu_t *const imu, 
+          const I2C_MODULE i2c, 
+          const UINT peripheral_clock_speed, 
+          const UINT i2c_speed, 
+          const UINT8 accel_range,
+          const UINT8 accel_bandwidth,
+          const UINT8 gyro_dlpf_lpf,
+          const UINT8 gyro_sample_rate_div, 
+          const UINT8 gyro_power_mgmt_sel);
+IMU_RESULT ImuUpdate(imu_t *const p_imu);
+accel_raw_t *ImuGetRawAccel(const imu_t *const p_imu);
+gyro_raw_t *ImuGetRawGyro(const imu_t *const p_imu);
+BOOL ImuIsOn(const imu_t *const p_imu);
+float ImuGetGyroTemp(const imu_t *const p_imu);
+float ImuGetGyroX(const imu_t *const p_imu);       // X === Roll
+float ImuGetGyroY(const imu_t *const p_imu);       // Y === Pitch
+float ImuGetGyroZ(const imu_t *const p_imu);       // Z === Yaw
+float ImuGetAccelX(const imu_t *const p_imu);
+float ImuGetAccelY(const imu_t *const p_imu);
+float ImuGetAccelZ(const imu_t *const p_imu);
 
 #endif

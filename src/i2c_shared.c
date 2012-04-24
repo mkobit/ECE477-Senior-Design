@@ -3,15 +3,15 @@
 #include <stdio.h>
 #include "i2c_shared.h"
 
-static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, BYTE data);
-static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart);
-static void I2CShared_StopTransfer(I2C_MODULE i2c);
+static BOOL I2CShared_TransmitOneByte(const I2C_MODULE i2c, const UINT8 data);
+static BOOL I2CShared_StartTransfer(const I2C_MODULE i2c, const BOOL restart);
+static void I2CShared_StopTransfer(const I2C_MODULE i2c);
 
-static void I2CShared_DebugStatus(I2C_MODULE i2c);
+static void I2CShared_DebugStatus(const I2C_MODULE i2c);
 
 /************************************************************************************************** 
   Function: 
-    BOOL I2CShared_Init(I2C_MODULE i2c, UINT peripheral_clock_speed, UINT i2c_speed)
+    BOOL I2CShared_Init(const I2C_MODULE i2c, const UINT peripheral_clock_speed, const UINT i2c_speed)
   
   Authors(s):
     mkobit
@@ -26,9 +26,9 @@ static void I2CShared_DebugStatus(I2C_MODULE i2c);
     I2C ports not being used for anything
   
   Parameters: 
-    I2C_MODULE i2c - I2C module to be used for initialization
-    UINT peripheral_clock_speed - clock speed of peripheral bus
-    UINT i2c_speed - target speed of I2C module
+    const I2C_MODULE i2c - I2C module to be used for initialization
+    const UINT peripheral_clock_speed - clock speed of peripheral bus
+    const UINT i2c_speed - target speed of I2C module
   
   Returns: 
     TRUE - successfully enabled I2C on this module
@@ -43,7 +43,7 @@ static void I2CShared_DebugStatus(I2C_MODULE i2c);
     I2C module (i2c) configured for use as an I2C bus
   
 **************************************************************************************************/
-BOOL I2CShared_Init(I2C_MODULE i2c, UINT peripheral_clock_speed, UINT i2c_speed) {
+BOOL I2CShared_Init(const I2C_MODULE i2c, const UINT peripheral_clock_speed, const UINT i2c_speed) {
   UINT actualClock;
   
   I2CConfigure(i2c, I2C_ENABLE_HIGH_SPEED);
@@ -68,7 +68,7 @@ BOOL I2CShared_Init(I2C_MODULE i2c, UINT peripheral_clock_speed, UINT i2c_speed)
 
 /************************************************************************************************** 
   Function: 
-    static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart)
+    static BOOL I2CShared_StartTransfer(const I2C_MODULE i2c, const BOOL restart)
   
   Author(s):
     mkobit
@@ -85,8 +85,8 @@ BOOL I2CShared_Init(I2C_MODULE i2c, UINT peripheral_clock_speed, UINT i2c_speed)
     *Transaction started  - *only if (restart) is TRUE
   
   Parameters: 
-    I2C_MODULE i2c - I2C module to be used for this transaction
-    BOOL restart - restart transaction when TRUE, just start when FALSE
+    const I2C_MODULE i2c - I2C module to be used for this transaction
+    const BOOL restart - restart transaction when TRUE, just start when FALSE
   
   Returns: 
     TRUE - If successful
@@ -102,7 +102,7 @@ BOOL I2CShared_Init(I2C_MODULE i2c, UINT peripheral_clock_speed, UINT i2c_speed)
     I2C waiting for next action
   
 **************************************************************************************************/
-static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart) {
+static BOOL I2CShared_StartTransfer(const I2C_MODULE i2c, const BOOL restart) {
   I2C_STATUS status;
 
   // Send the start/restart signal
@@ -142,7 +142,7 @@ return TRUE;
 
 /************************************************************************************************** 
   Function: 
-    static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, UINT8 data)
+    static BOOL I2CShared_TransmitOneByte(const I2C_MODULE i2c, const UINT8 data)
     
   Author(s): 
     mkobit
@@ -159,8 +159,8 @@ return TRUE;
     I2C module configured
   
   Parameters: 
-    I2C_MODULE i2c - I2C module to be used for this transaction
-    UINT8 data - to be transmitted
+    const I2C_MODULE i2c - I2C module to be used for this transaction
+    const UINT8 data - to be transmitted
   
   Returns: 
     TRUE - If successful
@@ -176,7 +176,7 @@ return TRUE;
     I2C bus waiting for next action
   
 **************************************************************************************************/
-static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, UINT8 data) {
+static BOOL I2CShared_TransmitOneByte(const I2C_MODULE i2c, const UINT8 data) {
 
     // Wait for the transmitter to be ready
     while(!I2CTransmitterIsReady(i2c));
@@ -206,7 +206,7 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, UINT8 data) {
 
 /************************************************************************************************** 
   Function: 
-    BOOL I2CShared_WriteByte(I2C_MODULE i2c, UINT8 i2c_addr, UINT8 i2c_register, UINT8 data)
+    BOOL I2CShared_WriteByte(const I2C_MODULE i2c, const UINT8 i2c_addr, const UINT8 i2c_register, const UINT8 data)
   
   Author(s):
     mkobit
@@ -221,10 +221,10 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, UINT8 data) {
     I2C module configured
   
   Parameters: 
-    I2C_MODULE i2c - I2C module to be used for this transaction
-    UINT8 i2c_addr - write address of I2C device
-    UINT8 i2c_register - I2C register to write to
-    UINT8 data - data to be written
+    const I2C_MODULE i2c - I2C module to be used for this transaction
+    const UINT8 i2c_addr - write address of I2C device
+    const UINT8 i2c_register - I2C register to write to
+    const UINT8 data - data to be written
   
   Returns: 
     TRUE - write succesful
@@ -240,7 +240,7 @@ static BOOL I2CShared_TransmitOneByte(I2C_MODULE i2c, UINT8 data) {
     
   
 **************************************************************************************************/
-BOOL I2CShared_WriteByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_register, UINT8 data) {
+BOOL I2CShared_WriteByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const UINT8 i2c_register, const UINT8 data) {
 
   // Wait until bus is open
   //while(!I2CBusIsIdle(i2c));
@@ -285,7 +285,7 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_registe
 
 /************************************************************************************************** 
   Function:
-    BOOL I2CShared_ReadByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_read_addr, UINT8 i2c_register, char *buffer)
+    BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const UINT8 i2c_read_addr, const UINT8 i2c_register, UINT8 *const buffer)
 
   Author(s): 
     mkobit
@@ -301,11 +301,11 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_registe
     I2C module configured
   
   Parameters: 
-    I2C_MODULE i2c - I2C module to be used for this transaction
-    UINT8 i2c_write_addr - write address of I2C device
-    UINT8 i2c_read_addr - read address of I2C device
-    UINT8 i2c_register - I2C register to read from
-    UINT8 *buffer - buffer to place read byte into
+    const I2C_MODULE i2c - I2C module to be used for this transaction
+    const UINT8 i2c_write_addr - write address of I2C device
+    const UINT8 i2c_read_addr - read address of I2C device
+    const UINT8 i2c_register - I2C register to read from
+    UINT8 *const buffer - buffer to place read byte into
   
   Returns: 
     TRUE - read succesful
@@ -322,7 +322,7 @@ BOOL I2CShared_WriteByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_registe
     I2C bus idle
   
 **************************************************************************************************/
-BOOL I2CShared_ReadByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_read_addr, UINT8 i2c_register, UINT8 *buffer) {
+BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const UINT8 i2c_read_addr, const UINT8 i2c_register, UINT8 *const buffer) {
 
   // Wait until bus is idle
   //while(!I2CBusIsIdle(i2c));
@@ -383,7 +383,8 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_read_add
 
 /************************************************************************************************** 
   Function:
-    BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_read_addr, UINT8 i2c_register_start, int nbytes, UINT8 *buffer)
+    BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const UINT8 i2c_read_addr, 
+        const UINT8 i2c_register_start, const int nbytes, UINT8 *buffer)
 
   Author(s):
     mkobit
@@ -399,12 +400,12 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_read_add
     I2C module configured
 
   Parameters:
-    I2C_MODULE i2c - I2C module to be used for this transaction
-    UINT8 i2c_write_addr - write address of I2C device
-    UINT8 i2c_read_addr - read address of I2C device
-    UINT8 i2c_register_start - I2C register to begin reading from
-    int nbytes - how many bytes to be read
-    UINT8 *buffer - buffer to place read bytes
+    const I2C_MODULE i2c - I2C module to be used for this transaction
+    const UINT8 i2c_write_addr - write address of I2C device
+    const UINT8 i2c_read_addr - read address of I2C device
+    const UINT8 i2c_register_start - I2C register to begin reading from
+    const int nbytes - how many bytes to be read
+    UINT8 *const buffer - buffer to place read bytes
 
   Returns:
     TRUE - reads were successful
@@ -421,7 +422,8 @@ BOOL I2CShared_ReadByte(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_read_add
     I2C bus idle
 
 **************************************************************************************************/
-BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c_read_addr, UINT8 i2c_register_start, int nbytes, UINT8 *buffer) {
+BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const UINT8 i2c_read_addr, 
+    const UINT8 i2c_register_start, const int nbytes, UINT8 *buffer) {
   int i;
   UINT8 temp;
 
@@ -498,7 +500,7 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c
 
 /************************************************************************************************** 
   Function:
-    void I2CShared_StopTransfer(I2C_MODULE i2c)
+    void I2CShared_StopTransfer(const I2C_MODULE i2c)
 
   Author(s):
     mkobit
@@ -514,7 +516,7 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c
     I2C module configured
 
   Parameters:
-    I2C_MODULE i2c - I2C module to be used for this transaction
+    const I2C_MODULE i2c - I2C module to be used for this transaction
 
   Returns:
     void
@@ -528,7 +530,7 @@ BOOL I2CShared_ReadMultipleBytes(I2C_MODULE i2c, UINT8 i2c_write_addr, UINT8 i2c
     I2C bus idle
 
 **************************************************************************************************/
-static void I2CShared_StopTransfer(I2C_MODULE i2c) {
+static void I2CShared_StopTransfer(const I2C_MODULE i2c) {
   I2C_STATUS  status;
 
   // Send the Stop signal
@@ -540,7 +542,39 @@ static void I2CShared_StopTransfer(I2C_MODULE i2c) {
   } while (!(status & I2C_STOP));
 }
 
-static void I2CShared_DebugStatus(I2C_MODULE i2c) {
+/************************************************************************************************** 
+  Function: 
+    static void I2CShared_DebugStatus(const I2C_MODULE i2c)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Prints out statuses of the I2C module that is passed in
+  
+  Description: 
+    Useful for debugging when errors occur to see what the current state of the I2C module is
+  
+  Preconditions: 
+    I2C module 
+    UART2 preconfigured as debugging output
+  
+  Parameters: 
+    const I2C_MODULE i2c - I2C module to print out status messages
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    I2CShared_DebugStatus(I2C1)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
+static void I2CShared_DebugStatus(const I2C_MODULE i2c) {
     I2C_STATUS status;
     status = I2CGetStatus(i2c);
     if (I2C_TRANSMITTER_FULL & status) printf("I2CShared_DebugStatus: I2C_TRANSMITTER_FULL, 0x%x\n", I2C_TRANSMITTER_FULL & status);

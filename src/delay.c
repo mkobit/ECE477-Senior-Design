@@ -8,7 +8,7 @@ static UINT _core_ticks_in_ms;
 
 /************************************************************************************************** 
   Function: 
-    void DelayInit(UINT clock_hz)
+    void DelayInit(const UINT clock_hz)
   
   Author(s): 
     mkobit
@@ -23,7 +23,7 @@ static UINT _core_ticks_in_ms;
     Core timer configured
   
   Parameters: 
-    UINT clock_hz - clock speed of microcontroller
+    const UINT clock_hz - clock speed of microcontroller
   
   Returns: 
     void
@@ -37,7 +37,7 @@ static UINT _core_ticks_in_ms;
     Core timer reset, internal static variables set
   
 **************************************************************************************************/
-void DelayInit(UINT clock_hz) {
+void DelayInit(const UINT clock_hz) {
   _core_hz = clock_hz / 2;  // runs at half-speed of system clock
   _core_ticks_in_us = DELAY_US_TO_CT_TICKS(_core_hz);
   _core_ticks_in_ms = DELAY_MS_TO_CT_TICKS(_core_hz);
@@ -46,7 +46,7 @@ void DelayInit(UINT clock_hz) {
 
 /************************************************************************************************** 
   Function: 
-    void DelayS(UINT s)
+    void DelayS(const UINT s)
   
   Author(s): 
     mkobit
@@ -61,7 +61,7 @@ void DelayInit(UINT clock_hz) {
     DelayInit called previously, core timer configured
   
   Parameters: 
-    UINT s - seconds to delay: should not be an excessively high number
+    const UINT s - seconds to delay: should not be an excessively high number
   
   Returns: 
     void
@@ -73,7 +73,7 @@ void DelayInit(UINT clock_hz) {
     Core timer overwritten to 0 before delay, could be any number after
   
 **************************************************************************************************/
-void DelayS(UINT s) {
+void DelayS(const UINT s) {
   UINT start;
   UINT ticks_to_wait;
   UINT core_time;
@@ -88,7 +88,7 @@ void DelayS(UINT s) {
 
 /************************************************************************************************** 
   Function: 
-    void DelayMs(UINT ms)
+    void DelayMs(const UINT ms)
   
   Author(s): 
     mkobit
@@ -103,7 +103,7 @@ void DelayS(UINT s) {
     DelayInit called previously, core timer configured
   
   Parameters: 
-    UINT ms - milliseconds to delay
+    const UINT ms - milliseconds to delay
   
   Returns: 
     void
@@ -117,7 +117,7 @@ void DelayS(UINT s) {
     None
   
 **************************************************************************************************/
-void DelayMs(UINT ms) {
+void DelayMs(const UINT ms) {
   UINT start;
   UINT ticks_to_wait;
   UINT core_time;
@@ -133,7 +133,7 @@ void DelayMs(UINT ms) {
 
 /************************************************************************************************** 
   Function: 
-    void DelayUs(UINT us)
+    void DelayUs(const UINT us)
   
   Author(s): 
     mkobit
@@ -148,7 +148,7 @@ void DelayMs(UINT ms) {
     DelayInit called previously, core timer configured
   
   Parameters: 
-    UINT us - milliseconds to delay
+    const UINT us - milliseconds to delay
   
   Returns: 
     void
@@ -162,7 +162,7 @@ void DelayMs(UINT ms) {
     None
   
 **************************************************************************************************/
-void DelayUs(UINT us) {
+void DelayUs(const UINT us) {
   UINT start;
   UINT ticks_to_wait;
   UINT core_time;
@@ -214,7 +214,7 @@ us_t DelayUtilGetUs(void) {
 
 /************************************************************************************************** 
   Function: 
-    us_t DelayUtilElapsedUs(us_t start, us_t end)
+    us_t DelayUtilElapsedUs(const us_t start, const us_t end)
   
   Author(s): 
     mkobit
@@ -230,8 +230,8 @@ us_t DelayUtilGetUs(void) {
     Must not have been an excessive amount of time in between start and end that results in an overlap
   
   Parameters: 
-    us_t start - start time in microseconds
-    us_t end - end time in microseconds
+    const us_t start - start time in microseconds
+    const us_t end - end time in microseconds
   
   Returns: 
     unsigned int elapsedUs - us between start and end
@@ -247,6 +247,6 @@ us_t DelayUtilGetUs(void) {
     None
   
 **************************************************************************************************/
-unsigned int DelayUtilElapsedUs(us_t start, us_t end) {
+us_t DelayUtilElapsedUs(const us_t start, const us_t end) {
   return end - start;
 }

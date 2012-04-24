@@ -18,7 +18,7 @@ static void BatteryMonitorWriteByte(UINT8 c);
 
 /************************************************************************************************** 
   Function: 
-    void BatteryMonitorInit(UINT batt_mon_pin, IoPortId batt_mon_port)
+    void BatteryMonitorInit(const UINT batt_mon_pin, const IoPortId batt_mon_port)
   
   Author(s): 
     mkobit
@@ -34,8 +34,8 @@ static void BatteryMonitorWriteByte(UINT8 c);
     Pin and port provided not being used for anything else
   
   Parameters: 
-    UINT batt_mon_pin - pin number of the battery monitor pin, should only be 1 pin
-    IoPortId batt_mon_port - port of the battery monitor pin
+    const UINT batt_mon_pin - pin number of the battery monitor pin, should only be 1 pin
+    const IoPortId batt_mon_port - port of the battery monitor pin
   
   Returns: 
     None
@@ -49,7 +49,7 @@ static void BatteryMonitorWriteByte(UINT8 c);
     Port (_bmon_port), pin (_bmon_pin) configured as open-drain pin
   
 **************************************************************************************************/
-void BatteryMonitorInit(UINT batt_mon_pin, IoPortId batt_mon_port) {
+void BatteryMonitorInit(const UINT batt_mon_pin, const IoPortId batt_mon_port) {
   _bmon_port = batt_mon_port;
   _bmon_pin = batt_mon_pin;
   switch(_bmon_port) {
@@ -65,8 +65,8 @@ void BatteryMonitorInit(UINT batt_mon_pin, IoPortId batt_mon_port) {
 
 /************************************************************************************************** 
   Function: 
-    BATTMON_RESULT BatteryMonitorReadBytes(UINT8 net_address_command, 
-                    UINT8 start_addr, 
+    BATTMON_RESULT BatteryMonitorReadBytes(const UINT8 net_address_command, 
+                    const UINT8 start_addr, 
                     UINT8 *data, 
                     int nitems)
   
@@ -86,10 +86,10 @@ void BatteryMonitorInit(UINT batt_mon_pin, IoPortId batt_mon_port) {
     (_bmon_pin) and (_bmon_port) have not been reconfigured or other use
   
   Parameters: 
-    UINT8 net_address_command - command for how the bus master will interact with the slaves
-    UINT8 start_addr - starting address for function
+    const UINT8 net_address_command - command for how the bus master will interact with the slaves
+    const UINT8 start_addr - starting address for function
     char *data - pointer for data to be read into
-    int nitems - number of bytes to read from the battery monitor
+    const int nitems - number of bytes to read from the battery monitor
   
   Returns: 
     BATTMON_SUCCESS - If transaction was successful
@@ -110,10 +110,10 @@ void BatteryMonitorInit(UINT batt_mon_pin, IoPortId batt_mon_port) {
       which means that only 1 device can be on the 1 wire bus
   
 **************************************************************************************************/
-BATTMON_RESULT BatteryMonitorReadBytes(UINT8 net_address_command, 
-                    UINT8 start_addr, 
+BATTMON_RESULT BatteryMonitorReadBytes(const UINT8 net_address_command, 
+                    const UINT8 start_addr, 
                     UINT8 *data, 
-                    int nitems) {
+                    const int nitems) {
   int i;
   BATTMON_RESULT presence_detect;
   UINT8 data_read;
@@ -143,10 +143,10 @@ BATTMON_RESULT BatteryMonitorReadBytes(UINT8 net_address_command,
 
 /************************************************************************************************** 
   Function: 
-    BATTMON_RESULT BatteryMonitorWriteBytes(UINT8 net_address_command, 
-                    UINT8 start_addr, 
-                    UINT8 *data, 
-                    int nitems)
+    BATTMON_RESULT BatteryMonitorWriteBytes(const UINT8 net_address_command, 
+                    const UINT8 start_addr, 
+                    const UINT8 *data, 
+                    const int nitems)
   
   Author(s):
     mkobit
@@ -164,8 +164,7 @@ BATTMON_RESULT BatteryMonitorReadBytes(UINT8 net_address_command,
     (_bmon_pin) and (_bmon_port) have not been reconfigured or other use
   
   Parameters: 
-    UINT8 net_address_command - command for how the bus master will interact with the slaves
-    UINT8 function - the feature of the battery monitor to execute 
+    const UINT8 net_address_command - command for how the bus master will interact with the slaves
     UINT8 start_addr - starting address for function
   
   Returns: 
@@ -183,10 +182,10 @@ BATTMON_RESULT BatteryMonitorReadBytes(UINT8 net_address_command,
     One-wire bus idle
   
 **************************************************************************************************/
-BATTMON_RESULT BatteryMonitorWriteBytes(UINT8 net_address_command, 
-                    UINT8 start_addr, 
-                    UINT8 *data, 
-                    int nitems) {
+BATTMON_RESULT BatteryMonitorWriteBytes(const UINT8 net_address_command, 
+                    const UINT8 start_addr, 
+                    const UINT8 *data, 
+                    const int nitems) {
   int i;
   BATTMON_RESULT presence_detect;
   if (net_address_command == BATTERY_MONITOR_NET_SKIP_ADDR) {

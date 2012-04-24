@@ -5,7 +5,7 @@
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroInit(I2C_MODULE i2c, UINT8 dlpf_lpf, UINT8 sample_rate_div, UINT8 power_mgmt_sel)
+    GYRO_RESULT GyroInit(const I2C_MODULE i2c, const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel)
 
   Author(s):
     mkobit
@@ -20,8 +20,8 @@
     I2C module previously enabled
 
   Parameters:
-    I2C_MODULE i2c - I2C module to connect with
-    UINT8 dlpf_lpf - low pass filter configuration for sensor acquisition
+    const I2C_MODULE i2c - I2C module to connect with
+    const UINT8 dlpf_lpf - low pass filter configuration for sensor acquisition
         GYRO_DLPF_LPF_256HZ   - results in 8 kHz sample rate
         GYRO_DLPF_LPF_188HZ   - results in 1 kHz sample rate
         GYRO_DLPF_LPF_98HZ    - *
@@ -29,9 +29,9 @@
         GYRO_DLPF_LPF_20HZ    - *
         GYRO_DLPF_LPF_10HZ    - *
         GYRO_DLPF_LPF_5HZ     - *
-    UINT8 sample_rate_div - sample rate divider, F = F_internal / (sample_rate_div + 1)
+    const UINT8 sample_rate_div - sample rate divider, F = F_internal / (sample_rate_div + 1)
       E.g. -> 1kHz sample rate from dlpf_lpf, sample_rate_div = 9, F = 1 kHz / (9 _ 1) = 100 Hz 
-    UINT8 power_mgmt_sel - device clock selector
+    const UINT8 power_mgmt_sel - device clock selector
       GYRO_PWR_MGM_CLK_SEL_INTERNAL - internal oscillator
       GYRO_PWR_MGM_CLK_SEL_X        - X as clock reference
       GYRO_PWR_MGM_CLK_SEL_Y        - Y as clock reference
@@ -51,7 +51,7 @@
     I2C bus is in idle state
 
 **************************************************************************************************/
-GYRO_RESULT GyroInit(I2C_MODULE i2c, UINT8 dlpf_lpf, UINT8 sample_rate_div, UINT8 power_mgmt_sel) {
+GYRO_RESULT GyroInit(const I2C_MODULE i2c, const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel) {
 
   // OR the low pass frequency passed with dflp_config with full scale operation and write it to the gyro
   // Set internal clock and full scale operation
@@ -81,7 +81,7 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, UINT8 dlpf_lpf, UINT8 sample_rate_div, UINT
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data)
+    GYRO_RESULT GyroWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 data)
 
   Author(s):
     mkobit
@@ -96,9 +96,9 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, UINT8 dlpf_lpf, UINT8 sample_rate_div, UINT
     I2C module previously enabled and running
 
   Parameters:
-    I2C_MODULE i2c - I2C module to connect with
-    UINT8 i2c_reg - register to write to
-    UINT8 data - data to be written
+    const I2C_MODULE i2c - I2C module to connect with
+    const UINT8 i2c_reg - register to write to
+    const UINT8 data - data to be written
 
   Returns:
     GYRO_SUCCESS - If successful
@@ -113,7 +113,7 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, UINT8 dlpf_lpf, UINT8 sample_rate_div, UINT
     
 
 **************************************************************************************************/
-GYRO_RESULT GyroWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data) {
+GYRO_RESULT GyroWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 data) {
   if (I2CShared_WriteByte(i2c, GYRO_WRITE, i2c_reg, data)) {
     return GYRO_SUCCESS;
   } else {
@@ -123,7 +123,7 @@ GYRO_RESULT GyroWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data) {
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer)
+    GYRO_RESULT GyroRead(const I2C_MODULE i2c, const UINT8 i2c_reg, UINT8 *const buffer)
 
   Author(s):
     mkobit
@@ -138,9 +138,9 @@ GYRO_RESULT GyroWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data) {
     I2C module previously enabled and running
 
   Parameters:
-    I2C_MODULE i2c - I2C module to connect with
-    UINT8 i2c_reg - register to read from
-    UINT8 *buffer - buffer to place read byte into
+    const I2C_MODULE i2c - I2C module to connect with
+    const UINT8 i2c_reg - register to read from
+    UINT8 *const buffer - buffer to place read byte into
 
   Returns:
     GYRO_SUCCESS - If successful
@@ -156,7 +156,7 @@ GYRO_RESULT GyroWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data) {
     
 
 **************************************************************************************************/
-GYRO_RESULT GyroRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer) {
+GYRO_RESULT GyroRead(const I2C_MODULE i2c, const UINT8 i2c_reg, UINT8 *const buffer) {
   if (I2CShared_ReadByte(i2c, GYRO_WRITE,GYRO_READ, i2c_reg, buffer)) {
     return GYRO_SUCCESS;
   } else {
@@ -166,7 +166,7 @@ GYRO_RESULT GyroRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer) {
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp)
+    GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_raw_t *const raw, const BOOL readTemp)
 
   Author(s):
     mkobit
@@ -182,7 +182,9 @@ GYRO_RESULT GyroRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer) {
     I2C module previously enabled and running
 
   Parameters:
-    I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp - 
+    const I2C_MODULE i2c - I2C module to connect with
+    gyro_raw_t *const raw - pointer to raw read data from gyro
+    const BOOL readTemp - if TRUE read temperature if FALSE do not read temperature
 
   Returns:
     GYRO_SUCCESS - If successful
@@ -197,7 +199,7 @@ GYRO_RESULT GyroRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer) {
     I2C bus is in idle state, (raw) has most recent readings
 
 **************************************************************************************************/
-GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
+GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_raw_t *const raw, const BOOL readTemp) {
   UINT8 reading_rainbow[8];
   int nDataToRead;
   int offsetForTemp;
@@ -227,7 +229,7 @@ GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
 
 /************************************************************************************************** 
   Function:
-    float GyroGetTemp(gyro_raw_t *raw)
+    float GyroGetTemp(const gyro_raw_t *const raw)
 
   Author(s):
     mkobit
@@ -258,7 +260,7 @@ GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
     None
 
 **************************************************************************************************/
-float GyroGetTemp(gyro_raw_t *raw) {
+float GyroGetTemp(const gyro_raw_t *const raw) {
   float temperature;
   temperature = -GYRO_TEMP_OFFSET - raw->temp;
   temperature /= GYRO_TEMP_CONV_TO_DEGREES;
@@ -268,7 +270,7 @@ float GyroGetTemp(gyro_raw_t *raw) {
 
 /************************************************************************************************** 
   Function:
-    float GyroGetX(gyro_raw_t *raw)
+    float GyroGetX(const gyro_raw_t *const raw)
 
   Author(s):
     mkobit
@@ -299,7 +301,7 @@ float GyroGetTemp(gyro_raw_t *raw) {
     None
 
 **************************************************************************************************/
-float GyroGetX(gyro_raw_t *raw) {
+float GyroGetX(const gyro_raw_t *const raw) {
   float xd;
   xd = (float) raw->x / GYRO_CONV_TO_DEGREES;
   return xd;
@@ -307,7 +309,7 @@ float GyroGetX(gyro_raw_t *raw) {
 
 /************************************************************************************************** 
   Function:
-    float GyroGetY(gyro_raw_t *raw)
+    float GyroGetY(const gyro_raw_t *const raw)
 
   Author(s):
     mkobit
@@ -338,7 +340,7 @@ float GyroGetX(gyro_raw_t *raw) {
     None
 
 **************************************************************************************************/
-float GyroGetY(gyro_raw_t *raw) {
+float GyroGetY(const gyro_raw_t *const raw) {
   float yd;
   yd = (float) raw->y / GYRO_CONV_TO_DEGREES;
   return yd;
@@ -346,7 +348,7 @@ float GyroGetY(gyro_raw_t *raw) {
 
 /************************************************************************************************** 
   Function:
-    float GyroGetZ(gyro_raw_t *raw)
+    float GyroGetZ(const gyro_raw_t *const raw)
 
   Author(s):
     mkobit
@@ -377,7 +379,7 @@ float GyroGetY(gyro_raw_t *raw) {
     None
 
 **************************************************************************************************/
-float GyroGetZ(gyro_raw_t *raw) {
+float GyroGetZ(const gyro_raw_t *const raw) {
   float zd;
   zd = (float) raw->z / GYRO_CONV_TO_DEGREES;
   return zd;

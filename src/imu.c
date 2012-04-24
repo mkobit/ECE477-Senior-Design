@@ -7,14 +7,14 @@ static inline void ImuToggleSelector(imu_t* imu);
 
 /************************************************************************************************** 
   Function:
-    ImuInit(imu_t* imu,
-          I2C_MODULE i2c,
-          UINT peripheral_clock_speed, 
-          UINT i2c_speed, 
-          UINT8 accel_resolution,
-          UINT8 accel_bandwidth,
-          UINT8 gyro_dlpf_lpf,
-          UINT8 gyro_sample_rate_div,
+    ImuInit(imu_t *const imu,
+          const I2C_MODULE i2c,
+          const UINT peripheral_clock_speed, 
+          const UINT i2c_speed, 
+          const UINT8 accel_resolution,
+          const UINT8 accel_bandwidth,
+          const UINT8 gyro_dlpf_lpf,
+          const UINT8 gyro_sample_rate_div,
 
   Author(s):
     mkobit
@@ -30,16 +30,16 @@ static inline void ImuToggleSelector(imu_t* imu);
     I2C not previously configure
 
   Parameters:
-    imu_t* imu - reference to IMU to be initialized
-    I2C_MODULE i2c - I2C module to associate with this IMU
-    UINT peripheral_clock_speed - peripheral bus speed
-    UINT i2c_speed - target I2C bus speed
-    UINT8 accel_range - range of accelerometer
+    imu_t *const imu - reference to IMU to be initialized
+    const I2C_MODULE i2c - I2C module to associate with this IMU
+    const UINT peripheral_clock_speed - peripheral bus speed
+    const UINT i2c_speed - target I2C bus speed
+    const UINT8 accel_range - range of accelerometer
       ACCEL_SCALE_2G  - 2 G's (gravity)
       ACCEL_SCALE_4G  - 4 G's
       ACCEL_SCALE_8G  - 8 G's
       ACCEL_SCALE_16G - 16 G's
-    UINT8 accel_bandwidth - bandwidth of accelerometer
+    const UINT8 accel_bandwidth - bandwidth of accelerometer
       ACCEL_BW_1600   - 1600 Hz
       ACCEL_BW_800    - 800 Hz
       ACCEL_BW_400    - 400 Hz
@@ -47,7 +47,7 @@ static inline void ImuToggleSelector(imu_t* imu);
       ACCEL_BW_100    - 100 Hz
       ACCEL_BW_50     - 50 Hz
       ACCEL_BW_25     - 25 Hz
-    UINT8 dlpf_lpf - low pass filter configuration for sensor acquisition
+    const UINT8 dlpf_lpf - low pass filter configuration for sensor acquisition
       GYRO_DLPF_LPF_256HZ    - results in 8 kHz sample rate
       GYRO_DLPF_LPF_188HZ   - results in 1 kHz sample rate
       GYRO_DLPF_LPF_98HZ    - *
@@ -55,9 +55,9 @@ static inline void ImuToggleSelector(imu_t* imu);
       GYRO_DLPF_LPF_20HZ    - *
       GYRO_DLPF_LPF_10HZ    - *
       GYRO_DLPF_LPF_5HZ     - *
-    UINT8 sample_rate_div - sample rate divider, F = F_internal / (sample_rate_div + 1)
+    const UINT8 sample_rate_div - sample rate divider, F = F_internal / (sample_rate_div + 1)
       e.g. -> 1kHz sample rate from dlpf_lpf, sample_rate_div = 9, F = 1 kHz / (9 _ 1) = 100 Hz 
-    UINT8 power_mgmt_sel - device clock selector
+    const UINT8 power_mgmt_sel - device clock selector
       GYRO_PWR_MGM_CLK_SEL_INTERNAL - internal oscillator
       GYRO_PWR_MGM_CLK_SEL_X        - X as clock reference
       GYRO_PWR_MGM_CLK_SEL_Y        - Y as clock reference
@@ -86,15 +86,15 @@ static inline void ImuToggleSelector(imu_t* imu);
     Gyroscope initialized
 
 **************************************************************************************************/
-IMU_RESULT ImuInit(imu_t* imu,
-          I2C_MODULE i2c,
-          UINT peripheral_clock_speed, 
-          UINT i2c_speed, 
-          UINT8 accel_range,
-          UINT8 accel_bandwidth,
-          UINT8 gyro_dlpf_lpf,
-          UINT8 gyro_sample_rate_div, 
-          UINT8 gyro_power_mgmt_sel) {
+IMU_RESULT ImuInit(imu_t *const imu,
+          const I2C_MODULE i2c,
+          const UINT peripheral_clock_speed, 
+          const UINT i2c_speed, 
+          const UINT8 accel_range,
+          const UINT8 accel_bandwidth,
+          const UINT8 gyro_dlpf_lpf,
+          const UINT8 gyro_sample_rate_div, 
+          const UINT8 gyro_power_mgmt_sel) {
                                     
   UINT actualClock;
   ACCEL_RESULT accel_init_result;
@@ -134,7 +134,7 @@ IMU_RESULT ImuInit(imu_t* imu,
 
 /************************************************************************************************** 
   Function:
-    IMU_RESULT ImuUpdate(imu_t *p_imu)
+    IMU_RESULT ImuUpdate(imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -149,7 +149,7 @@ IMU_RESULT ImuInit(imu_t* imu,
     ImuInit called
 
   Parameters:
-    imu_t *p_imu - reference to the IMU being looked at
+    imu_t *const p_imu - reference to the IMU being looked at
 
   Returns:
     IMU_SUCCESS - If successful
@@ -165,7 +165,7 @@ IMU_RESULT ImuInit(imu_t* imu,
     Accelerometer updated
 
 **************************************************************************************************/
-IMU_RESULT ImuUpdate(imu_t *p_imu) {
+IMU_RESULT ImuUpdate(imu_t *const p_imu) {
   ACCEL_RESULT a_result;
   GYRO_RESULT g_result;
   
@@ -198,7 +198,7 @@ IMU_RESULT ImuUpdate(imu_t *p_imu) {
 
 /************************************************************************************************** 
   Function:
-    accel_raw_t *p_imuGetRawAccel(imu_t *p_imu)
+    accel_raw_t *p_imuGetRawAccel(const imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -214,7 +214,7 @@ IMU_RESULT ImuUpdate(imu_t *p_imu) {
     ImuUpdate typically called
 
   Parameters:
-    imu_t *p_imu - reference to the IMU being looked at
+    const imu_t *const p_imu - reference to the IMU being looked at
 
   Returns:
     accel_raw_t * - reference to imu's raw accelerometer data
@@ -229,13 +229,13 @@ IMU_RESULT ImuUpdate(imu_t *p_imu) {
     None
 
 **************************************************************************************************/
-accel_raw_t *p_imuGetRawAccel(imu_t *p_imu) {
+accel_raw_t *p_imuGetRawAccel(const imu_t *const p_imu) {
   return &imu->accel_raw;
 }
 
 /************************************************************************************************** 
   Function:
-    gyro_raw_t *p_imuGetRawGyro(imu_t *p_imu)
+    gyro_raw_t *p_imuGetRawGyro(const imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -251,7 +251,7 @@ accel_raw_t *p_imuGetRawAccel(imu_t *p_imu) {
     ImuUpdate typically called
     
   Parameters:
-    imu_t *p_imu - reference to the IMU being looked at
+    const imu_t *const p_imu - reference to the IMU being looked at
 
   Returns:
     gyro_raw_t * - reference to imu's raw gyro data
@@ -266,13 +266,13 @@ accel_raw_t *p_imuGetRawAccel(imu_t *p_imu) {
     None
 
 **************************************************************************************************/
-gyro_raw_t *p_imuGetRawGyro(imu_t *p_imu) {
+gyro_raw_t *p_imuGetRawGyro(const imu_t *const p_imu) {
   return &imu->gyro_raw;
 }
 
 /************************************************************************************************** 
   Function:
-    BOOL ImuIsOn(imu_t *p_imu)
+    BOOL ImuIsOn(const imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -287,7 +287,7 @@ gyro_raw_t *p_imuGetRawGyro(imu_t *p_imu) {
     ImuInit called
 
   Parameters:
-    imu_t *p_imu - reference to the IMU being used
+    const imu_t *const p_imu - reference to the IMU being used
 
   Returns:
     TRUE - IMU is online
@@ -302,13 +302,13 @@ gyro_raw_t *p_imuGetRawGyro(imu_t *p_imu) {
     None
 
 **************************************************************************************************/
-BOOL ImuIsOn(imu_t *p_imu) {
+BOOL ImuIsOn(const imu_t *const p_imu) {
   return imu->isOn;
 }
 
 /************************************************************************************************** 
   Function:
-    float ImuGetGyroTemp(imu_t *p_imu)
+    float ImuGetGyroTemp(const imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -324,7 +324,7 @@ BOOL ImuIsOn(imu_t *p_imu) {
     ImuUpdate called
 
   Parameters:
-    imu_t *p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
+    const imu_t *const p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
     float gtemp - gyroscope temperature
@@ -339,7 +339,7 @@ BOOL ImuIsOn(imu_t *p_imu) {
     None
 
 **************************************************************************************************/
-float ImuGetGyroTemp(imu_t *p_imu) {
+float ImuGetGyroTemp(const imu_t *const p_imu) {
   float gtemp;
   gtemp = GyroGetTemp(&imu->gyro_raw);
   return gtemp;
@@ -347,7 +347,7 @@ float ImuGetGyroTemp(imu_t *p_imu) {
 
 /************************************************************************************************** 
   Function:
-    float ImuGetGyroX(imu_t *p_imu)
+    float ImuGetGyroX(const imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -363,7 +363,7 @@ float ImuGetGyroTemp(imu_t *p_imu) {
     ImuUpdate called
 
   Parameters:
-    imu_t *p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
+    const imu_t *const p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
     float gx - gyroscope roll in terms of degrees/s
@@ -378,7 +378,7 @@ float ImuGetGyroTemp(imu_t *p_imu) {
     None
 
 **************************************************************************************************/
-float ImuGetGyroX(imu_t *p_imu) {
+float ImuGetGyroX(const imu_t *const p_imu) {
   float gx;
   gx = GyroGetX(&imu->gyro_raw);
   return gx;
@@ -386,7 +386,7 @@ float ImuGetGyroX(imu_t *p_imu) {
 
 /************************************************************************************************** 
   Function:
-    float ImuGetGyroY(imu_t *p_imu)
+    float ImuGetGyroY(const imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -402,7 +402,7 @@ float ImuGetGyroX(imu_t *p_imu) {
     ImuUpdate called
 
   Parameters:
-    imu_t *p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
+    const imu_t *const p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
     float gy - gyroscope pitch in terms of degrees/s
@@ -417,7 +417,7 @@ float ImuGetGyroX(imu_t *p_imu) {
     None
 
 **************************************************************************************************/
-float ImuGetGyroY(imu_t *p_imu) {
+float ImuGetGyroY(const imu_t *const p_imu) {
   float gy;
   gy = GyroGetY(&imu->gyro_raw);
   return gy;
@@ -425,7 +425,7 @@ float ImuGetGyroY(imu_t *p_imu) {
 
 /************************************************************************************************** 
   Function:
-    float ImuGetGyroZ(imu_t *p_imu)
+    float ImuGetGyroZ(const imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -441,7 +441,7 @@ float ImuGetGyroY(imu_t *p_imu) {
     ImuUpdate called
 
   Parameters:
-    imu_t *p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
+    const imu_t *const p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
     float gz - gyroscope yaw in terms of degrees/s
@@ -456,7 +456,7 @@ float ImuGetGyroY(imu_t *p_imu) {
     None
 
 **************************************************************************************************/
-float ImuGetGyroZ(imu_t *p_imu) {
+float ImuGetGyroZ(const imu_t *const p_imu) {
   float gz;
   gz = GyroGetZ(&imu->gyro_raw);
   return gz;
@@ -464,7 +464,7 @@ float ImuGetGyroZ(imu_t *p_imu) {
 
 /************************************************************************************************** 
   Function:
-    float ImuGetAccelX(imu_t *p_imu)
+    float ImuGetAccelX(const imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -480,7 +480,7 @@ float ImuGetGyroZ(imu_t *p_imu) {
     ImuUpdate called
 
   Parameters:
-    imu_t *p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
+    const imu_t *const p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
     float ax - accelerometer value in X in terms of 'g's
@@ -495,7 +495,7 @@ float ImuGetGyroZ(imu_t *p_imu) {
     None
 
 **************************************************************************************************/
-float ImuGetAccelX(imu_t *p_imu) {
+float ImuGetAccelX(const imu_t *const p_imu) {
   float ax;
   ax = AccelGetX(&imu->accel_raw);
   return ax;
@@ -503,7 +503,7 @@ float ImuGetAccelX(imu_t *p_imu) {
 
 /************************************************************************************************** 
   Function:
-    float ImuGetAccelY(imu_t *p_imu)
+    float ImuGetAccelY(const imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -519,7 +519,7 @@ float ImuGetAccelX(imu_t *p_imu) {
     ImuUpdate called
 
   Parameters:
-    imu_t *p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
+    const imu_t *const p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
     float ay - accelerometer value in Y in terms of 'g's
@@ -534,7 +534,7 @@ float ImuGetAccelX(imu_t *p_imu) {
     None
 
 **************************************************************************************************/
-float ImuGetAccelY(imu_t *p_imu) {
+float ImuGetAccelY(const imu_t *const p_imu) {
   float ay;
   ay = AccelGetY(&imu->accel_raw);
   return ay;
@@ -542,7 +542,7 @@ float ImuGetAccelY(imu_t *p_imu) {
 
 /************************************************************************************************** 
   Function:
-    float ImuGetAccelZ(imu_t *p_imu)
+    float ImuGetAccelZ(const imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -558,7 +558,7 @@ float ImuGetAccelY(imu_t *p_imu) {
     ImuUpdate called
 
   Parameters:
-    imu_t *p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
+    const imu_t *const p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
     float az - accelerometer value in Z in terms of 'g's
@@ -573,7 +573,7 @@ float ImuGetAccelY(imu_t *p_imu) {
     None
 
 **************************************************************************************************/
-float ImuGetAccelZ(imu_t *p_imu) {
+float ImuGetAccelZ(const imu_t *const p_imu) {
   float az;
   az = AccelGetZ(&imu->accel_raw);
   return az;
@@ -581,7 +581,7 @@ float ImuGetAccelZ(imu_t *p_imu) {
 
 /************************************************************************************************** 
   Function:
-    static inline void ImuToggleSelector(imu_t* imu)
+    static inline void ImuToggleSelector(const imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -596,7 +596,7 @@ float ImuGetAccelZ(imu_t *p_imu) {
     ImuInit called
 
   Parameters:
-    imu_t *p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
+    const imu_t *const p_imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
     void
@@ -610,6 +610,6 @@ float ImuGetAccelZ(imu_t *p_imu) {
     IMU will read the gyro/accel first next time
 
 **************************************************************************************************/
-static inline void ImuToggleSelector(imu_t* imu) {
+static inline void ImuToggleSelector(const imu_t *const p_imu) {
   imu->updateAccelFirst = !imu->updateAccelFirst;
 }

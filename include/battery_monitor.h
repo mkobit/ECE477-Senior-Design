@@ -77,14 +77,14 @@ typedef enum {
   BATTMON_FAIL
 } BATTMON_RESULT;
 
-void BatteryMonitorInit(UINT batt_mon_pin, IoPortId batt_mon_port);
-BATTMON_RESULT BatteryMonitorReadBytes(UINT8 net_address_command, 
-                    UINT8 start_addr, 
+void BatteryMonitorInit(const UINT batt_mon_pin, const IoPortId batt_mon_port);
+BATTMON_RESULT BatteryMonitorReadBytes(const UINT8 net_address_command, 
+                    const UINT8 start_addr, 
                     UINT8 *data, 
-                    int nitems);
-BATTMON_RESULT BatteryMonitorWriteBytes(UINT8 net_address_command, 
-                    UINT8 start_addr, 
-                    UINT8 *data, 
-                    int nitems);
+                    const int nitems);
+BATTMON_RESULT BatteryMonitorWriteBytes(const UINT8 net_address_command, 
+                    const UINT8 start_addr, 
+                    const UINT8 *data, 
+                    const int nitems);
 
 #endif

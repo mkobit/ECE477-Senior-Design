@@ -7,7 +7,7 @@ static float SCALES[4] = { .0039f, .0078f, .0156f, .0312f};  // from datasheet
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelInit(I2C_MODULE i2c, UINT8 resolution, UINT8 bandwidth, accel_raw_t *raw)
+    ACCEL_RESULT AccelInit(const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth, accel_raw_t *const raw)
     
   Author(s):
     mkobit
@@ -22,13 +22,13 @@ static float SCALES[4] = { .0039f, .0078f, .0156f, .0312f};  // from datasheet
     I2C module previously enabled
 
   Parameters: 
-    I2C_MODULE i2c - I2C module associated with this accelerometer
-    UINT8 range - constant for the range of gravity
+    const I2C_MODULE i2c - I2C module associated with this accelerometer
+    const UINT8 range - constant for the range of gravity
       ACCEL_RANGE_2G  - 2 G's (gravity)
       ACCEL_RANGE_4G  - 4 G's
       ACCEL_RANGE_8G  - 8 G's
       ACCEL_RANGE_16G - 16 G's
-    UINT8 bandwidth - device bandwidth and output data rate
+    const UINT8 bandwidth - device bandwidth and output data rate
       ACCEL_BW_1600   - 1600 Hz
       ACCEL_BW_800    - 800 Hz
       ACCEL_BW_400    - 400 Hz
@@ -36,7 +36,7 @@ static float SCALES[4] = { .0039f, .0078f, .0156f, .0312f};  // from datasheet
       ACCEL_BW_100    - 100 Hz
       ACCEL_BW_50     - 50 Hz
       ACCEL_BW_25     - 25 Hz
-    accel_raw_t *raw - accelerometer data structure associated with this accelerometer
+    accel_raw_t *const raw - accelerometer data structure associated with this accelerometer
 
   Returns:
     ACCEL_SUCCESS - If successful
@@ -52,7 +52,7 @@ static float SCALES[4] = { .0039f, .0078f, .0156f, .0312f};  // from datasheet
     I2C bus is in idle state
 
 **************************************************************************************************/
-ACCEL_RESULT AccelInit(I2C_MODULE i2c, UINT8 range, UINT8 bandwidth, accel_raw_t *raw) {
+ACCEL_RESULT AccelInit(const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth, accel_raw_t *const raw) {
 
   // I2C should already be enabled
   
@@ -89,7 +89,7 @@ ACCEL_RESULT AccelInit(I2C_MODULE i2c, UINT8 range, UINT8 bandwidth, accel_raw_t
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data)
+    ACCEL_RESULT AccelWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 data)
 
   Author(s):
     mkobit
@@ -104,9 +104,9 @@ ACCEL_RESULT AccelInit(I2C_MODULE i2c, UINT8 range, UINT8 bandwidth, accel_raw_t
     I2C module previously enabled and running
 
   Parameters:
-    I2C_MODULE i2c - I2C module to connect with
-    char i2c_reg - register to write to
-    UINT8 data - data to be written
+    const I2C_MODULE i2c - I2C module to connect with
+    const UINT8 i2c_reg - register to write to
+    const UINT8 data - data to be written
 
   Returns:
     ACCEL_SUCCESS - If successful
@@ -121,7 +121,7 @@ ACCEL_RESULT AccelInit(I2C_MODULE i2c, UINT8 range, UINT8 bandwidth, accel_raw_t
     I2C bus is in idle state
 
 **************************************************************************************************/
-ACCEL_RESULT AccelWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data) {
+ACCEL_RESULT AccelWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 data) {
   if (I2CShared_WriteByte(i2c, ACCEL_WRITE, i2c_reg, data)) {
     return ACCEL_SUCCESS;
   } else {
@@ -131,7 +131,7 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data) {
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer)
+    ACCEL_RESULT AccelRead(const I2C_MODULE i2c, const UINT8 i2c_reg, UINT8 *buffer)
 
   Author(s):
     mkobit
@@ -146,8 +146,8 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data) {
     I2C module previously enabled and running
 
   Parameters:
-    I2C_MODULE i2c - I2C module to connect with
-    UINT8 i2c_reg - register to read from
+    const I2C_MODULE i2c - I2C module to connect with
+    const UINT8 i2c_reg - register to read from
     UINT8 *buffer - buffer to place read byte into
 
   Returns:
@@ -164,7 +164,7 @@ ACCEL_RESULT AccelWrite(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 data) {
     I2C bus is in idle state
 
 **************************************************************************************************/
-ACCEL_RESULT AccelRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer) {
+ACCEL_RESULT AccelRead(const I2C_MODULE i2c, const UINT8 i2c_reg, UINT8 *buffer) {
   if (I2CShared_ReadByte(i2c, ACCEL_WRITE, ACCEL_READ, i2c_reg, buffer)) {
     return ACCEL_SUCCESS;
   } else {
@@ -174,7 +174,7 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer) {
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw)
+    ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, accel_raw_t *const raw)
 
   Author(s):
     mkobit
@@ -189,8 +189,8 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer) {
     I2C module previously enabled and running
 
   Parameters:
-    I2C_MODULE i2c -  I2C module to connect with
-    accel_raw_t *raw - reference to structure to place read data into
+    const I2C_MODULE i2c -  I2C module to connect with
+    accel_raw_t *const raw - reference to structure to place read data into
 
   Returns:
     ACCEL_SUCCESS - If successful
@@ -205,7 +205,7 @@ ACCEL_RESULT AccelRead(I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *buffer) {
     I2C bus is in idle state, (raw) has most recent readings
 
 **************************************************************************************************/
-ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
+ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, accel_raw_t *const raw) {
   UINT8 reading_rainbow[6];  // placeholder for read data
   
   // read x,y, and z data into buffer
@@ -222,7 +222,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
 
 /************************************************************************************************** 
   Function:
-    AccelGetX(accel_raw_t *raw)
+    AccelGetX(const accel_raw_t *const raw)
 
   Author(s):
     mkobit
@@ -238,7 +238,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
     AccelReadAllAxes called to place data in raw
 
   Parameters:
-    accel_raw_t *raw - pointer to raw read data from accelerometer
+    const accel_raw_t *const raw - pointer to raw read data from accelerometer
 
   Returns:
     float xf - value in X in terms of 'g's
@@ -254,7 +254,7 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
     None
 
 **************************************************************************************************/
-float AccelGetX(accel_raw_t *raw) {
+float AccelGetX(const accel_raw_t *const raw) {
   float xf;
   xf = (float) raw->x * SCALES[raw->scale_ind];
   return xf;
@@ -262,7 +262,7 @@ float AccelGetX(accel_raw_t *raw) {
 
 /************************************************************************************************** 
   Function:
-    AccelGetY(accel_raw_t *raw)
+    AccelGetY(const accel_raw_t *const raw)
 
   Author(s):
     mkobit
@@ -278,7 +278,7 @@ float AccelGetX(accel_raw_t *raw) {
     AccelReadAllAxes called to place data in raw
 
   Parameters:
-    accel_raw_t *raw - pointer to raw read data from accelerometer
+    const accel_raw_t *const raw - pointer to raw read data from accelerometer
 
   Returns:
     float xf - value in Y in terms of 'g's
@@ -294,7 +294,7 @@ float AccelGetX(accel_raw_t *raw) {
     None
 
 **************************************************************************************************/
-float AccelGetY(accel_raw_t *raw) {
+float AccelGetY(const accel_raw_t *const raw) {
   float yf;
   yf = (float) raw->y * SCALES[raw->scale_ind];
   return yf;
@@ -302,7 +302,7 @@ float AccelGetY(accel_raw_t *raw) {
 
 /************************************************************************************************** 
   Function:
-    AccelGetZ(accel_raw_t *raw)
+    AccelGetZ(const accel_raw_t *const raw)
 
   Author(s):
     mkobit
@@ -318,7 +318,7 @@ float AccelGetY(accel_raw_t *raw) {
     AccelReadAllAxes called to place data in raw
 
   Parameters:
-    accel_raw_t *raw - pointer to raw read data from accelerometer
+    const accel_raw_t *const raw - pointer to raw read data from accelerometer
 
   Returns:
     float zf - value in Z in terms of 'g's
@@ -334,7 +334,7 @@ float AccelGetY(accel_raw_t *raw) {
     None
 
 **************************************************************************************************/
-float AccelGetZ(accel_raw_t *raw) {
+float AccelGetZ(const accel_raw_t *const raw) {
   float zf;
   zf = (float) raw->z * SCALES[raw->scale_ind];
   return zf;

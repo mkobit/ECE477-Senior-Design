@@ -95,8 +95,8 @@ ACCEL_RESULT AccelInit(I2C_MODULE i2c, unsigned char range, unsigned char bandwi
 ACCEL_RESULT AccelWrite(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char data);
 ACCEL_RESULT AccelRead(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char *buffer);
 ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw);
-double AccelGetX(accel_raw_t *raw);
-double AccelGetY(accel_raw_t *raw);
-double AccelGetZ(accel_raw_t *raw);
+float AccelGetX(accel_raw_t *raw);
+float AccelGetY(accel_raw_t *raw);
+float AccelGetZ(accel_raw_t *raw);
 
 #endif

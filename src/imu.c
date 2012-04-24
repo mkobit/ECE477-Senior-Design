@@ -308,7 +308,7 @@ BOOL ImuIsOn(imu_t *imu) {
 
 /************************************************************************************************** 
   Function:
-    
+    float ImuGetGyroTemp(imu_t *imu)
 
   Author(s):
     mkobit
@@ -327,11 +327,11 @@ BOOL ImuIsOn(imu_t *imu) {
     imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
-    double gtemp - gyroscope temperature
+    float gtemp - gyroscope temperature
 
   Example:
     <code>
-    double gtemp;
+    float gtemp;
     gtemp = ImuGetGyroTemp(&imu)
     </code>
 
@@ -339,15 +339,15 @@ BOOL ImuIsOn(imu_t *imu) {
     None
 
 **************************************************************************************************/
-double ImuGetGyroTemp(imu_t *imu) {
-  double gtemp;
+float ImuGetGyroTemp(imu_t *imu) {
+  float gtemp;
   gtemp = GyroGetTemp(&imu->gyro_raw);
   return gtemp;
 }
 
 /************************************************************************************************** 
   Function:
-    double ImuGetGyroX(imu_t *imu)
+    float ImuGetGyroX(imu_t *imu)
 
   Author(s):
     mkobit
@@ -366,11 +366,11 @@ double ImuGetGyroTemp(imu_t *imu) {
     imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
-    double gx - gyroscope roll in terms of degrees/s
+    float gx - gyroscope roll in terms of degrees/s
 
   Example:
     <code>
-    double gx;
+    float gx;
     gx = ImuGetGyroX(&imu)
     </code>
 
@@ -378,15 +378,15 @@ double ImuGetGyroTemp(imu_t *imu) {
     None
 
 **************************************************************************************************/
-double ImuGetGyroX(imu_t *imu) {
-  double gx;
+float ImuGetGyroX(imu_t *imu) {
+  float gx;
   gx = GyroGetX(&imu->gyro_raw);
   return gx;
 }
 
 /************************************************************************************************** 
   Function:
-    double ImuGetGyroY(imu_t *imu)
+    float ImuGetGyroY(imu_t *imu)
 
   Author(s):
     mkobit
@@ -405,11 +405,11 @@ double ImuGetGyroX(imu_t *imu) {
     imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
-    double gy - gyroscope pitch in terms of degrees/s
+    float gy - gyroscope pitch in terms of degrees/s
 
   Example:
     <code>
-    double gz;
+    float gz;
     gz = ImuGetGyroZ(&imu)
     </code>
 
@@ -417,15 +417,15 @@ double ImuGetGyroX(imu_t *imu) {
     None
 
 **************************************************************************************************/
-double ImuGetGyroY(imu_t *imu) {
-  double gy;
+float ImuGetGyroY(imu_t *imu) {
+  float gy;
   gy = GyroGetY(&imu->gyro_raw);
   return gy;
 }
 
 /************************************************************************************************** 
   Function:
-    double ImuGetGyroZ(imu_t *imu)
+    float ImuGetGyroZ(imu_t *imu)
 
   Author(s):
     mkobit
@@ -444,11 +444,11 @@ double ImuGetGyroY(imu_t *imu) {
     imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
-    double gz - gyroscope yaw in terms of degrees/s
+    float gz - gyroscope yaw in terms of degrees/s
 
   Example:
     <code>
-    double gz;
+    float gz;
     gz = ImuGetGyroZ(&imu)
     </code>
 
@@ -456,15 +456,15 @@ double ImuGetGyroY(imu_t *imu) {
     None
 
 **************************************************************************************************/
-double ImuGetGyroZ(imu_t *imu) {
-  double gz;
+float ImuGetGyroZ(imu_t *imu) {
+  float gz;
   gz = GyroGetZ(&imu->gyro_raw);
   return gz;
 }
 
 /************************************************************************************************** 
   Function:
-    double ImuGetAccelX(imu_t *imu)
+    float ImuGetAccelX(imu_t *imu)
 
   Author(s):
     mkobit
@@ -483,11 +483,11 @@ double ImuGetGyroZ(imu_t *imu) {
     imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
-    double ax - accelerometer value in X in terms of 'g's
+    float ax - accelerometer value in X in terms of 'g's
 
   Example:
     <code>
-    double az;
+    float az;
     az = ImuGetAccelZ(&imu)
     </code>
 
@@ -495,15 +495,15 @@ double ImuGetGyroZ(imu_t *imu) {
     None
 
 **************************************************************************************************/
-double ImuGetAccelX(imu_t *imu) {
-  double ax;
+float ImuGetAccelX(imu_t *imu) {
+  float ax;
   ax = AccelGetX(&imu->accel_raw);
   return ax;
 }
 
 /************************************************************************************************** 
   Function:
-    double ImuGetAccelY(imu_t *imu)
+    float ImuGetAccelY(imu_t *imu)
 
   Author(s):
     mkobit
@@ -522,11 +522,11 @@ double ImuGetAccelX(imu_t *imu) {
     imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
-    double ay - accelerometer value in Y in terms of 'g's
+    float ay - accelerometer value in Y in terms of 'g's
 
   Example:
     <code>
-    double az;
+    float az;
     az = ImuGetAccelZ(&imu)
     </code>
 
@@ -534,15 +534,15 @@ double ImuGetAccelX(imu_t *imu) {
     None
 
 **************************************************************************************************/
-double ImuGetAccelY(imu_t *imu) {
-  double ay;
+float ImuGetAccelY(imu_t *imu) {
+  float ay;
   ay = AccelGetY(&imu->accel_raw);
   return ay;
 }
 
 /************************************************************************************************** 
   Function:
-    double ImuGetAccelZ(imu_t *imu)
+    float ImuGetAccelZ(imu_t *imu)
 
   Author(s):
     mkobit
@@ -561,11 +561,11 @@ double ImuGetAccelY(imu_t *imu) {
     imu_t *imu - pointer to imu containing raw accelerometer and raw gyroscope data
 
   Returns:
-    double az - accelerometer value in Z in terms of 'g's
+    float az - accelerometer value in Z in terms of 'g's
 
   Example:
     <code>
-    double az;
+    float az;
     az = ImuGetAccelZ(&imu)
     </code>
 
@@ -573,8 +573,8 @@ double ImuGetAccelY(imu_t *imu) {
     None
 
 **************************************************************************************************/
-double ImuGetAccelZ(imu_t *imu) {
-  double az;
+float ImuGetAccelZ(imu_t *imu) {
+  float az;
   az = AccelGetZ(&imu->accel_raw);
   return az;
 }

@@ -37,12 +37,12 @@ IMU_RESULT ImuUpdate(imu_t *imu);
 accel_raw_t *ImuGetRawAccel(imu_t *imu);
 gyro_raw_t *ImuGetRawGyro(imu_t *imu);
 BOOL ImuIsOn(imu_t *imu);
-double ImuGetGyroTemp(imu_t *imu);
-double ImuGetGyroX(imu_t *imu);       // X === Roll
-double ImuGetGyroY(imu_t *imu);       // Y === Pitch
-double ImuGetGyroZ(imu_t *imu);       // Z === Yaw
-double ImuGetAccelX(imu_t *imu);
-double ImuGetAccelY(imu_t *imu);
-double ImuGetAccelZ(imu_t *imu);
+float ImuGetGyroTemp(imu_t *p_imu);
+float ImuGetGyroX(imu_t *p_imu);       // X === Roll
+float ImuGetGyroY(imu_t *p_imu);       // Y === Pitch
+float ImuGetGyroZ(imu_t *p_imu);       // Z === Yaw
+float ImuGetAccelX(imu_t *p_imu);
+float ImuGetAccelY(imu_t *p_imu);
+float ImuGetAccelZ(imu_t *p_imu);
 
 #endif

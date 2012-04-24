@@ -3,7 +3,7 @@
 #include "adxl345.h"
 #include "i2c_shared.h"
 
-static double SCALES[4] = { .0039f, .0078f, .0156f, .0312f};  // from datasheet
+static float SCALES[4] = { .0039f, .0078f, .0156f, .0312f};  // from datasheet
 
 /************************************************************************************************** 
   Function:
@@ -241,11 +241,11 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
     accel_raw_t *raw - pointer to raw read data from accelerometer
 
   Returns:
-    double xf - value in X in terms of 'g's
+    float xf - value in X in terms of 'g's
 
   Example:
     <code>
-    double xg;
+    float xg;
     AccelReadAllAxes(I2C1, &accel_readings)
     xg = AccelGetX(&accel_readings)
     </code>
@@ -254,9 +254,9 @@ ACCEL_RESULT AccelReadAllAxes(I2C_MODULE i2c, accel_raw_t *raw) {
     None
 
 **************************************************************************************************/
-double AccelGetX(accel_raw_t *raw) {
-  double xf;
-  xf = (double) raw->x * SCALES[raw->scale_ind];
+float AccelGetX(accel_raw_t *raw) {
+  float xf;
+  xf = (float) raw->x * SCALES[raw->scale_ind];
   return xf;
 }
 
@@ -281,11 +281,11 @@ double AccelGetX(accel_raw_t *raw) {
     accel_raw_t *raw - pointer to raw read data from accelerometer
 
   Returns:
-    double xf - value in Y in terms of 'g's
+    float xf - value in Y in terms of 'g's
 
   Example:
     <code>
-    double yg;
+    float yg;
     AccelReadAllAxes(I2C1, &accel_readings)
     yg = AccelGetY(&accel_readings)
     </code>
@@ -294,9 +294,9 @@ double AccelGetX(accel_raw_t *raw) {
     None
 
 **************************************************************************************************/
-double AccelGetY(accel_raw_t *raw) {
-  double yf;
-  yf = (double) raw->y * SCALES[raw->scale_ind];
+float AccelGetY(accel_raw_t *raw) {
+  float yf;
+  yf = (float) raw->y * SCALES[raw->scale_ind];
   return yf;
 }
 
@@ -321,11 +321,11 @@ double AccelGetY(accel_raw_t *raw) {
     accel_raw_t *raw - pointer to raw read data from accelerometer
 
   Returns:
-    double zf - value in Z in terms of 'g's
+    float zf - value in Z in terms of 'g's
 
   Example:
     <code>
-    double zg;
+    float zg;
     AccelReadAllAxes(I2C1, &accel_readings)
     zg = AccelGetZ(&accel_readings)
     </code>
@@ -334,8 +334,8 @@ double AccelGetY(accel_raw_t *raw) {
     None
 
 **************************************************************************************************/
-double AccelGetZ(accel_raw_t *raw) {
-  double zf;
-  zf = (double) raw->z * SCALES[raw->scale_ind];
+float AccelGetZ(accel_raw_t *raw) {
+  float zf;
+  zf = (float) raw->z * SCALES[raw->scale_ind];
   return zf;
 }

@@ -81,9 +81,9 @@ GYRO_RESULT GyroInit(I2C_MODULE i2c, unsigned char dlpf_lpf, unsigned char sampl
 GYRO_RESULT GyroWrite(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char data);
 GYRO_RESULT GyroRead(I2C_MODULE i2c, unsigned char i2c_reg, unsigned char *buffer);
 GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp);
-double GyroGetTemp(gyro_raw_t *raw);
-double GyroGetX(gyro_raw_t *raw);   // X === Roll
-double GyroGetY(gyro_raw_t *raw);   // Y === Pitch
-double GyroGetZ(gyro_raw_t *raw);   // Z === Yaw
+float GyroGetTemp(gyro_raw_t *raw);
+float GyroGetX(gyro_raw_t *raw);   // X === Roll
+float GyroGetY(gyro_raw_t *raw);   // Y === Pitch
+float GyroGetZ(gyro_raw_t *raw);   // Z === Yaw
 
 #endif

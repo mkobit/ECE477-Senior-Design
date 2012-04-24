@@ -227,7 +227,7 @@ GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
 
 /************************************************************************************************** 
   Function:
-    double GyroGetTemp(gyro_raw_t *raw)
+    float GyroGetTemp(gyro_raw_t *raw)
 
   Author(s):
     mkobit
@@ -246,11 +246,11 @@ GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
     gyro_raw_t *raw - pointer to raw read data from gyro
 
   Returns:
-    double temperature - converted temperature in Celsius
+    float temperature - converted temperature in Celsius
 
   Example:
     <code>
-    double tempC
+    float tempC
     tempC = GyroGetTemp(&raw_gyro)
     </code>
 
@@ -258,8 +258,8 @@ GYRO_RESULT GyroReadAllAxes(I2C_MODULE i2c, gyro_raw_t *raw, BOOL readTemp) {
     None
 
 **************************************************************************************************/
-double GyroGetTemp(gyro_raw_t *raw) {
-  double temperature;
+float GyroGetTemp(gyro_raw_t *raw) {
+  float temperature;
   temperature = -GYRO_TEMP_OFFSET - raw->temp;
   temperature /= GYRO_TEMP_CONV_TO_DEGREES;
   temperature += GYRO_TEMP_OFFSET_DEGS;
@@ -268,7 +268,7 @@ double GyroGetTemp(gyro_raw_t *raw) {
 
 /************************************************************************************************** 
   Function:
-    double GyroGetX(gyro_raw_t *raw)
+    float GyroGetX(gyro_raw_t *raw)
 
   Author(s):
     mkobit
@@ -287,11 +287,11 @@ double GyroGetTemp(gyro_raw_t *raw) {
     gyro_raw_t *raw - pointer to raw read data from gyro
 
   Returns:
-    double xd - roll in terms of degrees/s
+    float xd - roll in terms of degrees/s
 
   Example:
     <code>
-    double roll
+    float roll
     roll = GyroGetX(&raw_gyro)
     </code>
 
@@ -299,15 +299,15 @@ double GyroGetTemp(gyro_raw_t *raw) {
     None
 
 **************************************************************************************************/
-double GyroGetX(gyro_raw_t *raw) {
-  double xd;
-  xd = (double) raw->x / GYRO_CONV_TO_DEGREES;
+float GyroGetX(gyro_raw_t *raw) {
+  float xd;
+  xd = (float) raw->x / GYRO_CONV_TO_DEGREES;
   return xd;
 }
 
 /************************************************************************************************** 
   Function:
-    double GyroGetY(gyro_raw_t *raw)
+    float GyroGetY(gyro_raw_t *raw)
 
   Author(s):
     mkobit
@@ -326,11 +326,11 @@ double GyroGetX(gyro_raw_t *raw) {
     gyro_raw_t *raw - pointer to raw read data from gyro
 
   Returns:
-    double yd - pitch in terms of degrees/s
+    float yd - pitch in terms of degrees/s
 
   Example:
     <code>
-    double pitch
+    float pitch
     pitch = GyroGetY(&raw_gyro)
     </code>
 
@@ -338,15 +338,15 @@ double GyroGetX(gyro_raw_t *raw) {
     None
 
 **************************************************************************************************/
-double GyroGetY(gyro_raw_t *raw) {
-  double yd;
-  yd = (double) raw->y / GYRO_CONV_TO_DEGREES;
+float GyroGetY(gyro_raw_t *raw) {
+  float yd;
+  yd = (float) raw->y / GYRO_CONV_TO_DEGREES;
   return yd;
 }
 
 /************************************************************************************************** 
   Function:
-    double GyroGetZ(gyro_raw_t *raw)
+    float GyroGetZ(gyro_raw_t *raw)
 
   Author(s):
     mkobit
@@ -365,11 +365,11 @@ double GyroGetY(gyro_raw_t *raw) {
     gyro_raw_t *raw - pointer to raw read data from gyro
 
   Returns:
-    double zd - yaw in terms of degrees/s
+    float zd - yaw in terms of degrees/s
 
   Example:
     <code>
-    double yaw
+    float yaw
     yaw = GyroGetZ(&raw_gyro)
     </code>
 
@@ -377,8 +377,8 @@ double GyroGetY(gyro_raw_t *raw) {
     None
 
 **************************************************************************************************/
-double GyroGetZ(gyro_raw_t *raw) {
-  double zd;
-  zd = (double) raw->z / GYRO_CONV_TO_DEGREES;
+float GyroGetZ(gyro_raw_t *raw) {
+  float zd;
+  zd = (float) raw->z / GYRO_CONV_TO_DEGREES;
   return zd;
 }

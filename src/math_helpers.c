@@ -53,9 +53,9 @@ Euler angles and quats - http://forum.onlineconversion.com/showthread.php?t=5408
   
   Parameters: 
     const float roll - roll angle, rotation about the X-axis
-		const float pitch - pitch angle, rotation about the Y-axis
-		const float yaw - yaw angle, rotation about the Z-axis
-		EULER_ANGLES *const e - Euler angles to be filled in
+    const float pitch - pitch angle, rotation about the Y-axis
+    const float yaw - yaw angle, rotation about the Z-axis
+    EULER_ANGLES *const e - Euler angles to be filled in
   
   Returns: 
     void
@@ -93,10 +93,10 @@ void MHelpers_FillInEuler(const float roll, const float pitch, const float yaw, 
   
   Parameters: 
     const float q0 - quaternion value q0
-		const float q1 - quaternion value q1
-		const float q2 - quaternion value q2
-		const float q3 - quaternion value q3
-		QUATERNION *const q - quaternion to be filled in
+    const float q1 - quaternion value q1
+    const float q2 - quaternion value q2
+    const float q3 - quaternion value q3
+    QUATERNION *const q - quaternion to be filled in
   
   Returns: 
     void
@@ -119,7 +119,7 @@ void MHelpers_FillInQuat(const float q0, const float q1, const float q2, const f
 
 /************************************************************************************************** 
   Function: 
-    void MHelpers_EulerToQuaternion(const EULER_ANGLES *const source, const QUATERNION *const dest)
+    void MHelpers_EulerToQuaternion(const EULER_ANGLES *const source, QUATERNION *const dest)
   
   Author(s): 
     mkobit
@@ -135,7 +135,7 @@ void MHelpers_FillInQuat(const float q0, const float q1, const float q2, const f
   
   Parameters: 
     const EULER_ANGLES *const source - source Euler angles to use
-    const QUATERNION *const dest - destination quaternion to convert values into
+    QUATERNION *const dest - destination quaternion to convert values into
   
   Returns: 
     void
@@ -149,11 +149,11 @@ void MHelpers_FillInQuat(const float q0, const float q1, const float q2, const f
     (dest) has converted quaternion from the (source) Euler angles
   
 **************************************************************************************************/
-void MHelpers_EulerToQuaternion(const EULER_ANGLES *const source, const QUATERNION *const dest) {
+void MHelpers_EulerToQuaternion(const EULER_ANGLES *const source, QUATERNION *const dest) {
   // local variables for readibility
-  const float roll = e->roll;
-  const float pitch = e->pitch;
-  const float yaw = e->yaw;
+  const float roll = source->roll;
+  const float pitch = source->pitch;
+  const float yaw = source->yaw;
   
   // Local variables for faster conversion
   const float cr = cosf(roll / 2);  // cos of roll
@@ -204,14 +204,14 @@ void MHelpers_EulerToQuaternion(const EULER_ANGLES *const source, const QUATERNI
 **************************************************************************************************/
 void MHelpers_QuaternionToEuler(const QUATERNION *const source, EULER_ANGLES *const dest) {
   // local variables for readibility
-  const float q0 = q->q0;
-  const float q1 = q->q1;
-  const float q2 = q->q2;
-  const float q3 = q->q3;
+  const float q0 = source->q0;
+  const float q1 = source->q1;
+  const float q2 = source->q2;
+  const float q3 = source->q3;
   
   // calculations for euler conversion
   dest->roll = atan2f(2 * (q0 * q1 + q2* q3), 1 - 2 * (q1 * q1 + q2 * q2));
-  dest->pitch = arcsinf(2 * (q0 * q2 - q3 * q1));
+  dest->pitch = asinf(2 * (q0 * q2 - q3 * q1));
   dest->yaw = atan2f(2* (q0 * q3 + q1 * q2), 1 - 2 * (q2 * q2 + q3 * q3));
 } 
 
@@ -247,13 +247,13 @@ void MHelpers_QuaternionToEuler(const QUATERNION *const source, EULER_ANGLES *co
   
 **************************************************************************************************/
 float MHelpers_FastInvSqrt(const float x) {
-	const float halfx = 0.5f * x;
-	float y = x;
-	long i = *(long*)&y;
-	i = 0x5f3759df - (i>>1);
-	y = *(float*)&i;
-	y = y * (1.5f - (halfx * y * y));
-	return y;
+  const float halfx = 0.5f * x;
+  float y = x;
+  long i = *(long*)&y;
+  i = 0x5f3759df - (i>>1);
+  y = *(float*)&i;
+  y = y * (1.5f - (halfx * y * y));
+  return y;
 }
 
 /************************************************************************************************** 

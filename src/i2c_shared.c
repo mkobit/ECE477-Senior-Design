@@ -115,7 +115,7 @@ static BOOL I2CShared_StartTransfer(I2C_MODULE i2c, BOOL restart) {
         //printf("I2CShared_StartTransfer: Waiting for bus to be idle\n");
         //I2CShared_DebugStatus(i2c);
         //I2CShared_ResetBus(i2c);
-        I2CShared_StopTransfer(i2c);
+        //I2CShared_StopTransfer(i2c);
     }
 
     //printf("I2CShared_StartTransfer\n");

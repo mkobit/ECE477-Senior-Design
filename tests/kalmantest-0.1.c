@@ -71,6 +71,7 @@ int main() {
 
   Kalman_MahonyInit(&kmah);
   Kalman_MadgwickInit(&kmad);
+  printf("PB speed = %u\n", pbFreq);
   printf("Kalmans initted\n");
   DelayS(2);
   printf("Beginning acquisition and filtering...");

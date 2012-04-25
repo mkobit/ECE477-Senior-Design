@@ -12,15 +12,14 @@
 #pragma config POSCMOD = HS
 #pragma config FNOSC = PRIPLL
 #pragma config FWDTEN = OFF // watchdog off
-#pragma config FPBDIV = DIV_2
+#pragma config FPBDIV = DIV_1
 
 #define SYS_CLOCK (80000000L)
 #define GetSystemClock()            (SYS_CLOCK)
-#define GetPeripheralClock()        (SYS_CLOCK/2)
 #define GetInstructionClock()       (SYS_CLOCK)
 
 #define TEST_I2C_BUS_ID              I2C1
-#define TEST_I2C_BUS_SPEED           (100000)
+#define TEST_I2C_BUS_SPEED           (400000)
 #define BAUDRATE 57600
 
 #define CLEAR_VT "\033[2J"
@@ -30,28 +29,30 @@
 typedef short int int16_t;
 #endif
 
-void OPENDEBUG();
+void OPENDEBUG(unsigned int pbFreq);
 
 int main() {
-  int pbFreq;
+  unsigned int pbFreq;
   long int delayed = 0;
   BOOL result = TRUE;
   BOOL init_res;
   unsigned char data = 0xFF;
+  us_t t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14;
   int16_t ax,ay,az;
   int16_t gx,gy,gz,gt;
 
   SYSTEMConfig(GetSystemClock(), SYS_CFG_ALL);
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
   
-  //OPENDEBUG();
+  //OPENDEBUG(pbFreq);
   OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
             (pbFreq/16/BAUDRATE) - 1);
 
-  DelayInit(GetSystemClock());
+  DelayInit(pbFreq);
   ///UARTSendData(UART2, CLEAR_VT);
+
   putsUART2(CLEAR_VT);
-  init_res = I2CShared_Init(TEST_I2C_BUS_ID, GetPeripheralClock(), TEST_I2C_BUS_SPEED);
+  init_res = I2CShared_Init(TEST_I2C_BUS_ID, pbFreq, TEST_I2C_BUS_SPEED);
   
   printf("Starting -> init_res = %d\n", (int) init_res);
   // accelerometer ID
@@ -138,52 +139,71 @@ int main() {
   DelayS(4);
   do {
       ax = 0; ay = 0; az = 0; gx = 0; gy = 0; gz = 0; gt = 0;
-      DelayMs(200);
+      DelayMs(400);
       putsUART2(CLEAR_VT);
       // clear terminal before reading and updating
       // accel
+      t1 = DelayUtilGetUs();
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x33, &data);   // X MSB
+      t2 = DelayUtilGetUs();
       ax = ax | (data << 8);
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x32, &data);   // X LSB
+      t3 = DelayUtilGetUs();
       ax = ax | data;
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x35, &data);   // Y MSB
+      t4 = DelayUtilGetUs();
       ay = ay | (data << 8);
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x34, &data);   // Y LSB
+      t5 = DelayUtilGetUs();
       ay = ay | data;
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x37, &data);   // Z MSB
+      t6 = DelayUtilGetUs();
       az = az | (data << 8);
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x36, &data);   // Z LSB
+      t7 = DelayUtilGetUs();
       az = az | data;
       // gyro
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1B, &data);   // T MSB
+      t8 = DelayUtilGetUs();
       gx = gx | (data << 8);
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1C, &data);   // T LSB
+      t9 = DelayUtilGetUs();
       gx = gx | data;
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1D, &data);   // X MSB
+      t10 = DelayUtilGetUs();
       gx = gx | (data << 8);
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1E, &data);   // X LSB
+      t11 = DelayUtilGetUs();
       gx = gx | data;
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1F, &data);   // Y MSB
+      t11 = DelayUtilGetUs();
       gy = gy | (data << 8);
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x20, &data);   // Y LSB
+      t12 = DelayUtilGetUs();
       gy = gy | data;
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x21, &data);   // Z MSB
+      t13 = DelayUtilGetUs();
       gz = gz | (data << 8);
       I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x22, &data);   // Z LSB
+      t14 = DelayUtilGetUs();
       gz = gz | data;
       // print results
-      printf("ax = %5d, ay = %5d, az = %5d\n", ax,ay,az);
-      printf("gx = %5d, gy = %5d, gz = %5d, gt = %5d\n", gx, gy, gz, gt);
+      printf("ax = %5d, ay = %5d, az = %5d\ntimes per byte = %u, %u, %u, %u, %u, %u\n", ax,ay,az, DelayUtilElapsedUs(t2,t1), \
+              DelayUtilElapsedUs(t3,t2), DelayUtilElapsedUs(t4,t3), DelayUtilElapsedUs(t5,t4), DelayUtilElapsedUs(t6,t5), DelayUtilElapsedUs(t7,t6));
+      printf("\ngx = %5d, gy = %5d, gz = %5d, gt = %5d\ntimes per byte= %u, %u, %u\n", gx, gy, gz, gt, DelayUtilElapsedUs(t8, t7), \
+              DelayUtilElapsedUs(t9,t8), DelayUtilElapsedUs(t10,t9), DelayUtilElapsedUs(t11,t10), DelayUtilElapsedUs(t12,t11), \
+              DelayUtilElapsedUs(t13,t12),DelayUtilElapsedUs(t14,t13));
+      printf("Total time =%u\n", DelayUtilElapsedUs(t14,t1));
       delayed++;
-  } while(delayed < 300);
+  } while(delayed < 800);
 
   while(1) {}
   return 0;
 }
 
-void OPENDEBUG() {
+void OPENDEBUG(unsigned int pbFreq) {
   UARTConfigure(UART2, UART_ENABLE_PINS_TX_RX_ONLY);
   UARTSetLineControl(UART2, UART_DATA_SIZE_8_BITS | UART_PARITY_NONE | UART_STOP_BITS_1);
-  UARTSetDataRate(UART2, GetPeripheralClock(), BAUDRATE);
+  UARTSetDataRate(UART2, pbFreq, BAUDRATE);
   UARTEnable(UART2, UART_ENABLE | UART_TX_ENABLE);
 }

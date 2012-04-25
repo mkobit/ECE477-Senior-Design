@@ -21,7 +21,7 @@
 #pragma config POSCMOD = HS
 #pragma config FNOSC = PRIPLL
 #pragma config FWDTEN = OFF // watchdog off
-#pragma config FPBDIV = DIV_2
+#pragma config FPBDIV = DIV_1
 
 // Clock Constants
 #define SYS_CLOCK (80000000L)

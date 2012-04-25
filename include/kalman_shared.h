@@ -10,17 +10,17 @@
 
 // Structure of euler angles that could possibly be used
 typedef struct EULER_ANGLES {
-  float roll;   // rotation about the X-axis
-  float pitch;  // rotation about the Y-axis
-  float yaw;  // rotation about the Z-axis
+  volatile float phi;   
+  volatile float theta;  
+  volatile float psi;  
 } EULER_ANGLES;
 
 // Quaternion of sensor frame relative to auxiliary frame
 typedef struct QUATERNION  {
-  float q0;
-  float q1;
-  float q2;
-  float q3;
+  volatile float q0;
+  volatile float q1;
+  volatile float q2;
+  volatile float q3;
 } QUATERNION;
 
 typedef struct ROTATION_AXIS {
@@ -29,5 +29,10 @@ typedef struct ROTATION_AXIS {
   float axis_z;
 } ROTATION_AXIS;
 
+typedef struct YPR {
+  volatile float yaw;   // rotation about the X-axis
+  volatile float pitch; // rotation about the Y-axis
+  volatile float roll;  // rotation about the Z-axis
+};
 
 #endif

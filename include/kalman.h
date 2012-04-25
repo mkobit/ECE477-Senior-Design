@@ -14,9 +14,9 @@ typedef struct KALMAN_STATE_MADGWICK {
 typedef struct KALMAN_STATE_MAHONY {
   QUATERNION q;
   // integral error terms scaled by Ki
-  float integralFBx;
-  float integralFBy;
-  float integralFBz;
+  volatile float integralFBx;
+  volatile float integralFBy;
+  volatile float integralFBz;
 }KALMAN_STATE_MAHONY;
 
 void Kalman_MadgwickInit(KALMAN_STATE_MADGWICK *const q);

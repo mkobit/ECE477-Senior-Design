@@ -33,6 +33,6 @@ typedef struct YPR {
   volatile float yaw;   // rotation about the X-axis
   volatile float pitch; // rotation about the Y-axis
   volatile float roll;  // rotation about the Z-axis
-};
+} YPR;
 
 #endif

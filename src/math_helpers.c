@@ -118,10 +118,10 @@ void MHelpers_FillInQuat(const float q0, const float q1, const float q2, const f
 }
 
 //TODO doc
-void MHelpers_FillInYPR(const float yaw, const float pitch, const float raw, YPR *const ypr) {
+void MHelpers_FillInYPR(const float yaw, const float pitch, const float roll, YPR *const ypr) {
   ypr->yaw = yaw;
   ypr->pitch = pitch;
-  ypr->yaw = yaw;
+  ypr->roll = roll;
 }
 
 /************************************************************************************************** 
@@ -220,15 +220,16 @@ void MHelpers_QuaternionToEuler(const QUATERNION *const source, EULER_ANGLES *co
   float psi, theta, phi;
 
   // calculations for euler conversion
-  psi = MHelpers_RadiansToDegrees(atan2(2 * q1 * q2 - 2 * q0 * q3, 2 * q0*q0 + 2 * q1*q1 - 1)) // psi
-  theta = MHelpers_RadiansToDegrees(-asin(2 * q1 * q3 + 2 * q0 * q2)); // theta
-  phi = MHelpers_RadiansToDegrees(atan2(2 * q2 * q3 - 2 * q0 * q1, 2 * q0*q0 + 2 * q3*q3 - 1)); // phi
+  psi = MHelpers_RadiansToDegrees(atan2f(2 * q1 * q2 - 2 * q0 * q3, 2 * q0*q0 + 2 * q1*q1 - 1)); // psi
+  theta = MHelpers_RadiansToDegrees(-asinf(2 * q1 * q3 + 2 * q0 * q2)); // theta
+  phi = MHelpers_RadiansToDegrees(atan2f(2 * q2 * q3 - 2 * q0 * q1, 2 * q0*q0 + 2 * q3*q3 - 1)); // phi
 
   MHelpers_FillInEuler(psi, theta, phi, dest);
 } 
 
 void MHelpers_QuaternionToYPR(const QUATERNION *const source, YPR *const ypr) {
   float gx, gy, gz; // estimated gravity direction
+  float yaw, pitch, roll;
 
   // local variables for readibility
   const float q0 = source->q0;
@@ -240,9 +241,10 @@ void MHelpers_QuaternionToYPR(const QUATERNION *const source, YPR *const ypr) {
   gy = 2 * (q0*q1 + q2*q3);
   gz = q0*q0 - q1*q1 - q2*q2 + q3*q3;
 
-  ypr = MHelpers_RadiansToDegrees(atan2f(2 * q1 * q2 - 2 * q0 * q3, 2 * q0*q0 + 2 * q1 * q1 - 1));
-  ypr[1] = MHelpers_RadiansToDegrees(atanf(gx / sqrtf(gy*gy + gz*gz)));
-  ypr[2] = MHelpers_RadiansToDegrees(atanf(gy / sqrtf(gx*gx + gz*gz)));
+  yaw = MHelpers_RadiansToDegrees(atan2f(2 * q1 * q2 - 2 * q0 * q3, 2 * q0*q0 + 2 * q1 * q1 - 1));
+  pitch = MHelpers_RadiansToDegrees(atanf(gx / sqrtf(gy*gy + gz*gz)));
+  roll = MHelpers_RadiansToDegrees(atanf(gy / sqrtf(gx*gx + gz*gz)));
+  MHelpers_FillInYPR(yaw, pitch, roll, ypr);
   
 }
 

@@ -210,6 +210,11 @@ void ImuSetID(imu_t *const p_imu, const imu_id id) {
     p_imu->id = id;
 }
 
+//TODO doc
+imu_id ImuGetId(const imu_t *const p_imu) {
+  return (p_imu->id);
+}
+
 // TODO doc
 void ImuResetI2CBus(const imu_t *p_imu) {
   I2CShared_ResetBus(p_imu->i2c_module);

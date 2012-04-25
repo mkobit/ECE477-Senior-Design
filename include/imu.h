@@ -38,6 +38,7 @@ accel_raw_t *ImuGetRawAccel(imu_t *const p_imu);
 gyro_raw_t *ImuGetRawGyro(imu_t *const p_imu);
 BOOL ImuIsOn(const imu_t *const p_imu);
 void ImuSetID(imu_t *const p_imu, const imu_id id);
+imu_id ImuGetId(const imu_t *const p_imu);
 void ImuResetI2CBus(const imu_t *p_imu);
 float ImuGetGyroTemp(const imu_t *const p_imu);
 float ImuGetGyroX(const imu_t *const p_imu);       // X === Roll

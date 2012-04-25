@@ -76,6 +76,7 @@ int main() {
   DelayS(2);
   printf("Beginning acquisition and filtering...");
   DelayS(2);
+  t5 = DelayUtilGetUs();
   while(1) {
     DelayMs(TEST_UPDATE_FREQ);
     putsUART2(CLEAR_VT);
@@ -100,11 +101,11 @@ int main() {
     q = &(kmad.q);
     printf("\nMadg variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
     MHelpers_QuaternionToEuler(q, &e);
-    printf("In Euler      : roll=%6.2f pitch=%6.2f yaw=%6.2f\n", e.pitch, e.roll, e.yaw);
+    printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
     q = &(kmah.q);
     printf("\nMah  variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
     MHelpers_QuaternionToEuler(q, &e);
-    printf("In Euler      : roll=%6.2f pitch=%6.2f yaw=%6.2f\n", e.pitch, e.roll, e.yaw);
+    printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
   }
 
 

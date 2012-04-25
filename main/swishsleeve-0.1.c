@@ -37,6 +37,7 @@
 /* IMU DEFINES AND CONSTANTS */
 // IDs and corresponding I2C modules to be used with the IMUs
 // These same IDs should be used on the base station
+#define N_IMUS 3
 #define ID_UPPER_ARM 0
 #define I2C_UPPER_ARM I2C1
 #define ID_FORE_ARM 1
@@ -57,12 +58,18 @@
 
 /* KALMAN DEFINES AND CONSTANTS */
 // TODO need update rate
+#define SAMPLE_FREQ 100.0f  // 1 / 10 ms
+
+/* XBEE DEFINES AND CONSTANTS */
+// TODO all xbee settings here
 
 /* LCD DEFINES AND CONSTANTS */
 #define LCD_INPUTS 11
 // Settings that are being used
 #define CURSOR_VAL LCD_CURSOR_OFF
 #define CURSOR_BLINK LCD_CURSOR_BLINK_OFF
+
+#define LCD_DISP_THRESH 1000
 
 typedef struct LCD_PAIR {
     unsigned int bitnum;
@@ -74,6 +81,7 @@ typedef struct LCD_PAIR {
 #define INIT_MESSAGE2 "Initializing."
 #define INIT_MESSAGE3 "Initializing.."
 #define INIT_MESSAGE4 "Initializing..."
+#define READY_MESSAGE "System Ready\nAcquiring data..."
 #define IMU_ERROR "IMU ERROR"
 #define BATT_PRE "Battery: "
 #define RSSI_PRE "RSSI: "
@@ -94,43 +102,61 @@ LCD_PAIR lcd_pairs[LCD_INPUTS] = {  // TODO fix these for the actual project
 
 
 // Pins and ports used for button reset TODO
+volatile BOOL RECALIBRATE = FALSE;
 
-// Settings for timer interrupt
+// Settings for timer interrupt, 10 ms interrupt
+#define TIM1_SETTINGS (T1_ON | T1_SOURCE_INT | T1_PS_1_256)
+#define TIM1_PERIOD 3124  // Done by hand and tested for 10 ms, SYS_CLOCK / PBFREQ / TIM1_PS / 1000 / (1 / 10 ms)
 volatile BOOL UPDATE = FALSE;     // flag for update that timer will change
 
+
 // Utility functions used in here
-BOOL ButtonReset();
+void ButtonConfig();
+void ButtonCheck();
+// Timer interrupt functions
+void ConfigTimer1Intrs();
+#define SetTimer1Intrs(on) mT1IntEnable(on) // simple macro expansion to the mT1IntEnable
+// Interrupt handler for Timer1 is called 'Timer1IntrHandler'
 void UpdateLCDStatus(int signalPercent, int batteryPercent);
 
+/*** MAIN SWISH SLEEVE PROGRAM ***/
 int main() {
-  // IMUs variables
+  // Loop variables
+  int i;
+
+  // IMUs
   imu_t imu_upper_arm;
   imu_t imu_fore_arm;
   imu_t imu_hand;
+  // Determine which IMU to update first, start with IMU 0
+  int lastUpdateImu = 0;
 
-  // Kalman filter state variables
+  // Kalman filter states
   KALMAN_STATE_MADGWICK k_upper_arm;
   KALMAN_STATE_MADGWICK k_fore_arm;
   KALMAN_STATE_MADGWICK k_hand;
 
-  // Result variables to keep track
+  // Percentage readings from RSSI of Xbee and battery monitor *NOT CONFIGED*
+  int rssiPercentage = -1;
+  int batteryPercentage = -1;
+  
+  // Result variables to keep track of statuses from libraries
   IMU_RESULT imu_res;
 
-  // Actual peripheral bus frequency variable
+  // Actual peripheral bus frequency
   unsigned int pbFreq;
 
+  // Counters for updating IMUs in cyclic order, LCD, battery monitor, and possibly(?) FIXME the RSSI
+  unsigned int lcd_update_counter = 0;
+  //  unsigned int bmon_update_counter = 0; *UNUSED*
+  
   // Const pointers assigned to each IMU for readability
-  imu_t *const p_up_arm = &imu_upper_arm;
-  imu_t *const p_fore_arm = &imu_fore_arm;
-  imu_t *const p_hand = &imu_hand;
+  imu_t *const p_imus[N_IMUS] = {&imu_upper_arm, &imu_fore_arm, &imu_hand};
 
   // Const pointers assigned to each Kalman filter state
-  KALMAN_STATE_MADGWICK *const pK_up_arm = &k_upper_arm;
-  KALMAN_STATE_MADGWICK *const pK_fore_arm = &k_fore_arm;
-  KALMAN_STATE_MADGWICK *const pK_hand = &k_hand;
+  KALMAN_STATE_MADGWICK *const pKs[N_IMUS] = {&k_upper_arm, &k_fore_arm, &k_hand};
 
   
-
   // Initialize components needed
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
 
@@ -152,38 +178,90 @@ int main() {
     LCD_DOTS_5x8);
   LcdInstrSetDisplayMode(LCD_DISPLAY_ON, CURSOR_VAL, CURSOR_BLINK);
   // Display initializing message
-  LcdDisplayData(INIT_MESSAGE1);
+  LcdClearAndDisplayData(INIT_MESSAGE1);
 
   // Initialize IMUs
   // Set IMU IDs
-  ImuSetID(p_up_arm, ID_UPPER_ARM);
-  ImuSetID(p_fore_arm, ID_FORE_ARM);
-  ImuSetID(p_hand, ID_HAND);
+  ImuSetID(p_imus[ID_UPPER_ARM], ID_UPPER_ARM);
+  ImuSetID(p_imus[ID_FORE_ARM], ID_FORE_ARM);
+  ImuSetID(p_imus[ID_HAND], ID_HAND);
   // Initialize IMUs
-  imu_res = ImuInit(p_up_arm, I2C_UPPER_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
-  LcdDisplayData(INIT_MESSAGE2);
-  imu_res = ImuInit(p_fore_arm, I2C_FORE_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
-  LcdDisplayData(INIT_MESSAGE3);
-  imu_res = ImuInit(p_hand, I2C_HAND, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL); // TODO pic32mx360 only has 2 i2c ports
-  LcdDisplayData(INIT_MESSAGE4);
+  imu_res = ImuInit(p_imus[ID_UPPER_ARM], I2C_UPPER_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
+  LcdClearAndDisplayData(INIT_MESSAGE2);
+  imu_res = ImuInit(p_imus[ID_FORE_ARM], I2C_FORE_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
+  LcdClearAndDisplayData(INIT_MESSAGE3);
+  imu_res = ImuInit(p_imus[ID_HAND], I2C_HAND, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL); // TODO pic32mx360 only has 2 i2c ports
+  LcdClearAndDisplayData(INIT_MESSAGE4);
 
   // Initialize Kalman state - USING MADGWICK FOR NOW
-  Kalman_MadgwickInit(pK_up_arm);
-  Kalman_MadgwickInit(pK_fore_arm);
-  Kalman_MadgwickInit(pK_hand);
-  LcdDisplayData(INIT_MESSAGE1);
+  for (i = 0; i < N_IMUS; i++) {
+    Kalman_MadgwickInit(pKs[i]);
+  }
+  LcdClearAndDisplayData(INIT_MESSAGE1);
 
+  // Configure reset button
+  ButtonConfig();
+
+  // Configure interrupts for the system as multi vector
+  INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR);
+  
   // Set timer for interrupts based on how often IMUUpdate and KalmanUpdate occur
+  ConfigTimer1Intrs();
 
+  // TODO other imu results/calibrations and also a printout for IMUs that fail and/or successful
 
-  // TODO other imu results and also a printout for IMUs that fail and/or successful
+  LcdClearAndDisplayData(READY_MESSAGE);
+  DelayS(3);
+  // Enable interrupts
+  INTEnableInterrupts();
+  // Enable Timer1 interrupts
+  SetTimer1Intrs(TRUE);
 
+  // Main loop,
+  while(1) {
+    // Wait until timer interrupt trigures an update
+    while(!UPDATE);
+
+    // Update IMUs
+    for (i = 0; i < N_IMUS; i++) {
+      // Update in a different order each time for fairness
+      ImuUpdate(p_imus[(i + lastUpdateImu) % N_IMUS]);
+    }
+    // Change which IMU gets updated first
+    lastUpdateImu = (lastUpdateImu + 1) % N_IMUS;
+
+    // Kalman filter the data
+    for (i = 0; i < N_IMUS; i++) {
+      // Order does not matter here
+      Kalman_MadgwickUpdate(p_imus[i], pKs[i], SAMPLE_FREQ);
+    }
+
+    // Update RSSI if at threshhold
+    // TODO
+
+    // Update battery monitor at threshhold
+    // *NOT BEING USED RIGHT NOW*
+
+    // Output data via XBee
+    
+    // Display data to LCD, if at threshhold
+    if (lcd_update_counter++ == LCD_DISP_THRESH) {
+      UpdateLCDStatus(rssiPercentage, batteryPercentage);
+      // Reset counter
+      lcd_update_counter = 0;
+    }
+  }
 
   return 0;
 }
 
 // TODO
-BOOL ButtonRest() {
+void ButtonConfig() {
+  
+}
+
+// TODO
+void ButtonCheck() {
   // TODO
   static BOOL past = 0;
   static BOOL current = 0;
@@ -191,18 +269,35 @@ BOOL ButtonRest() {
   return FALSE;
 }
 
+// TODO
+void ConfigTimer1Intrs() {
+  // Configure timers for our target update rate
+  ConfigIntTimer1(T1_INT_OFF | T1_INT_PRIOR_1);
+  OpenTimer1(TIM1_SETTINGS, TIM1_PERIOD);
+}
+
+// TODO
+void __ISR(_TIMER_1_VECTOR, ipl1) Timer1IntrHandler() {
+  // Clear interrupt flag
+  mT1ClearIntFlag();
+  // Handle timer 1 interrupt
+  if (UPDATE == TRUE) {
+    printf("\nERROR: TIMER1 Interrupt happened before last calculations were completed\n\n");
+  }
+  UPDATE = TRUE;
+}
+
 // DONE doc this
 void UpdateLCDStatus(int signalPercent, int batteryPercent) {
-  char buffer[17];
+  char buffer[35];
   char percentageval[5];
-
-  // Return to home address without instruction
-  LcdInstrSetDDRAMAddress(LINE_1);
 
   // Display signal message
   if (signalPercent <= 0) {
-    // invalid signal strength
-    LcdDisplayData(RSS_INVAL);
+    // invalid signal strength, copy to buffer
+    strcpy(buffer, RSS_INVAL);
+    // Append newline to data for battery message
+    strcat(buffer, "\n");
   } else {
     strcpy(buffer, BATT_PRE);
     // Format battery string
@@ -210,25 +305,23 @@ void UpdateLCDStatus(int signalPercent, int batteryPercent) {
     strcat(buffer, percentageval);
     strcat(buffer, percentageval);
     strcat(buffer, "%");
-    // Display formatted signal string to LCD
-    LcdDisplayData(buffer);
+    // Append newline to data for battery message
+    strcat(buffer, "\n");
   }
 
-  // Move to second line
-  LcdInstrSetDDRAMAddress(LINE_2);
-  
   // Display battery message
   if (batteryPercent <= 0) {
-    LcdDisplayData(RSS_INVAL);
+    // Concat RSSI error message
+    strcat(buffer, RSS_INVAL);
   } else {
-    strcpy(buffer, RSSI_PRE);
+    strcat(buffer, RSSI_PRE);
     // Format battery string
     itoa(percentageval, batteryPercent, 10);
     strcat(buffer, percentageval);
     strcat(buffer, percentageval);
     strcat(buffer, "%");
-    // Display formatted battery string to LCD
-    LcdDisplayData(buffer);
   }
 
+  // Clear and display this new changes
+  LcdClearAndDisplayData(buffer);
 }

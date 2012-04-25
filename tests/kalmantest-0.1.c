@@ -26,7 +26,6 @@
 // Clock Constants
 #define SYS_CLOCK (80000000L)
 #define GetSystemClock()            (SYS_CLOCK)
-#define GetPeripheralClock()        (SYS_CLOCK/2)
 #define GetInstructionClock()       (SYS_CLOCK)
 
 #define TEST_I2C_BUS_ID              I2C1

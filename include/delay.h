@@ -6,7 +6,7 @@
 
 typedef unsigned int us_t;
 
-void DelayInit(const UINT clock_hz);
+void DelayInit(const UINT pbFreq);
 void DelayS(const UINT s);
 void DelayMs(const UINT ms);
 void DelayUs(const UINT us);

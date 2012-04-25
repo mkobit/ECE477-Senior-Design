@@ -95,26 +95,41 @@ LCD_PAIR lcd_pairs[LCD_INPUTS] = {  // TODO fix these for the actual project
 
 // Pins and ports used for button reset TODO
 
+// Settings for timer interrupt
+volatile BOOL UPDATE = FALSE;     // flag for update that timer will change
 
 // Utility functions used in here
 BOOL ButtonReset();
 void UpdateLCDStatus(int signalPercent, int batteryPercent);
 
 int main() {
-  // IMUs to be used
+  // IMUs variables
   imu_t imu_upper_arm;
   imu_t imu_fore_arm;
   imu_t imu_hand;
 
-  unsigned int pbFreq;  // Peripheral bus frequency
+  // Kalman filter state variables
+  KALMAN_STATE_MADGWICK k_upper_arm;
+  KALMAN_STATE_MADGWICK k_fore_arm;
+  KALMAN_STATE_MADGWICK k_hand;
 
-  // Assign pointers to each IMU for readability and faster access
+  // Result variables to keep track
+  IMU_RESULT imu_res;
+
+  // Actual peripheral bus frequency variable
+  unsigned int pbFreq;
+
+  // Const pointers assigned to each IMU for readability
   imu_t *const p_up_arm = &imu_upper_arm;
   imu_t *const p_fore_arm = &imu_fore_arm;
   imu_t *const p_hand = &imu_hand;
 
-  // Result variables to keep track
-  IMU_RESULT imu_res;
+  // Const pointers assigned to each Kalman filter state
+  KALMAN_STATE_MADGWICK *const pK_up_arm = &k_upper_arm;
+  KALMAN_STATE_MADGWICK *const pK_fore_arm = &k_fore_arm;
+  KALMAN_STATE_MADGWICK *const pK_hand = &k_hand;
+
+  
 
   // Initialize components needed
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
@@ -136,7 +151,7 @@ int main() {
     lcd_pairs[10].bitnum, lcd_pairs[10].port_id,
     LCD_DOTS_5x8);
   LcdInstrSetDisplayMode(LCD_DISPLAY_ON, CURSOR_VAL, CURSOR_BLINK);
-  // Display initializing
+  // Display initializing message
   LcdDisplayData(INIT_MESSAGE1);
 
   // Initialize IMUs
@@ -146,18 +161,30 @@ int main() {
   ImuSetID(p_hand, ID_HAND);
   // Initialize IMUs
   imu_res = ImuInit(p_up_arm, I2C_UPPER_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
+  LcdDisplayData(INIT_MESSAGE2);
+  imu_res = ImuInit(p_fore_arm, I2C_FORE_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
+  LcdDisplayData(INIT_MESSAGE3);
+  imu_res = ImuInit(p_hand, I2C_HAND, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL); // TODO pic32mx360 only has 2 i2c ports
+  LcdDisplayData(INIT_MESSAGE4);
+
+  // Initialize Kalman state - USING MADGWICK FOR NOW
+  Kalman_MadgwickInit(pK_up_arm);
+  Kalman_MadgwickInit(pK_fore_arm);
+  Kalman_MadgwickInit(pK_hand);
+  LcdDisplayData(INIT_MESSAGE1);
+
+  // Set timer for interrupts based on how often IMUUpdate and KalmanUpdate occur
+
+
   // TODO other imu results and also a printout for IMUs that fail and/or successful
 
-
-
-  
 
   return 0;
 }
 
 // TODO
 BOOL ButtonRest() {
-    // TODO
+  // TODO
   static BOOL past = 0;
   static BOOL current = 0;
 

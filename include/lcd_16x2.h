@@ -79,6 +79,7 @@ void LcdInstrShiftCursorOrDisplay(const UINT8 shift_select, const UINT8 shift_di
 void LcdInstrSetCGRAMAddress(const UINT8 address);
 void LcdInstrSetDDRAMAddress(const UINT8 address);
 void LcdDisplayData(UINT8 *data);
+void LcdClearAndDisplayData(UINT8 *data);
 void LcdDisplayChar(const UINT8 c);
 
 #endif

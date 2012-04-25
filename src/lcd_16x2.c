@@ -600,6 +600,11 @@ void LcdDisplayChar(const UINT8 c) {
   DelayUs(50);// 43 us + 15%
 }
 
+void LcdClearAndDisplayData(UINT8 *data) {
+  LcdInstrClearDisplay();
+  LcdDisplayData(data);
+}
+
 /************************************************************************************************** 
   Function: 
     static void LcdSetOutputs(const int rs, const int rw, const UINT8 c)

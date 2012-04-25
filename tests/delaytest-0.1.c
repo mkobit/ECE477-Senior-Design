@@ -46,7 +46,7 @@ int main(void)
 	pbFreq = SYSTEMConfigPerformance(SYSTEM_FREQUENCY);
 	OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
 		(pbFreq/16/BAUDRATE) - 1);
-	DelayInit(SYSTEM_FREQUENCY);
+	DelayInit(pbFreq);
 	putsUART2(CLEAR_VT);
 	DelayMs(1500);
 	putsUART2("Beginning in 3...\r\n");

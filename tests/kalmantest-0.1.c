@@ -52,7 +52,7 @@ int main() {
   //OPENDEBUG();
   OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
             (pbFreq/16/BAUDRATE) - 1);
-  DelayInit(GetSystemClock());
+  DelayInit(pbFreq);
   putsUART2(CLEAR_VT);
   p_imu = &imu;
   imu_res = ImuInit(p_imu,

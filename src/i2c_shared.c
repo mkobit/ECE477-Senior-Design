@@ -45,7 +45,6 @@ static void I2CShared_DebugStatus(const I2C_MODULE i2c);
 **************************************************************************************************/
 BOOL I2CShared_Init(const I2C_MODULE i2c, const UINT peripheral_clock_speed, const UINT i2c_speed) {
   UINT actualClock;
-  
   I2CConfigure(i2c, I2C_ENABLE_HIGH_SPEED);
 
   // Check clock rate for peripheral bus
@@ -54,12 +53,14 @@ BOOL I2CShared_Init(const I2C_MODULE i2c, const UINT peripheral_clock_speed, con
     printf("I2CShared_Init: Error, I2C clock frequency (%u) error exceeds 10%%n\n", actualClock);
     return FALSE;
   }
-  // Enable I2C
-  I2CShared_ResetBus(i2c);
-  //I2CEnable(i2c, TRUE);
+
+  I2CEnable(i2c, FALSE);
+  I2CEnable(i2c, TRUE);
+  I2CClearStatus(i2c, I2C_TRANSMITTER_FULL | I2C_DATA_AVAILABLE | \
+  I2C_SLAVE_READ | I2C_START | I2C_STOP | I2C_SLAVE_DATA | I2C_RECEIVER_OVERFLOW | I2C_TRANSMITTER_OVERFLOW | \
+  I2C_10BIT_ADDRESS | I2C_GENERAL_CALL | I2C_ARBITRATION_LOSS | I2C_TRANSMITTER_BUSY | I2C_BYTE_ACKNOWLEDGED);
   
   //Debug
-  //printf("I2CShared_Init status print\n");
   //I2CShared_DebugStatus(i2c);
 
   //I2CClearStatus(i2c, I2C_START | I2C_STOP | I2C_ARBITRATION_LOSS);

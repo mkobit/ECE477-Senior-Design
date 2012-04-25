@@ -37,7 +37,7 @@ Euler angles and quats - http://forum.onlineconversion.com/showthread.php?t=5408
 
 /************************************************************************************************** 
   Function: 
-    void MHelpers_FillInEuler(const float roll, const float pitch, const float yaw, EULER_ANGLES *const e)
+    void MHelpers_FillInEuler(const float psi, const float theta, const float phi, EULER_ANGLES *const e)
   
   Author(s): 
     mkobit
@@ -52,9 +52,9 @@ Euler angles and quats - http://forum.onlineconversion.com/showthread.php?t=5408
     None
   
   Parameters: 
-    const float roll - roll angle, rotation about the X-axis
-    const float pitch - pitch angle, rotation about the Y-axis
-    const float yaw - yaw angle, rotation about the Z-axis
+    const float psi -
+    const float theta -
+    const float phi -
     EULER_ANGLES *const e - Euler angles to be filled in
   
   Returns: 
@@ -69,10 +69,10 @@ Euler angles and quats - http://forum.onlineconversion.com/showthread.php?t=5408
     (e) filled in with euler angles
   
 **************************************************************************************************/
-void MHelpers_FillInEuler(const float roll, const float pitch, const float yaw, EULER_ANGLES *const e) {
-  e->roll = roll;
-  e->pitch = pitch;
-  e->yaw = yaw;
+void MHelpers_FillInEuler(const float psi, const float theta, const float phi, EULER_ANGLES *const e) {
+  e->psi = psi;
+  e->theta = theta;
+  e->phi = phi;
 }
 
 /************************************************************************************************** 
@@ -117,6 +117,13 @@ void MHelpers_FillInQuat(const float q0, const float q1, const float q2, const f
   q->q3 = q3;
 }
 
+//TODO doc
+void MHelpers_FillInYPR(const float yaw, const float pitch, const float raw, YPR *const ypr) {
+  ypr->yaw = yaw;
+  ypr->pitch = pitch;
+  ypr->yaw = yaw;
+}
+
 /************************************************************************************************** 
   Function: 
     void MHelpers_EulerToQuaternion(const EULER_ANGLES *const source, QUATERNION *const dest)
@@ -149,11 +156,11 @@ void MHelpers_FillInQuat(const float q0, const float q1, const float q2, const f
     (dest) has converted quaternion from the (source) Euler angles
   
 **************************************************************************************************/
-void MHelpers_EulerToQuaternion(const EULER_ANGLES *const source, QUATERNION *const dest) {
+/*void MHelpers_EulerToQuaternion(const EULER_ANGLES *const source, QUATERNION *const dest) {
   // local variables for readibility
-  const float roll = source->roll;
-  const float pitch = source->pitch;
-  const float yaw = source->yaw;
+  const float psi = source->psi;
+  const float theta = source->theta;
+  const float phi = source->phi;
   
   // Local variables for faster conversion
   const float cr = cosf(roll / 2);  // cos of roll
@@ -168,7 +175,7 @@ void MHelpers_EulerToQuaternion(const EULER_ANGLES *const source, QUATERNION *co
   dest->q1 = sr * cp * cy - cr * sp * sy;
   dest->q2 = cr * sp * cy + sr * cp * sy;
   dest->q3 = cr * cp * sy - sr * sp * cy;
-} 
+} */
 
 /************************************************************************************************** 
   Function: 
@@ -208,12 +215,36 @@ void MHelpers_QuaternionToEuler(const QUATERNION *const source, EULER_ANGLES *co
   const float q1 = source->q1;
   const float q2 = source->q2;
   const float q3 = source->q3;
-  
+
+  // Local values
+  float psi, theta, phi;
+
   // calculations for euler conversion
-  dest->roll = atan2f(2 * (q0 * q1 + q2* q3), 1 - 2 * (q1 * q1 + q2 * q2));
-  dest->pitch = asinf(2 * (q0 * q2 - q3 * q1));
-  dest->yaw = atan2f(2* (q0 * q3 + q1 * q2), 1 - 2 * (q2 * q2 + q3 * q3));
+  psi = MHelpers_RadiansToDegrees(atan2(2 * q1 * q2 - 2 * q0 * q3, 2 * q0*q0 + 2 * q1*q1 - 1)) // psi
+  theta = MHelpers_RadiansToDegrees(-asin(2 * q1 * q3 + 2 * q0 * q2)); // theta
+  phi = MHelpers_RadiansToDegrees(atan2(2 * q2 * q3 - 2 * q0 * q1, 2 * q0*q0 + 2 * q3*q3 - 1)); // phi
+
+  MHelpers_FillInEuler(psi, theta, phi, dest);
 } 
+
+void MHelpers_QuaternionToYPR(const QUATERNION *const source, YPR *const ypr) {
+  float gx, gy, gz; // estimated gravity direction
+
+  // local variables for readibility
+  const float q0 = source->q0;
+  const float q1 = source->q1;
+  const float q2 = source->q2;
+  const float q3 = source->q3;
+
+  gx = 2 * (q1*q3 - q0*q2);
+  gy = 2 * (q0*q1 + q2*q3);
+  gz = q0*q0 - q1*q1 - q2*q2 + q3*q3;
+
+  ypr = MHelpers_RadiansToDegrees(atan2f(2 * q1 * q2 - 2 * q0 * q3, 2 * q0*q0 + 2 * q1 * q1 - 1));
+  ypr[1] = MHelpers_RadiansToDegrees(atanf(gx / sqrtf(gy*gy + gz*gz)));
+  ypr[2] = MHelpers_RadiansToDegrees(atanf(gy / sqrtf(gx*gx + gz*gz)));
+  
+}
 
 /************************************************************************************************** 
   Function: 
@@ -247,9 +278,9 @@ void MHelpers_QuaternionToEuler(const QUATERNION *const source, EULER_ANGLES *co
   
 **************************************************************************************************/
 float MHelpers_FastInvSqrt(const float x) {
-  const float halfx = 0.5f * x;
-  float y = x;
-  long i = *(long*)&y;
+  volatile const float halfx = 0.5f * x;
+  volatile float y = x;
+  volatile long i = *(long*)&y;
   i = 0x5f3759df - (i>>1);
   y = *(float*)&i;
   y = y * (1.5f - (halfx * y * y));
@@ -288,5 +319,9 @@ float MHelpers_FastInvSqrt(const float x) {
   
 **************************************************************************************************/
 float MHelpers_DegreesToRadians(const float degrees) {
-  return degrees * (float) (PI / 180.0f);
+  return degrees * (M_PI / 180.0f );
+}
+
+float MHelpers_RadiansToDegrees(const float radians) {
+  return radians * (180.0f / M_PI);
 }

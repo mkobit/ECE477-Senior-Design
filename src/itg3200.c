@@ -215,12 +215,12 @@ GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_raw_t *const raw, const B
     
     // if readTemp was true, update temperature
     if (readTemp) {
-      raw->temp = (reading_rainbow[0] << 8) | reading_rainbow[1];
+      raw->temp = ((INT16)reading_rainbow[0] << 8) | reading_rainbow[1];
     }
     
-    raw->x = (reading_rainbow[0 + offsetForTemp] << 8) | reading_rainbow[1 + offsetForTemp];
-    raw->y = (reading_rainbow[2 + offsetForTemp] << 8) | reading_rainbow[3 + offsetForTemp];
-    raw->z = (reading_rainbow[4 + offsetForTemp] << 8) | reading_rainbow[5 + offsetForTemp];
+    raw->x = ((INT16)reading_rainbow[0 + offsetForTemp] << 8) | reading_rainbow[1 + offsetForTemp];
+    raw->y = ((INT16)reading_rainbow[2 + offsetForTemp] << 8) | reading_rainbow[3 + offsetForTemp];
+    raw->z = ((INT16)reading_rainbow[4 + offsetForTemp] << 8) | reading_rainbow[5 + offsetForTemp];
     return GYRO_SUCCESS;
   } else {
     return GYRO_FAIL;

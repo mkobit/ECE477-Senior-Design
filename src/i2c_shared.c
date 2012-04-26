@@ -45,7 +45,7 @@ static void I2CShared_DebugStatus(const I2C_MODULE i2c);
 **************************************************************************************************/
 BOOL I2CShared_Init(const I2C_MODULE i2c, const UINT peripheral_clock_speed, const UINT i2c_speed) {
   UINT actualClock;
-  I2CConfigure(i2c, I2C_ENABLE_HIGH_SPEED);
+  I2CConfigure(i2c, 0);
 
   // Check clock rate for peripheral bus
   actualClock = I2CSetFrequency(i2c, peripheral_clock_speed, i2c_speed);
@@ -54,11 +54,7 @@ BOOL I2CShared_Init(const I2C_MODULE i2c, const UINT peripheral_clock_speed, con
     return FALSE;
   }
 
-  I2CEnable(i2c, FALSE);
-  I2CEnable(i2c, TRUE);
-  I2CClearStatus(i2c, I2C_TRANSMITTER_FULL | I2C_DATA_AVAILABLE | \
-  I2C_SLAVE_READ | I2C_START | I2C_STOP | I2C_SLAVE_DATA | I2C_RECEIVER_OVERFLOW | I2C_TRANSMITTER_OVERFLOW | \
-  I2C_10BIT_ADDRESS | I2C_GENERAL_CALL | I2C_ARBITRATION_LOSS | I2C_TRANSMITTER_BUSY | I2C_BYTE_ACKNOWLEDGED);
+  I2CShared_ResetBus(i2c);
   
   //Debug
   //I2CShared_DebugStatus(i2c);
@@ -122,9 +118,9 @@ static BOOL I2CShared_StartTransfer(const I2C_MODULE i2c, const BOOL restart) {
       }
     }
 
-    if(I2CStart(i2c) != I2C_SUCCESS)
+    if(I2CStart(i2c) == I2C_ARBITRATION_LOSS)
     {
-      printf("I2CShared_StartTransfer: Bus collision during transfer Start\n");
+      printf("I2CShared_StartTransfer: I2CStart experienced I2C_ARBITRATION_LOSS\n");
       //I2CShared_DebugStatus(i2c);
       return FALSE;
     }
@@ -644,7 +640,7 @@ static void I2CShared_DebugStatus(const I2C_MODULE i2c) {
 void I2CShared_ResetBus(const I2C_MODULE i2c) {
   I2CEnable(i2c, FALSE);
   I2CEnable(i2c, TRUE);
-  I2CClearStatus(i2c, I2C_TRANSMITTER_FULL | I2C_DATA_AVAILABLE | \
-  I2C_SLAVE_READ | I2C_START | I2C_STOP | I2C_SLAVE_DATA | I2C_RECEIVER_OVERFLOW | I2C_TRANSMITTER_OVERFLOW | \
-  I2C_10BIT_ADDRESS | I2C_GENERAL_CALL | I2C_ARBITRATION_LOSS | I2C_TRANSMITTER_BUSY | I2C_BYTE_ACKNOWLEDGED);
+//  I2CClearStatus(i2c, I2C_TRANSMITTER_FULL | I2C_DATA_AVAILABLE | \
+//  I2C_SLAVE_READ | I2C_START | I2C_STOP | I2C_SLAVE_DATA | I2C_RECEIVER_OVERFLOW | I2C_TRANSMITTER_OVERFLOW | \
+//  I2C_10BIT_ADDRESS | I2C_GENERAL_CALL | I2C_ARBITRATION_LOSS | I2C_TRANSMITTER_BUSY | I2C_BYTE_ACKNOWLEDGED);
 }

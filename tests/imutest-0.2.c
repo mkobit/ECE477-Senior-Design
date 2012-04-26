@@ -23,7 +23,6 @@
 // Clock Constants
 #define SYS_CLOCK (80000000L)
 #define GetSystemClock()            (SYS_CLOCK)
-#define GetPeripheralClock()        (SYS_CLOCK/2)
 #define GetInstructionClock()       (SYS_CLOCK)
 
 #define TEST_I2C_BUS_ID              I2C1
@@ -33,7 +32,7 @@
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
 
-void OPENDEBUG();
+void OPENDEBUG(unsigned int pbFreq);
 
 int main() {
   long int pbFreq;
@@ -45,22 +44,25 @@ int main() {
   // initialize debug messages
   
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
+  
   //OPENDEBUG();
   OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
             (pbFreq/16/BAUDRATE) - 1);
   
-  DelayInit(GetSystemClock());
+  DelayInit(pbFreq);
   putsUART2(CLEAR_VT);
+  printf("Max PB speed: %u, what pbfreq is: %d", PB_BUS_MAX_FREQ_HZ, pbFreq);
+  DelayS(2);
   //DBINIT();
   p_imu = &imu;
   //UARTSendData(UART2, CLEAR_VT);
   imu_res = ImuInit(p_imu,
           TEST_I2C_BUS_ID,
-          GetPeripheralClock(),
+          pbFreq,
           TEST_I2C_BUS_SPEED,
           ACCEL_RANGE_4G,
           ACCEL_BW_100,
-          GYRO_DLPF_LPF_42HZ,
+          GYRO_DLPF_LPF_10HZ,
           9,
           GYRO_PWR_MGM_CLK_SEL_X);
   //init_res = I2CShared_Init(TEST_I2C_BUS_ID, pbFreq, TEST_I2C_BUS_SPEED);
@@ -75,11 +77,11 @@ int main() {
     printf("\n");
     imu_res = ImuInit(p_imu,
           TEST_I2C_BUS_ID,
-          GetPeripheralClock(),
+          pbFreq,
           TEST_I2C_BUS_SPEED,
           ACCEL_RANGE_4G,
           ACCEL_BW_100,
-          GYRO_DLPF_LPF_42HZ,
+          GYRO_DLPF_LPF_10HZ,
           9,
           GYRO_PWR_MGM_CLK_SEL_X);
   }
@@ -105,9 +107,9 @@ int main() {
   return 0;
 }
 
-void OPENDEBUG() {
+void OPENDEBUG(unsigned int pbFreq) {
   UARTConfigure(UART2, UART_ENABLE_PINS_TX_RX_ONLY);
   UARTSetLineControl(UART2, UART_DATA_SIZE_8_BITS | UART_PARITY_NONE | UART_STOP_BITS_1);
-  UARTSetDataRate(UART2, GetPeripheralClock(), BAUDRATE);
+  UARTSetDataRate(UART2, pbFreq, BAUDRATE);
   UARTEnable(UART2, UART_ENABLE | UART_TX_ENABLE);
 }

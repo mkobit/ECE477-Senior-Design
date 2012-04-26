@@ -77,13 +77,29 @@ typedef struct gyro_raw_t {
   INT16 temp;
 } gyro_raw_t;
 
-GYRO_RESULT GyroInit(const I2C_MODULE i2c, const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel);
+typedef struct gyro_t {
+  gyro_raw_t raw;
+  INT16 xPolarity;
+  INT16 yPolarity;
+  INT16 zPolarity;
+  INT16 xOffset;
+  INT16 yOffset;
+  INT16 zOffset;
+  float xGain;
+  float yGain;
+  float zGain;
+} gyro_t;
+
+GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel);
 GYRO_RESULT GyroWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 data);
 GYRO_RESULT GyroRead(const I2C_MODULE i2c, UINT8 i2c_reg, UINT8 *const buffer);
-GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_raw_t *const raw, const BOOL readTemp);
-float GyroGetTemp(const gyro_raw_t *const raw);
-float GyroGetX(const gyro_raw_t *const raw);   // X === Roll
-float GyroGetY(const gyro_raw_t *const raw);   // Y === Pitch
-float GyroGetZ(const gyro_raw_t *const raw);   // Z === Yaw
+GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_t *const gyro, const BOOL readTemp);
+GYRO_RESULT GyroCalibrate(I2C_MODULE i2c, gyro_t *const gyro, int samplesToTake, UINT ms_delay) {
+void GyroSetRevPolarity(gyro_t *const gyro, const BOOL xPol, const BOOL yPol, const BOOL zPol);
+void GyroSetGains(gyro_t *const gyro, const float xGain, const float yGain, const float zGain);
+float GyroGetTemp(gyro_t *const gyro);
+float GyroGetX(gyro_t *const gyro);   // X === Roll
+float GyroGetY(gyro_t *const gyro);   // Y === Pitch
+float GyroGetZ(gyro_t *const gyro);   // Z === Yaw
 
 #endif

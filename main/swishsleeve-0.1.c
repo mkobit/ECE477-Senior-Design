@@ -37,13 +37,25 @@
 /* IMU DEFINES AND CONSTANTS */
 // IDs and corresponding I2C modules to be used with the IMUs
 // These same IDs should be used on the base station
+#ifdef I2C3
 #define N_IMUS 3
+#else
+#define N_IMUS 2
+#endif
+
+/* KALMAN DEFINES AND CONSTANTS */
+// TODO need update rate
+#define SAMPLE_FREQ 100.0f  // 1 / 10 ms
+
 #define ID_UPPER_ARM 0
 #define I2C_UPPER_ARM I2C1
 #define ID_FORE_ARM 1
 #define I2C_FORE_ARM I2C2   // FIXME these i2c are probably wrong from diagram
 #define ID_HAND 2
+// For testing, if we have I2C3 we will use it
+#ifdef I2C3
 #define I2C_HAND I2C3
+#endif
 // I2C bus frequency to communicate with IMUs
 #define I2C_FREQ 400000
 // IMU acceleration and gyroscope settings being used
@@ -52,13 +64,12 @@
 #define GYR_DLPF GYRO_DLPF_LPF_42HZ     // gyro digital low pass filter setting
 #define GYR_SAMP_DIV 9                  // sample divider being used
 #define GYR_POW_SEL GYRO_PWR_MGM_CLK_SEL_X  // gyro clock selector
+// IMU calibration settings
+#define CALIBRATE_SAMPLES 128
+#define CALIBRATE_DELAY (1 / SAMPLE_FREQ) *
 
 /* BATTERY MONITOR DEFINES AND CONSTANTS */
 // *not incorporated
-
-/* KALMAN DEFINES AND CONSTANTS */
-// TODO need update rate
-#define SAMPLE_FREQ 100.0f  // 1 / 10 ms
 
 /* XBEE DEFINES AND CONSTANTS */
 // TODO all xbee settings here
@@ -79,14 +90,19 @@ typedef struct LCD_PAIR {
 } LCD_PAIR;
 
 // pins and ports to be used for testing
-#define INIT_MESSAGE1 "Initializing"
-#define INIT_MESSAGE2 "Initializing."
-#define INIT_MESSAGE3 "Initializing.."
-#define INIT_MESSAGE4 "Initializing..."
+#define INIT_MESSAGE "Initializing"
+#define START_MESSAGE "Swish Sleeve"
+#define IMU_MESSAGE "IMUs"
+#define FILTER_INIT_MESSAGE "Kalman Filters"
+#define CALIB_MESSAGE_A "Hold arms still"
+#define CALIB_MESSAGE_B "Calibrating"
 #define READY_MESSAGE "System Ready\nAcquiring data..."
-#define IMU_ERROR "IMU ERROR"
 #define BATT_PRE "Battery: "
 #define RSSI_PRE "RSSI: "
+// Success messages
+#define SUCC_IMU_MESSAGE " IMUs were\nsuccessful"
+// Error display messages
+#define ERROR_IMU_MESSAGE "ERR: IMU Failure"
 #define BATT_INVAL "NO BATT. SIGNAL"
 #define RSS_INVAL "NO RSSI. SIGNAL"
 LCD_PAIR lcd_pairs[LCD_INPUTS] = {  // TODO fix these for the actual project
@@ -103,8 +119,11 @@ LCD_PAIR lcd_pairs[LCD_INPUTS] = {  // TODO fix these for the actual project
     {BIT_4, IOPORT_C}};
 
 
-// Pins and ports used for button reset TODO
-volatile BOOL RECALIBRATE = FALSE;
+// Pins and ports used for button reset FIXME: might need to be changed for diagram/working
+#define BUTTON1_A_PORT IOPORT_G
+#define BUTTON1_A_PIN BIT_2
+#define BUTTON1_B_PORT IOPORT_G
+#define BUTTON1_B_PIN BIT_3
 
 // Settings for timer interrupt, 10 ms interrupt
 #define TIM1_SETTINGS (T1_ON | T1_SOURCE_INT | T1_PS_1_256)
@@ -114,11 +133,13 @@ volatile BOOL UPDATE = FALSE;     // flag for update that timer will change
 
 // Utility functions used in here
 void ButtonConfig();
-void ButtonCheck();
+BOOL ButtonCheck();
 // Timer interrupt functions
 void ConfigTimer1Intrs();
 #define SetTimer1Intrs(on) mT1IntEnable(on) // simple macro expansion to the mT1IntEnable
 // Interrupt handler for Timer1 is called 'Timer1IntrHandler'
+void DetectIMUErrorTrap(IMU_RESULT *imu_results);
+void Send2LineDisplay(char *line_1, char *line_2, unsigned char bottomLineStartOffset);
 void UpdateLCDStatus(int signalPercent, int batteryPercent);
 
 /*** MAIN SWISH SLEEVE PROGRAM ***/
@@ -143,7 +164,7 @@ int main() {
   int batteryPercentage = -1;
   
   // Result variables to keep track of statuses from libraries
-  IMU_RESULT imu_res;
+  IMU_RESULT imu_res[N_IMUS];
 
   // Actual peripheral bus frequency
   unsigned int pbFreq;
@@ -153,17 +174,26 @@ int main() {
   //  unsigned int bmon_update_counter = 0; *UNUSED*
   
   // Const pointers assigned to each IMU for readability
+#ifdef I2C3
   imu_t *const p_imus[N_IMUS] = {&imu_upper_arm, &imu_fore_arm, &imu_hand};
+#else
+  imu_t *const p_imus[N_IMUS] = {&imu_upper_arm, &imu_fore_arm};
+#endif
 
   // Const pointers assigned to each Kalman filter state
+#ifdef I2C3
   KALMAN_STATE_MADGWICK *const pKs[N_IMUS] = {&k_upper_arm, &k_fore_arm, &k_hand};
-
+#else
+  KALMAN_STATE_MADGWICK *const pKs[N_IMUS] = {&k_upper_arm, &k_fore_arm};
+#endif
   
   // Initialize components needed
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
 
   // Initialize Delay module first
   DelayInit(pbFreq);
+  // Delay for components to boot up
+  DelayS(1);
 
   // Initialize LCD module
   LcdInit(lcd_pairs[0].bitnum, lcd_pairs[0].port_id,
@@ -179,28 +209,33 @@ int main() {
     lcd_pairs[10].bitnum, lcd_pairs[10].port_id,
     LCD_DOTS_5x8);
   LcdInstrSetDisplayMode(LCD_DISPLAY_ON, CURSOR_VAL, CURSOR_BLINK);
+
   // Display initializing message
-  LcdClearAndDisplayData(INIT_MESSAGE1);
+  Send2LineDisplay(INIT_MESSAGE, START_MESSAGE, 0);
+  DelayS(2);
 
   // Initialize IMUs
+  Send2LineDisplay(INIT_MESSAGE, IMU_MESSAGE, 0);
   // Set IMU IDs
   ImuSetID(p_imus[ID_UPPER_ARM], ID_UPPER_ARM);
   ImuSetID(p_imus[ID_FORE_ARM], ID_FORE_ARM);
   ImuSetID(p_imus[ID_HAND], ID_HAND);
   // Initialize IMUs
-  imu_res = ImuInit(p_imus[ID_UPPER_ARM], I2C_UPPER_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
-  LcdClearAndDisplayData(INIT_MESSAGE2);
-  imu_res = ImuInit(p_imus[ID_FORE_ARM], I2C_FORE_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
-  LcdClearAndDisplayData(INIT_MESSAGE3);
-  imu_res = ImuInit(p_imus[ID_HAND], I2C_HAND, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL); // TODO pic32mx360 only has 2 i2c ports
-  LcdClearAndDisplayData(INIT_MESSAGE4);
+  imu_res[ID_UPPER_ARM] = ImuInit(p_imus[ID_UPPER_ARM], I2C_UPPER_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
+  imu_res[ID_FORE_ARM] = ImuInit(p_imus[ID_FORE_ARM], I2C_FORE_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
+#ifdef I2C3
+  imu_res[ID_HAND] = ImuInit(p_imus[ID_HAND], I2C_HAND, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL); // TODO pic32mx360 only has 2 i2c ports
+#endif
+
+  /** IF ERROR IN AN IMU, TRAP HERE*/
+  DetectIMUErrorTrap(imu_res);
 
   // Initialize Kalman state - USING MADGWICK FOR NOW
+  Send2LineDisplay(INIT_MESSAGE, FILTER_INIT_MESSAGE, 0);
   for (i = 0; i < N_IMUS; i++) {
     Kalman_MadgwickInit(pKs[i]);
   }
-  LcdClearAndDisplayData(INIT_MESSAGE1);
-
+  
   // Configure settings for XBee TODO
   //UARTConfigure(XBEE_UART_PORT, XBEE_SETTINGS);
 
@@ -214,11 +249,17 @@ int main() {
   ConfigTimer1Intrs();
 
   // TODO other imu results/calibrations and also a printout for IMUs that fail and/or successful
-
+  Send2LineDisplay(CALIB_MESSAGE_A, CALIB_MESSAGE_B, 0);
+  DelayS(1);
+  for (i = 0; i < N_IMUS; i++) {
+    imu_res[i] = ImuCalibrate(p_imus[i], TRUE, TRUE, CALIBRATE_SAMPLES, CALIBRATE_DELAY);
+  }
   LcdClearAndDisplayData(READY_MESSAGE);
   DelayS(3);
-  // Enable interrupts
+  // Enable int
+  errupts
   INTEnableInterrupts();
+  
   // Enable Timer1 interrupts
   SetTimer1Intrs(TRUE);
 
@@ -226,6 +267,11 @@ int main() {
   while(1) {
     // Wait until timer interrupt trigures an update
     while(!UPDATE);
+
+    if (ButtonCheck()) {
+      // If user has pressed reset button, recalibrate system
+      RecalibrateIMUs()
+    }
 
     // Update IMUs
     for (i = 0; i < N_IMUS; i++) {
@@ -260,16 +306,28 @@ int main() {
   return 0;
 }
 
-// TODO
+// DONE doc this
 void ButtonConfig() {
-  
+  PORTSetPinsDigitalIn(BUTTON1_A_PORT, BUTTON1_A_PIN);
+  PORTSetPinsDigitalIn(BUTTON1_B_PORT, BUTTON1_B_PIN);
 }
 
-// TODO
-void ButtonCheck() {
-  // TODO
-  static BOOL past = 0;
-  static BOOL current = 0;
+// DONE doc this
+BOOL ButtonCheck() {
+  static BOOL down = FALSE;
+  BOOL b1, b2;
+  BOOL res = FALSE;;
+
+  b1 = PORTReadBits(BUTTON1_A_PORT, BUTTON1_A_PIN) ? TRUE : FALSE;
+  b2 = PORTReadBits(BUTTON1_B_PORT, BUTTON1_B_PIN) ? TRUE : FALSE;
+
+  if (down && (b1 && !b2)) {
+    // button relased
+    res = TRUE;
+  }
+  down = !b1 && b2;
+
+  return (res);
 
   return FALSE;
 }
@@ -281,7 +339,7 @@ void ConfigTimer1Intrs() {
   OpenTimer1(TIM1_SETTINGS, TIM1_PERIOD);
 }
 
-// TODO
+// DONE doc this
 void __ISR(_TIMER_1_VECTOR, ipl1) Timer1IntrHandler() {
   // Clear interrupt flag
   mT1ClearIntFlag();
@@ -294,39 +352,60 @@ void __ISR(_TIMER_1_VECTOR, ipl1) Timer1IntrHandler() {
 
 // DONE doc this
 void UpdateLCDStatus(int signalPercent, int batteryPercent) {
-  char buffer[35];
+  char line1[40];
+  char line2[40];
   char percentageval[5];
 
   // Display signal message
   if (signalPercent <= 0) {
     // invalid signal strength, copy to buffer
-    strcpy(buffer, RSS_INVAL);
+    strcpy(line1, RSS_INVAL);
     // Append newline to data for battery message
-    strcat(buffer, "\n");
   } else {
-    strcpy(buffer, BATT_PRE);
+    strcpy(line1, BATT_PRE);
     // Format battery string
     itoa(percentageval, signalPercent, 10);
-    strcat(buffer, percentageval);
-    strcat(buffer, percentageval);
-    strcat(buffer, "%");
-    // Append newline to data for battery message
-    strcat(buffer, "\n");
+    strcat(line1, percentageval);
+    strcat(line1, percentageval);
+    strcat(line1, "%");
   }
 
   // Display battery message
   if (batteryPercent <= 0) {
     // Concat RSSI error message
-    strcat(buffer, RSS_INVAL);
+    strcat(line2, RSS_INVAL);
   } else {
-    strcat(buffer, RSSI_PRE);
+    strcat(line2, RSSI_PRE);
     // Format battery string
     itoa(percentageval, batteryPercent, 10);
-    strcat(buffer, percentageval);
-    strcat(buffer, percentageval);
-    strcat(buffer, "%");
+    strcat(line2, percentageval);
+    strcat(line2, percentageval);
+    strcat(line2, "%");
   }
 
-  // Clear and display this new changes
-  LcdClearAndDisplayData(buffer);
+  // Clear and display this 2 line message
+  Send2LineDisplay(line1, line2, 0);
+}
+
+void Send2LineDisplay(char *line_1, char *line_2, unsigned char bottomLineStartOffset) {
+  LcdInstrClearDisplay();
+  LcdDisplayData(line_1);
+  LcdInstrSetDDRAMAddress(LCD_LINES_2 + bottomLineStartOffset);
+  LcdDisplayData(line_2);
+}
+
+void DetectIMUErrorTrap(IMU_RESULT *imu_results) {
+  int i;
+
+  for (i = 0; i < N_IMUS; i++) {
+    if (imu_results[i] == IMU_FAIL) {
+      Send2LineDisplay(ERROR_IMU_MESSAGE, "Device: ", 0);
+      LcdDisplayChar(i + 60); // This assumes an IMU ID less that 10
+      while (1);  // LOCKS HERE FOR ERRORS
+    }
+  }
+  LcdInstrClearDisplay();
+  LcdDisplayChar(N_IMUS + 60);
+  LcdDisplayData(SUCC_IMU_MESSAGE);
+  DelayS(1);  
 }

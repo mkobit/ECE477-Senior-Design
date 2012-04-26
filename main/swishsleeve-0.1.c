@@ -66,7 +66,7 @@
 #define GYR_POW_SEL GYRO_PWR_MGM_CLK_SEL_X  // gyro clock selector
 // IMU calibration settings
 #define CALIBRATE_SAMPLES 128
-#define CALIBRATE_DELAY (1 / SAMPLE_FREQ) *
+#define CALIBRATE_DELAY ((UINT)((1 / SAMPLE_FREQ) * 1000))
 
 /* BATTERY MONITOR DEFINES AND CONSTANTS */
 // *not incorporated
@@ -92,6 +92,7 @@ typedef struct LCD_PAIR {
 // pins and ports to be used for testing
 #define INIT_MESSAGE "Initializing"
 #define START_MESSAGE "Swish Sleeve"
+#define XBEE_MESSAGE "XBee"
 #define IMU_MESSAGE "IMUs"
 #define FILTER_INIT_MESSAGE "Kalman Filters"
 #define CALIB_MESSAGE_A "Hold arms still"
@@ -132,15 +133,16 @@ volatile BOOL UPDATE = FALSE;     // flag for update that timer will change
 
 
 // Utility functions used in here
-void ButtonConfig();
-BOOL ButtonCheck();
+void ButtonConfig(IoPortId b1a, unsigned int bit1a, IoPortId b1b, unsigned int bit1b);
+BOOL Button1Check();
 // Timer interrupt functions
 void ConfigTimer1Intrs();
 #define SetTimer1Intrs(on) mT1IntEnable(on) // simple macro expansion to the mT1IntEnable
 // Interrupt handler for Timer1 is called 'Timer1IntrHandler'
 void DetectIMUErrorTrap(IMU_RESULT *imu_results);
-void Send2LineDisplay(char *line_1, char *line_2, unsigned char bottomLineStartOffset);
-void UpdateLCDStatus(int signalPercent, int batteryPercent);
+void Send2LineDisplay(char *line_1, char *line_2, const unsigned char bottomLineStartOffset);
+void UpdateLCDStatus(const int signalPercent, const int batteryPercent);
+void RecalibrateIMUs(imu_t **const imus);
 
 /*** MAIN SWISH SLEEVE PROGRAM ***/
 int main() {
@@ -177,7 +179,7 @@ int main() {
 #ifdef I2C3
   imu_t *const p_imus[N_IMUS] = {&imu_upper_arm, &imu_fore_arm, &imu_hand};
 #else
-  imu_t *const p_imus[N_IMUS] = {&imu_upper_arm, &imu_fore_arm};
+  imu_t *p_imus[N_IMUS] = {&imu_upper_arm, &imu_fore_arm};
 #endif
 
   // Const pointers assigned to each Kalman filter state
@@ -227,7 +229,7 @@ int main() {
   imu_res[ID_HAND] = ImuInit(p_imus[ID_HAND], I2C_HAND, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL); // TODO pic32mx360 only has 2 i2c ports
 #endif
 
-  /** IF ERROR IN AN IMU, TRAP HERE*/
+  /** IF ERROR IN AN IMU INIT, TRAP HERE**/
   DetectIMUErrorTrap(imu_res);
 
   // Initialize Kalman state - USING MADGWICK FOR NOW
@@ -237,10 +239,11 @@ int main() {
   }
   
   // Configure settings for XBee TODO
+  Send2LineDisplay(INIT_MESSAGE, XBEE_MESSAGE, 0);
   //UARTConfigure(XBEE_UART_PORT, XBEE_SETTINGS);
 
   // Configure reset button
-  ButtonConfig();
+  ButtonConfig(BUTTON1_A_PORT, BUTTON1_A_PIN, BUTTON1_B_PIN, BUTTON1_B_PORT);
 
   // Configure interrupts for the system as multi vector
   INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR);
@@ -254,10 +257,18 @@ int main() {
   for (i = 0; i < N_IMUS; i++) {
     imu_res[i] = ImuCalibrate(p_imus[i], TRUE, TRUE, CALIBRATE_SAMPLES, CALIBRATE_DELAY);
   }
+  /** IF ERROR IN AN IMU CALIBRATION, TRAP HERE*/
+  DetectIMUErrorTrap(imu_res);
   LcdClearAndDisplayData(READY_MESSAGE);
   DelayS(3);
-  // Enable int
-  errupts
+
+  // Update system status
+  // TODO
+
+  // Display system status
+  UpdateLCDStatus(rssiPercentage, batteryPercentage);
+
+  // Enable interrupts
   INTEnableInterrupts();
   
   // Enable Timer1 interrupts
@@ -268,9 +279,9 @@ int main() {
     // Wait until timer interrupt trigures an update
     while(!UPDATE);
 
-    if (ButtonCheck()) {
+    if (Button1Check()) {
       // If user has pressed reset button, recalibrate system
-      RecalibrateIMUs()
+      RecalibrateIMUs(p_imus);
     }
 
     // Update IMUs
@@ -307,13 +318,13 @@ int main() {
 }
 
 // DONE doc this
-void ButtonConfig() {
-  PORTSetPinsDigitalIn(BUTTON1_A_PORT, BUTTON1_A_PIN);
-  PORTSetPinsDigitalIn(BUTTON1_B_PORT, BUTTON1_B_PIN);
+void ButtonConfig(IoPortId b1a, unsigned int bit1a, IoPortId b1b, unsigned int bit1b) {
+  PORTSetPinsDigitalIn(b1a, bit1a);
+  PORTSetPinsDigitalIn(b1b, bit1b);
 }
 
 // DONE doc this
-BOOL ButtonCheck() {
+BOOL Button1Check() {
   static BOOL down = FALSE;
   BOOL b1, b2;
   BOOL res = FALSE;;
@@ -322,17 +333,15 @@ BOOL ButtonCheck() {
   b2 = PORTReadBits(BUTTON1_B_PORT, BUTTON1_B_PIN) ? TRUE : FALSE;
 
   if (down && (b1 && !b2)) {
-    // button relased
+    // Button relased after it was pushed down
     res = TRUE;
   }
   down = !b1 && b2;
 
   return (res);
-
-  return FALSE;
 }
 
-// TODO
+// DONE doc this
 void ConfigTimer1Intrs() {
   // Configure timers for our target update rate
   ConfigIntTimer1(T1_INT_OFF | T1_INT_PRIOR_1);
@@ -351,7 +360,7 @@ void __ISR(_TIMER_1_VECTOR, ipl1) Timer1IntrHandler() {
 }
 
 // DONE doc this
-void UpdateLCDStatus(int signalPercent, int batteryPercent) {
+void UpdateLCDStatus(const int signalPercent, const int batteryPercent) {
   char line1[40];
   char line2[40];
   char percentageval[5];
@@ -408,4 +417,27 @@ void DetectIMUErrorTrap(IMU_RESULT *imu_results) {
   LcdDisplayChar(N_IMUS + 60);
   LcdDisplayData(SUCC_IMU_MESSAGE);
   DelayS(1);  
+}
+
+void RecalibrateIMUs(imu_t **const imus) {
+  int i;
+  IMU_RESULT res[N_IMUS];
+  UINT intrs;
+
+  // Turn off timer interrupts and recalibrate
+  intrs = INTDisableInterrupts();
+
+  // Display calibrating message
+  Send2LineDisplay(CALIB_MESSAGE_A, CALIB_MESSAGE_B, 0);
+
+  for (i = 0; i < N_IMUS; i++) {
+    res[i] = ImuCalibrate(imus[i], TRUE, TRUE, CALIBRATE_SAMPLES, CALIBRATE_DELAY);
+  }
+
+  // Trap here if an error occurs during calibration
+  DetectIMUErrorTrap(res);
+
+  // Clear Timer1 and enable interrupts
+  WriteTimer1(0);
+  INTRestoreInterrupts(intrs);
 }

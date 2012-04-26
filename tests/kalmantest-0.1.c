@@ -7,7 +7,10 @@
 #include "kalman.h"
 #include "math_helpers.h"
 
-#define TEST_UPDATE_FREQ 200
+#define TEST_UPDATE_FREQ 10
+
+//#define FILE_SAVE_TEST
+#define FILE_SAVE_LINES 400
 
 // Configuration Bit settings
 //
@@ -45,6 +48,9 @@ int main() {
   KALMAN_STATE_MAHONY kmah;
   EULER_ANGLES e;
   QUATERNION *q;
+#ifdef FILE_SAVE_TEST
+  int i = 0;
+#endif
 
 
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
@@ -72,14 +78,21 @@ int main() {
   Kalman_MahonyInit(&kmah);
   Kalman_MadgwickInit(&kmad);
   printf("PB speed = %u\n", pbFreq);
-  printf("Kalmans initted\n");
+  printf("Kalmans initialized\n");
   DelayS(2);
-  printf("Beginning acquisition and filtering...");
+  ImuCalibrate(p_imu, TRUE, TRUE, 128, TEST_UPDATE_FREQ);
+  printf("Finished IMU calibration.\nBeginning acquisition and filtering...\n");
   DelayS(2);
+  printf("Clearing VT in 2, then wait 5 for output\n");
+  DelayS(2);
+  putsUART2(CLEAR_VT);
+  DelayS(5);
   t5 = DelayUtilGetUs();
   while(1) {
     DelayMs(TEST_UPDATE_FREQ);
+#ifndef FILE_SAVE_TEST
     putsUART2(CLEAR_VT);
+#endif
     t1 = DelayUtilGetUs();
     imu_res = ImuUpdate(p_imu);
     if (imu_res == IMU_FAIL) {
@@ -91,6 +104,8 @@ int main() {
     t3 = DelayUtilGetUs();
     Kalman_MahonyUpdate(p_imu, &kmah, 1.0f / (float) TEST_UPDATE_FREQ * 1000.0f);
     t4 = DelayUtilGetUs();
+#ifndef FILE_SAVE_TEST
+    printf("Update rate = %d ms\n", TEST_UPDATE_FREQ);
     printf("Times follow (in us):\n");
     printf("IMU Update:  %u\n", DelayUtilElapsedUs(t2,t1));
     printf("Madg Update: %u\n", DelayUtilElapsedUs(t3,t2));
@@ -106,8 +121,18 @@ int main() {
     printf("\nMah  variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
     MHelpers_QuaternionToEuler(q, &e);
     printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
+#else
+    q = &(kmad.q);
+    printf("%f,%f,%f,%f\n", q->q0, q->q1, q->q2, q->q3);
+    if (i++ == FILE_SAVE_LINES) {
+      break;
+    }
+
+#endif
+
   }
 
-
+  // Never exit
+  while(1);
   return 0;
 }

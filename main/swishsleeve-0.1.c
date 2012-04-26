@@ -62,6 +62,8 @@
 
 /* XBEE DEFINES AND CONSTANTS */
 // TODO all xbee settings here
+#define XBEE_UART_PORT UART3
+#define XBEE_SETTINGS UART_ENABLE_PINS_TX_RX_ONLY
 
 /* LCD DEFINES AND CONSTANTS */
 #define LCD_INPUTS 11
@@ -161,7 +163,7 @@ int main() {
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
 
   // Initialize Delay module first
-  DelayInit(GetSystemClock());
+  DelayInit(pbFreq);
 
   // Initialize LCD module
   LcdInit(lcd_pairs[0].bitnum, lcd_pairs[0].port_id,
@@ -198,6 +200,9 @@ int main() {
     Kalman_MadgwickInit(pKs[i]);
   }
   LcdClearAndDisplayData(INIT_MESSAGE1);
+
+  // Configure settings for XBee TODO
+  //UARTConfigure(XBEE_UART_PORT, XBEE_SETTINGS);
 
   // Configure reset button
   ButtonConfig();

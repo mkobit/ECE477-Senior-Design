@@ -47,7 +47,7 @@ volatile static float twoKi = TWOKIDEF;     // 2 * integral gain (Ki)
     Kalman updated to newest state
   
 **************************************************************************************************/
-void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE_MADGWICK *const kmadg, const float sampleFreq) {
+void Kalman_MadgwickUpdate(imu_t *const p_imu, KALMAN_STATE_MADGWICK *const kmadg, const float sampleFreq) {
   // Local gyro and accel values
   float gx, gy, gz;
   float ax, ay, az;
@@ -221,7 +221,7 @@ void Kalman_MadgwickInit(KALMAN_STATE_MADGWICK *const kmadg) {
     Kalman updated to newest state
   
 **************************************************************************************************/
-void Kalman_MahonyUpdate(const imu_t *const p_imu, KALMAN_STATE_MAHONY *const kmah, const float sampleFreq) {
+void Kalman_MahonyUpdate(imu_t *const p_imu, KALMAN_STATE_MAHONY *const kmah, const float sampleFreq) {
   // Local gyro and accel values
   float gx, gy, gz;
   float ax, ay, az;

@@ -210,10 +210,10 @@ GYRO_RESULT GyroCalibrate(gyro_t *const gyro, int samplesToTake, UINT ms_delay) 
       samplesTaken++;
       //printf("Sample %d: tX = %4.2f, tY = %4.2f, tZ = %4.2f\n", samplesTaken, tempOffsets[0], tempOffsets[1], tempOffsets[2]);
     } else {
-      timeout++;
-      // If this many read fails, just exit with 
-      if (timeout == 5000) {
+      // If this many read fails, just exit with failure to calibrate
+      if (timeout++ == 5000) {
         // Switch back in old values
+        printf("error in calibrate, error %d\n", timeout);
         return GYRO_FAIL;
       }
     }

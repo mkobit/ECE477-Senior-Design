@@ -18,7 +18,7 @@
 #pragma config POSCMOD = HS
 #pragma config FNOSC = PRIPLL
 #pragma config FWDTEN = OFF // watchdog off
-#pragma config FPBDIV = DIV_2
+#pragma config FPBDIV = DIV_1
 
 // Clock Constants
 #define SYS_CLOCK (80000000L)
@@ -29,6 +29,8 @@
 #define TEST_I2C_BUS_SPEED           (400000)
 #define BAUDRATE 57600
 
+#define UPDATE_DELAY 15
+
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
 
@@ -36,11 +38,11 @@ void OPENDEBUG(unsigned int pbFreq);
 
 int main() {
   long int pbFreq;
-  long int delayed = 0;
   imu_t imu;
   imu_t *p_imu;
   IMU_RESULT imu_res = IMU_FAIL;
   us_t start, end;
+  gyro_t *gyro;
   // initialize debug messages
   
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
@@ -85,7 +87,10 @@ int main() {
           9,
           GYRO_PWR_MGM_CLK_SEL_X);
   }
-  printf("\nSuccess\n");
+  printf("\nSuccess: calculating offsets\n");
+  ImuCalibrate(p_imu, TRUE, TRUE, 128, UPDATE_DELAY);
+  gyro = ImuGetGyro(p_imu);
+  printf("ImuCalibration complete: offsets are: %d, %d, %d\n", gyro->xOffset, gyro->yOffset, gyro->zOffset);
   DelayS(3);
   while(1) {
     start = DelayUtilGetUs();
@@ -100,8 +105,8 @@ int main() {
     putsUART2(CLEAR_VT);
     printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
     printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
-    printf("Us for update = %d\n", DelayUtilElapsedUs(end, start));
-    DelayMs(100);
+    //printf("Us for update = %d\n", DelayUtilElapsedUs(end, start));
+    DelayMs(UPDATE_DELAY);
   }
   while(1);
   return 0;

@@ -5,6 +5,10 @@
 
 static float SCALES[4] = { .0039f, .0078f, .0156f, .0312f};  // from datasheet
 
+static float AccelRawGetX(accel_raw_t *const raw, const float xGain);
+static float AccelRawGetY(accel_raw_t *const raw, const float yGain);
+static float AccelRawGetZ(accel_raw_t *const raw, const float zGain);
+
 /************************************************************************************************** 
   Function:
     ACCEL_RESULT AccelInit(const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth, accel_raw_t *const raw)
@@ -52,10 +56,15 @@ static float SCALES[4] = { .0039f, .0078f, .0156f, .0312f};  // from datasheet
     I2C bus is in idle state
 
 **************************************************************************************************/
-ACCEL_RESULT AccelInit(const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth, accel_raw_t *const raw) {
+ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth) {
 
+  accel_raw_t *const raw = &accel->raw;
   // I2C should already be enabled
+
+  accel->i2c = i2c;
   
+  AccelSetGains(accel, 1.0f, 1.0f, 1.0f);
+
   // Determine which scaling to use when getting the values
   switch(range) {
     case ACCEL_RANGE_2G: raw->scale_ind = ACCEL_RANGE_2G; break;
@@ -64,22 +73,24 @@ ACCEL_RESULT AccelInit(const I2C_MODULE i2c, const UINT8 range, const UINT8 band
     case ACCEL_RANGE_16G: raw->scale_ind = ACCEL_RANGE_16G; break;
     default: printf("AccelInitI2C: Error, 0x%c not a valid range for data format for adxl345\n", range); return ACCEL_FAIL;
   }
+
+  
   
   // Write configurations to it
   // Put accel in MEASURE mode
-  if (AccelWrite(i2c, ACCEL_POWER_CTL, ACCEL_MEASURE) == ACCEL_FAIL) {
+  if (AccelWrite(accel, ACCEL_POWER_CTL, ACCEL_MEASURE) == ACCEL_FAIL) {
     printf("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
   
   // Set Data Format
-  if (AccelWrite(i2c, ACCEL_DATA_FORMAT, range) == ACCEL_FAIL) {
+  if (AccelWrite(accel, ACCEL_DATA_FORMAT, range) == ACCEL_FAIL) {
     printf("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
 
   // Set Bandwidth
-  if (AccelWrite(i2c, ACCEL_BW_RATE, bandwidth) == ACCEL_FAIL) {
+  if (AccelWrite(accel, ACCEL_BW_RATE, bandwidth) == ACCEL_FAIL) {
     printf("AccelInitI2C: Error, could not write to ACCEL_BW_RATE to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
@@ -121,7 +132,12 @@ ACCEL_RESULT AccelInit(const I2C_MODULE i2c, const UINT8 range, const UINT8 band
     I2C bus is in idle state
 
 **************************************************************************************************/
-ACCEL_RESULT AccelWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 data) {
+ACCEL_RESULT AccelWrite(accel_t *const accel, const UINT8 i2c_reg, const UINT8 data) {
+  I2C_MODULE i2c;
+
+  // Get I2C module from accel
+  i2c = accel->i2c;
+  
   if (I2CShared_WriteByte(i2c, ACCEL_WRITE, i2c_reg, data)) {
     return ACCEL_SUCCESS;
   } else {
@@ -164,12 +180,21 @@ ACCEL_RESULT AccelWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 d
     I2C bus is in idle state
 
 **************************************************************************************************/
-ACCEL_RESULT AccelRead(const I2C_MODULE i2c, const UINT8 i2c_reg, UINT8 *buffer) {
+ACCEL_RESULT AccelRead(accel_t *const accel, const UINT8 i2c_reg, UINT8 *buffer) {
+  I2C_MODULE i2c;
+
+  // Get I2C module from accel
+  i2c = accel->i2c;
+
   if (I2CShared_ReadByte(i2c, ACCEL_WRITE, ACCEL_READ, i2c_reg, buffer)) {
     return ACCEL_SUCCESS;
   } else {
     return ACCEL_FAIL;
   }
+}
+
+ACCEL_RESULT AccelUpdate(accel_t *const accel) {
+  return AccelReadAllAxes(accel->i2c, &accel->raw);
 }
 
 /************************************************************************************************** 
@@ -220,6 +245,12 @@ ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, accel_raw_t *const raw) {
   }
 }
 
+void AccelSetGains(accel_t *const accel, float xGain, float yGain, float zGain) {
+  accel->xGain = xGain;
+  accel->yGain = yGain;
+  accel->zGain = zGain;
+}
+
 /************************************************************************************************** 
   Function:
     AccelGetX(const accel_raw_t *const raw)
@@ -254,10 +285,8 @@ ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, accel_raw_t *const raw) {
     None
 
 **************************************************************************************************/
-float AccelGetX(const accel_raw_t *const raw) {
-  float xf;
-  xf = (float) raw->x * SCALES[raw->scale_ind];
-  return xf;
+float AccelGetX(accel_t *const accel) {
+  return AccelRawGetX(&accel->raw, accel->xGain);
 }
 
 /************************************************************************************************** 
@@ -294,10 +323,8 @@ float AccelGetX(const accel_raw_t *const raw) {
     None
 
 **************************************************************************************************/
-float AccelGetY(const accel_raw_t *const raw) {
-  float yf;
-  yf = (float) raw->y * SCALES[raw->scale_ind];
-  return yf;
+float AccelGetY(accel_t *const accel) {
+  return AccelRawGetY(&accel->raw, accel->yGain);
 }
 
 /************************************************************************************************** 
@@ -334,8 +361,24 @@ float AccelGetY(const accel_raw_t *const raw) {
     None
 
 **************************************************************************************************/
-float AccelGetZ(const accel_raw_t *const raw) {
+float AccelGetZ(accel_t *const accel) {
+  return AccelRawGetZ(&accel->raw, accel->xGain);
+}
+
+static float AccelRawGetX(accel_raw_t *const raw, const float xGain) {
+  float xf;
+  xf = (float) raw->x * SCALES[raw->scale_ind] * xGain;
+  return xf;
+}
+
+static float AccelRawGetY(accel_raw_t *const raw, const float yGain) {
+  float yf;
+  yf = (float) raw->y * SCALES[raw->scale_ind] * yGain;
+  return yf;
+}
+
+static float AccelRawGetZ(accel_raw_t *const raw, const float zGain) {
   float zf;
-  zf = (float) raw->z * SCALES[raw->scale_ind];
+  zf = (float) raw->z * SCALES[raw->scale_ind] * zGain;
   return zf;
 }

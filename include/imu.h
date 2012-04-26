@@ -16,11 +16,11 @@ typedef enum {
 } IMU_RESULT;
 
 typedef struct imu_t {
+  accel_t accel;
+  gyro_t gyro;
   I2C_MODULE i2c_module;
   BOOL isOn;
   BOOL updateAccelFirst;
-  accel_raw_t accel_raw;
-  gyro_raw_t gyro_raw;
   imu_id id;
 } imu_t;
 
@@ -34,18 +34,21 @@ IMU_RESULT ImuInit(imu_t *const p_imu,
           const UINT8 gyro_sample_rate_div, 
           const UINT8 gyro_power_mgmt_sel);
 IMU_RESULT ImuUpdate(imu_t *const p_imu);
+accel_t *ImuGetAccel(imu_t *const p_imu);
 accel_raw_t *ImuGetRawAccel(imu_t *const p_imu);
+gyro_t *ImuGetGyro(imu_t *const p_imu);
 gyro_raw_t *ImuGetRawGyro(imu_t *const p_imu);
+IMU_RESULT ImuCalibrate(imu_t *const p_imu, BOOL calGyro, BOOL calAccel, int samplesToTake, UINT ms_delay);
 BOOL ImuIsOn(const imu_t *const p_imu);
 void ImuSetID(imu_t *const p_imu, const imu_id id);
 imu_id ImuGetId(const imu_t *const p_imu);
 void ImuResetI2CBus(const imu_t *p_imu);
-float ImuGetGyroTemp(const imu_t *const p_imu);
-float ImuGetGyroX(const imu_t *const p_imu);       // X === Roll
-float ImuGetGyroY(const imu_t *const p_imu);       // Y === Pitch
-float ImuGetGyroZ(const imu_t *const p_imu);       // Z === Yaw
-float ImuGetAccelX(const imu_t *const p_imu);
-float ImuGetAccelY(const imu_t *const p_imu);
-float ImuGetAccelZ(const imu_t *const p_imu);
+float ImuGetGyroTemp(imu_t *const p_imu);
+float ImuGetGyroX(imu_t *const p_imu);       // X === Roll
+float ImuGetGyroY(imu_t *const p_imu);       // Y === Pitch
+float ImuGetGyroZ(imu_t *const p_imu);       // Z === Yaw
+float ImuGetAccelX(imu_t *const p_imu);
+float ImuGetAccelY(imu_t *const p_imu);
+float ImuGetAccelZ(imu_t *const p_imu);
 
 #endif

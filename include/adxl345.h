@@ -91,12 +91,22 @@ typedef struct accel_raw_t {
   int scale_ind;
 } accel_raw_t;
 
-ACCEL_RESULT AccelInit(const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth, accel_raw_t *const raw);
-ACCEL_RESULT AccelWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 data);
-ACCEL_RESULT AccelRead(const I2C_MODULE i2c, const UINT8 i2c_reg, UINT8 *buffer);
+typedef struct accel_t {
+    accel_raw_t raw;
+    I2C_MODULE i2c;
+    float xGain;
+    float yGain;
+    float zGain;
+} accel_t;
+
+ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth);
+ACCEL_RESULT AccelWrite(accel_t *const accel, const UINT8 i2c_reg, const UINT8 data);
+ACCEL_RESULT AccelRead(accel_t *const accel, const UINT8 i2c_reg, UINT8 *buffer);
+ACCEL_RESULT AccelUpdate(accel_t *const accel);
 ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, accel_raw_t *const raw);
-float AccelGetX(accel_raw_t const *const raw);
-float AccelGetY(accel_raw_t const *const raw);
-float AccelGetZ(accel_raw_t const *const raw);
+void AccelSetGains(accel_t *const accel, float xGain, float yGain, float zGain);
+float AccelGetX(accel_t *const accel);
+float AccelGetY(accel_t *const accel);
+float AccelGetZ(accel_t *const accel);
 
 #endif

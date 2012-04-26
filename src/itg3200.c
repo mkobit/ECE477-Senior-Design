@@ -4,6 +4,10 @@
 #include "i2c_shared.h"
 #include "delay.h"
 
+static float GyroGetConvertedX(gyro_raw_t *const raw, const INT16 xPol, const float xGain);   // X === Roll
+static float GyroGetConvertedY(gyro_raw_t *const raw, const INT16 yPol, const float yGain);   // Y === Pitch
+static float GyroGetConvertedZ(gyro_raw_t *const raw, const INT16 zPol, const float zGain);   // Z === Yaw
+
 /************************************************************************************************** 
   Function:
     GYRO_RESULT GyroInit(const I2C_MODULE i2c, const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel)
@@ -55,21 +59,18 @@
 GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel) {
 
   // Set default polarities, offsets, and gains
-  gyro->xOffset = 0.0f;
-  gyro->yOffset = 0.0f;
-  gyro->zOffset = 0.0f;
+  GyroSetOffsets(gyro, 0, 0, 0);
 
-  gyro->xPolarity = 1;
-  gyro->yPolarity = 1;
-  gyro->zPolarity = 1;
+  GyroSetRevPolarity(gyro, FALSE, FALSE, FALSE);
 
-  gyro->xGain = 1.0f;
-  gyro->yGain = 1.0f;
-  gyro->zGain = 1.0f;
+  GyroSetGains(gyro, 1.0f, 1.0f, 1.0f);
+
+  // Assign it the i2c Module
+  gyro->i2c = i2c;
 
   // OR the low pass frequency passed with dflp_config with full scale operation and write it to the gyro
   // Set internal clock and full scale operation
-  if (GyroWrite(i2c, GYRO_DLPF_FS, dlpf_lpf | GYRO_DLPF_FS_ON) == GYRO_FAIL) {
+  if (GyroWrite(gyro, GYRO_DLPF_FS, dlpf_lpf | GYRO_DLPF_FS_ON) == GYRO_FAIL) {
     printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (UINT8) dlpf_lpf | GYRO_DLPF_FS_ON, (UINT8) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
@@ -77,13 +78,13 @@ GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 dlpf_
   // Set sample rate divider
   // If dlpf_lpf == GYRO_DLPF_LPF_256HZ, sample rate = 8 kHz / sample_rate_div
   // Else, sample rate = 1 kHz / (sample_rate_div + 1)
-  if (GyroWrite(i2c, GYRO_SMPLRT_DIV, sample_rate_div) == GYRO_FAIL) {
+  if (GyroWrite(gyro, GYRO_SMPLRT_DIV, sample_rate_div) == GYRO_FAIL) {
     printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (UINT8) dlpf_lpf | GYRO_DLPF_FS_ON, (UINT8) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
   
   // Select a gyro PLL for clock source (more stable)
-  if (GyroWrite(i2c, GYRO_PWR_MGM, power_mgmt_sel) == GYRO_FAIL) {
+  if (GyroWrite(gyro, GYRO_PWR_MGM, power_mgmt_sel) == GYRO_FAIL) {
     printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (UINT8) dlpf_lpf | GYRO_DLPF_FS_ON, (UINT8) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
@@ -127,7 +128,12 @@ GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 dlpf_
     
 
 **************************************************************************************************/
-GYRO_RESULT GyroWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 data) {
+GYRO_RESULT GyroWrite(gyro_t *const gyro, const UINT8 i2c_reg, const UINT8 data) {
+  I2C_MODULE i2c;
+
+  // Get I2C module from gyro
+  i2c = gyro->i2c;
+
   if (I2CShared_WriteByte(i2c, GYRO_WRITE, i2c_reg, data)) {
     return GYRO_SUCCESS;
   } else {
@@ -170,7 +176,11 @@ GYRO_RESULT GyroWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 dat
     
 
 **************************************************************************************************/
-GYRO_RESULT GyroRead(const I2C_MODULE i2c, const UINT8 i2c_reg, UINT8 *const buffer) {
+GYRO_RESULT GyroRead(gyro_t *const gyro, UINT8 i2c_reg, UINT8 *const buffer) {
+  I2C_MODULE i2c;
+
+  // Get I2C module from gyro
+  i2c = gyro->i2c;
   if (I2CShared_ReadByte(i2c, GYRO_WRITE,GYRO_READ, i2c_reg, buffer)) {
     return GYRO_SUCCESS;
   } else {
@@ -179,25 +189,31 @@ GYRO_RESULT GyroRead(const I2C_MODULE i2c, const UINT8 i2c_reg, UINT8 *const buf
 }
 
 
-GYRO_RESULT GyroCalibrate(I2C_MODULE i2c, gyro_t *const gyro, int samplesToTake, UINT ms_delay) {
+GYRO_RESULT GyroCalibrate(gyro_t *const gyro, int samplesToTake, UINT ms_delay) {
   int samplesTaken = 0;
   float tempOffsets[3];
   GYRO_RESULT res;
+  I2C_MODULE i2c;
+  
   int timeout = 0;
+
+  // Get gyro's I2C module
+  i2c = gyro->i2c;
 
   // Take samples and update the calibration
   do {
-    res = GyroReadAllAxes(i2c, gyro, TRUE);
+    res = GyroReadAllAxes(gyro->i2c, &gyro->raw, FALSE);
     if (res == GYRO_SUCCESS) {
-      tempOffsets[0] += GyroGetX(gyro);
-      tempOffsets[1] += GyroGetY(gyro);
-      tempOffsets[2] += GyroGetZ(gyro);
+      tempOffsets[0] += GyroGetRawX(gyro);
+      tempOffsets[1] += GyroGetRawY(gyro);
+      tempOffsets[2] += GyroGetRawZ(gyro);
       samplesTaken++;
+      //printf("Sample %d: tX = %4.2f, tY = %4.2f, tZ = %4.2f\n", samplesTaken, tempOffsets[0], tempOffsets[1], tempOffsets[2]);
     } else {
       timeout++;
-      // TODO constant for timeout
       // If this many read fails, just exit with 
       if (timeout == 5000) {
+        // Switch back in old values
         return GYRO_FAIL;
       }
     }
@@ -205,10 +221,16 @@ GYRO_RESULT GyroCalibrate(I2C_MODULE i2c, gyro_t *const gyro, int samplesToTake,
   } while (samplesTaken < samplesToTake);
 
   // successful calibration, update the offsets
-  gyro->xOffset = (INT16) (tempOffsets[0] / samplesToTake);
-  gyro->yOffset = (INT16) (tempOffsets[1] / samplesToTake);
-  gyro->zOffset = (INT16) (tempOffsets[2] / samplesToTake);
+  GyroSetOffsets(gyro, -tempOffsets[0] / samplesToTake, -tempOffsets[1] / samplesToTake, -tempOffsets[2] / samplesToTake);
   return GYRO_SUCCESS;
+}
+
+GYRO_RESULT GyroUpdate(gyro_t *const gyro, const BOOL readTemp) {
+  GYRO_RESULT res;
+
+  res = GyroReadAllAxes(gyro->i2c, &gyro->raw, readTemp);
+  GyroAddOffsets(gyro);
+  return res;
 }
 
 /************************************************************************************************** 
@@ -246,16 +268,12 @@ GYRO_RESULT GyroCalibrate(I2C_MODULE i2c, gyro_t *const gyro, int samplesToTake,
     I2C bus is in idle state, (raw) has most recent readings
 
 **************************************************************************************************/
-GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_t *const gyro, const BOOL readTemp) {
+GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_raw_t *const raw, const BOOL readTemp) {
   UINT8 reading_rainbow[8];
   int nDataToRead;
   int offsetForTemp;
   UINT8 startReadI2CReg;
-  gyro_raw_t *raw;
 
-  // Get pointer to raw values
-  raw = &gyro->raw;
-  
   nDataToRead = 6 + (readTemp ? 2 : 0);
   offsetForTemp = 0 + (readTemp ? 2 : 0);
   startReadI2CReg = readTemp ? GYRO_TEMP_OUT_H : GYRO_XOUT_H;
@@ -270,14 +288,22 @@ GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_t *const gyro, const BOOL
     }
 
     // Add offset
-    raw->x = ((INT16)reading_rainbow[0 + offsetForTemp] << 8) | reading_rainbow[1 + offsetForTemp] + gyro->xOffset;
-    raw->y = ((INT16)reading_rainbow[2 + offsetForTemp] << 8) | reading_rainbow[3 + offsetForTemp] + gyro->yOffset;
-    raw->z = ((INT16)reading_rainbow[4 + offsetForTemp] << 8) | reading_rainbow[5 + offsetForTemp] + gyro->zOffset;
+    raw->x = ((INT16)reading_rainbow[0 + offsetForTemp] << 8) | reading_rainbow[1 + offsetForTemp];
+    raw->y = ((INT16)reading_rainbow[2 + offsetForTemp] << 8) | reading_rainbow[3 + offsetForTemp];
+    raw->z = ((INT16)reading_rainbow[4 + offsetForTemp] << 8) | reading_rainbow[5 + offsetForTemp];
 
     return GYRO_SUCCESS;
   } else {
     return GYRO_FAIL;
   }
+}
+
+void GyroAddOffsets(gyro_t *const gyro) {
+  gyro_raw_t *raw = &gyro->raw;
+
+  raw->x += gyro->xOffset;
+  raw->y += gyro->yOffset;
+  raw->z += gyro->zOffset;
 }
 
 /************************************************************************************************** 
@@ -360,14 +386,7 @@ float GyroGetTemp(gyro_t *const gyro) {
 
 **************************************************************************************************/
 float GyroGetX(gyro_t *const gyro) {
-  float xd;
-  gyro_raw_t *raw;
-
-  // Get pointer to raw values
-  raw = &gyro->raw;
-  
-  xd = (float) (raw->x * gyro->xPolarity) / GYRO_CONV_TO_DEGREES * gyro->xGain;
-  return xd;
+  return GyroGetConvertedX(&gyro->raw, gyro->xPolarity, gyro->xGain);
 }
 
 /************************************************************************************************** 
@@ -404,13 +423,7 @@ float GyroGetX(gyro_t *const gyro) {
 
 **************************************************************************************************/
 float GyroGetY(gyro_t *const gyro) {
-  float yd;
-  gyro_raw_t *raw;
-
-  // Get pointer to raw values
-  raw = &gyro->raw;
-  yd = (float) (raw->y * gyro->yPolarity) / GYRO_CONV_TO_DEGREES * gyro->yGain;
-  return yd;
+  return GyroGetConvertedY(&gyro->raw, gyro->yPolarity, gyro->yGain);
 }
 
 /************************************************************************************************** 
@@ -447,13 +460,7 @@ float GyroGetY(gyro_t *const gyro) {
 
 **************************************************************************************************/
 float GyroGetZ(gyro_t *const gyro) {
-  float zd;
-  gyro_raw_t *raw;
-
-  // Get pointer to raw values
-  raw = &gyro->raw;
-  zd = (float) (raw->z * gyro->zPolarity) / GYRO_CONV_TO_DEGREES * gyro->zGain;
-  return zd;
+  return GyroGetConvertedZ(&gyro->raw, gyro->zPolarity, gyro->zGain);
 }
 
 void GyroSetRevPolarity(gyro_t *const gyro, const BOOL xPol, const BOOL yPol, const BOOL zPol) {
@@ -462,8 +469,47 @@ void GyroSetRevPolarity(gyro_t *const gyro, const BOOL xPol, const BOOL yPol, co
   gyro->zPolarity = zPol ? -1 : 1;
 }
 
+void GyroSetOffsets(gyro_t *const gyro, INT16 xOff, INT16 yOff, INT16 zOff) {
+  gyro->xOffset = xOff;
+  gyro->yOffset = yOff;
+  gyro->zOffset = zOff;
+}
+
 void GyroSetGains(gyro_t *const gyro, const float xGain, const float yGain, const float zGain) {
   gyro->xGain = xGain;
   gyro->yGain = yGain;
   gyro->zGain = zGain;
+}
+
+static float GyroGetConvertedX(gyro_raw_t *const raw, const INT16 xPol, const float xGain) { // X === Roll
+  float xd;
+  
+  xd = (float) (raw->x * xPol) / GYRO_CONV_TO_DEGREES * xGain;
+  return xd;
+}
+
+static float GyroGetConvertedY(gyro_raw_t *const raw, const INT16 yPol, const float yGain) {   // Y === Pitch
+  float yd;
+  
+  yd = (float) (raw->y * yPol) / GYRO_CONV_TO_DEGREES * yGain;
+  return yd;
+}
+
+static float GyroGetConvertedZ(gyro_raw_t *const raw, const INT16 zPol, const float zGain) {   // Z === Yaw
+  float zd;
+  
+  zd = (float) (raw->z * zPol) / GYRO_CONV_TO_DEGREES * zGain;
+  return zd;
+}
+
+INT16 GyroGetRawX(gyro_t *const gyro) {
+  return gyro->raw.x * gyro->xPolarity;
+}
+
+INT16 GyroGetRawY(gyro_t *const gyro) {
+  return gyro->raw.y * gyro->yPolarity;
+}
+
+INT16 GyroGetRawZ(gyro_t *const gyro) {
+  return gyro->raw.z * gyro->zPolarity;
 }

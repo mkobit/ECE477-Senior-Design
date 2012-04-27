@@ -4,7 +4,6 @@
 
 #include <stdio.h>
 
-
 #include "imu.h"
 //#include "battery_monitor.h"  DOES NOT WORK CURRENTLY
 #include "delay.h"
@@ -12,6 +11,7 @@
 #include "kalman.h"
 #include "lcd_16x2.h"
 #include "math_helpers.h"
+#include "xbee.h"
 
 
 // Configuration Bit settings
@@ -48,7 +48,7 @@
 #define SAMPLE_FREQ 100.0f  // 1 / 10 ms
 #define USE_MADGWICK 1
 #define USE_MAHONY 2
-#define FILTERING_ALG USE_MAHONY
+#define FILTERING_ALG USE_MADGWICK
 
 #define ID_UPPER_ARM 0
 #define I2C_UPPER_ARM I2C1
@@ -62,9 +62,9 @@
 // I2C bus frequency to communicate with IMUs
 #define I2C_FREQ 400000
 // IMU acceleration and gyroscope settings being used
-#define ACC_RANG ACCEL_RANGE_4G         // accelerometer range
+#define ACC_RANG ACCEL_RANGE_2G         // accelerometer range
 #define ACC_BW ACCEL_BW_100             // accelerometer bandwidth
-#define GYR_DLPF GYRO_DLPF_LPF_42HZ     // gyro digital low pass filter setting
+#define GYR_DLPF GYRO_DLPF_LPF_20HZ     // gyro digital low pass filter setting
 #define GYR_SAMP_DIV 9                  // sample divider being used
 #define GYR_POW_SEL GYRO_PWR_MGM_CLK_SEL_X  // gyro clock selector
 // IMU calibration settings
@@ -76,8 +76,12 @@
 
 /* XBEE DEFINES AND CONSTANTS */
 // TODO all xbee settings here
-#define XBEE_UART_PORT UART3
-#define XBEE_SETTINGS UART_ENABLE_PINS_TX_RX_ONLY
+#define UART_PORT_XBEE UART1
+typedef struct TRANSMIT_PACKAGE {
+  UINT8 n_bytes;
+  imu_id id;
+  QUATERNION q;
+} TRANSMIT_PACKAGE;
 
 /* LCD DEFINES AND CONSTANTS */
 #define LCD_INPUTS 11
@@ -173,7 +177,12 @@ int main() {
   KALMAN_STATE_MADGWICK k_upper_arm;
   KALMAN_STATE_MADGWICK k_fore_arm;
   KALMAN_STATE_MADGWICK k_hand;
-  
+
+  // XBee transmission variable
+  TRANSMIT_PACKAGE package;
+  // All packages are same size
+  package.n_bytes = (UINT8) sizeof(TRANSMIT_PACKAGE);
+
   // Result variables to keep track of statuses from libraries
   IMU_RESULT imu_res[N_IMUS];
 
@@ -201,7 +210,7 @@ int main() {
   #endif
 #else
   #if (FILTERING_ALG == USE_MADGWICK)
-  KALMAN_STATE_MADGWICK *const pKs[N_IMUS] = {&k_upper_arm, &k_fore_arm};
+  KALMAN_STATE_MADGWICK * pKs[N_IMUS] = {&k_upper_arm, &k_fore_arm};
   #elif (FILTERING_ALG == USE_MAHONY)
   KALMAN_STATE_MAHONY *const pKs[N_IMUS] = {&k_upper_arm, &k_fore_arm};
   #endif
@@ -262,7 +271,7 @@ int main() {
   
   // Configure settings for XBee TODO
   Send2LineDisplay(INIT_MESSAGE, XBEE_MESSAGE, 0);
-  //UARTConfigure(XBEE_UART_PORT, XBEE_SETTINGS);
+  XBeeConfigure(UART_PORT_XBEE, pbFreq, XBEE_BAUDRATE);
 
   // Configure reset button
   ButtonConfig(BUTTON1_A_PORT, BUTTON1_A_PIN, BUTTON1_B_PIN, BUTTON1_B_PORT);
@@ -309,7 +318,7 @@ int main() {
     // Update IMUs
     for (i = 0; i < N_IMUS; i++) {
       // Update in a different order each time for fairness
-      ImuUpdate(p_imus[(i + lastUpdateImu) % N_IMUS]);
+      imu_res[i] = ImuUpdate(p_imus[(i + lastUpdateImu) % N_IMUS]);
     }
     // Change which IMU gets updated first
     lastUpdateImu = (lastUpdateImu + 1) % N_IMUS;
@@ -331,11 +340,24 @@ int main() {
     // *NOT BEING USED RIGHT NOW*
 
     // Output data via XBee
-    TransmitFilterData(pKs);
+    for (i = 0; i < N_IMUS; i++) {
+      if (imu_res[i] == IMU_SUCCESS) {
+        // Package data and transmit it
+        package.id = ImuGetId(p_imus[i]);
+        package.q.q0 = pKs[i]->q.q0;
+        package.q.q1 = pKs[i]->q.q1;
+        package.q.q2 = pKs[i]->q.q2;
+        package.q.q3 = pKs[i]->q.q3;
+        XBeeSendDataBuffer(UART_PORT_XBEE, (char *) &package, package.n_bytes);
+      }
+    }
     
     // Display data to LCD, if at threshhold
     if (lcd_update_counter++ == LCD_DISP_THRESH) {
+#ifdef DISPLAY_BATTERY_PERCENTAGE
       UpdateLCDStatus(rssiPercentage, batteryPercentage);
+#else
+#endif
       // Reset counter
       lcd_update_counter = 0;
     }
@@ -495,17 +517,3 @@ void RecalibrateIMUs(imu_t **const imus) {
   WriteTimer1(0);
   INTRestoreInterrupts(intrs);
 }
-
-#if (FILTERING_ALG == USE_MADGWICK)
-void TransmitFilterData(KALMAN_STATE_MADGWICK **madgs) {
-  // TODO
-}
-
-#elif (FILTERING_ALG == USE_MAHONY)
-void TransmitFilterData(KALMAN_STATE_MAHONY **mahs) {
-// TODO
-  int i;
-
-}
-
-#endif

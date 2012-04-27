@@ -441,14 +441,12 @@ BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_write_add
   // SEND ADDRESS
   if (!I2CShared_TransmitOneByte(i2c, i2c_write_addr)) {
     printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_write_addr, i2c);
-    //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
   
   // SEND INTERNAL REGISTER
   if (!I2CShared_TransmitOneByte(i2c, i2c_register_start)) {
     printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_register 0x%x to I2C=%d\n", (unsigned char) i2c_register_start, i2c);
-    //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
   
@@ -461,7 +459,6 @@ BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_write_add
 
   if (!I2CShared_TransmitOneByte(i2c, i2c_read_addr)) {
     printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%x to I2C=%d\n", (unsigned char) i2c_read_addr, i2c);
-    //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
   
@@ -482,8 +479,9 @@ BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_write_add
       }
     }
 
-    
+    // Read the byte from I2C
     temp = I2CGetByte(i2c);
+    // Send ACK
     I2CAcknowledgeByte(i2c, TRUE);
 
     fault_count = 0;
@@ -495,13 +493,12 @@ BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_write_add
     }
     // place read data in buffer
     buffer[i] = temp;
-    // END READ
+    // END OF EACH READ
   }
 
-  // Read last byte and send nack
+  // Read last byte and send NACK
   if (I2CReceiverEnable(i2c, TRUE) != I2C_SUCCESS) {
     printf("I2CShared_ReadMultipleBytes: Error, could not configure I2C=%d to be a receiver\n", i2c);
-    //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
 
@@ -582,6 +579,45 @@ static void I2CShared_StopTransfer(const I2C_MODULE i2c) {
 
 /************************************************************************************************** 
   Function: 
+    void I2CShared_ResetBus(const I2C_MODULE i2c)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Resets the I2C bus on a failure
+  
+  Description: 
+    Disables and reenables the bus, and then clears all status bits if it can
+  
+  Preconditions: 
+    None
+  
+  Parameters: 
+    const I2C_MODULE i2c - I2C module to be reset
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    I2CShared_ResetBus(I2C1)
+    </code>
+  
+  Conditions at Exit: 
+    I2C enabled and cleared of all statuses
+  
+**************************************************************************************************/
+void I2CShared_ResetBus(const I2C_MODULE i2c) {
+  I2CEnable(i2c, FALSE);
+  I2CEnable(i2c, TRUE);
+  I2CClearStatus(i2c, I2C_TRANSMITTER_FULL | I2C_DATA_AVAILABLE | \
+  I2C_SLAVE_READ | I2C_START | I2C_STOP | I2C_SLAVE_DATA | I2C_RECEIVER_OVERFLOW | I2C_TRANSMITTER_OVERFLOW | \
+  I2C_10BIT_ADDRESS | I2C_GENERAL_CALL | I2C_ARBITRATION_LOSS | I2C_TRANSMITTER_BUSY | I2C_BYTE_ACKNOWLEDGED);
+}
+
+/************************************************************************************************** 
+  Function: 
     static void I2CShared_DebugStatus(const I2C_MODULE i2c)
   
   Author(s): 
@@ -592,6 +628,7 @@ static void I2CShared_StopTransfer(const I2C_MODULE i2c) {
   
   Description: 
     Useful for debugging when errors occur to see what the current state of the I2C module is
+    Static function, used by internal library
   
   Preconditions: 
     I2C module 
@@ -631,10 +668,3 @@ static void I2CShared_DebugStatus(const I2C_MODULE i2c) {
     if (status == 0) printf("I2CShared_DebugStatus: no status\n");
 }
 
-void I2CShared_ResetBus(const I2C_MODULE i2c) {
-  I2CEnable(i2c, FALSE);
-  I2CEnable(i2c, TRUE);
-//  I2CClearStatus(i2c, I2C_TRANSMITTER_FULL | I2C_DATA_AVAILABLE | \
-//  I2C_SLAVE_READ | I2C_START | I2C_STOP | I2C_SLAVE_DATA | I2C_RECEIVER_OVERFLOW | I2C_TRANSMITTER_OVERFLOW | \
-//  I2C_10BIT_ADDRESS | I2C_GENERAL_CALL | I2C_ARBITRATION_LOSS | I2C_TRANSMITTER_BUSY | I2C_BYTE_ACKNOWLEDGED);
-}

@@ -11,7 +11,7 @@ static float AccelRawGetZ(accel_raw_t *const raw, const float zGain);
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelInit(const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth, accel_raw_t *const raw)
+    ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth)
     
   Author(s):
     mkobit
@@ -26,6 +26,7 @@ static float AccelRawGetZ(accel_raw_t *const raw, const float zGain);
     I2C module previously enabled
 
   Parameters: 
+    accel_t *const accel - pointer to accelerometer structure to be initialized
     const I2C_MODULE i2c - I2C module associated with this accelerometer
     const UINT8 range - constant for the range of gravity
       ACCEL_RANGE_2G  - 2 G's (gravity)
@@ -40,7 +41,6 @@ static float AccelRawGetZ(accel_raw_t *const raw, const float zGain);
       ACCEL_BW_100    - 100 Hz
       ACCEL_BW_50     - 50 Hz
       ACCEL_BW_25     - 25 Hz
-    accel_raw_t *const raw - accelerometer data structure associated with this accelerometer
 
   Returns:
     ACCEL_SUCCESS - If successful
@@ -48,7 +48,7 @@ static float AccelRawGetZ(accel_raw_t *const raw, const float zGain);
 
   Example:
     <code>
-    AccelInit(I2C1, ACCEL_SCALE_4G, ACCEL_BW_100, &raw_values)
+    AccelInit(&accel, I2C1, ACCEL_SCALE_4G, ACCEL_BW_100)
     </code>
 
   Conditions at Exit:
@@ -100,7 +100,7 @@ ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 r
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 data)
+    ACCEL_RESULT AccelWrite(accel_t *const accel, const UINT8 i2c_reg, const UINT8 data)
 
   Author(s):
     mkobit
@@ -115,7 +115,7 @@ ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 r
     I2C module previously enabled and running
 
   Parameters:
-    const I2C_MODULE i2c - I2C module to connect with
+    accel_t *const accel - accelerometer for this function to act on
     const UINT8 i2c_reg - register to write to
     const UINT8 data - data to be written
 
@@ -125,11 +125,12 @@ ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 r
 
   Example:
     <code>
-    AccelWrite(i2c, ACCEL_DATA_FORMAT, ACCEL_SCALE_8G)
+    AccelWrite(&accel, ACCEL_DATA_FORMAT, ACCEL_SCALE_8G)
     </code>
 
   Conditions at Exit:
     I2C bus is in idle state
+    Accelerometer written to
 
 **************************************************************************************************/
 ACCEL_RESULT AccelWrite(accel_t *const accel, const UINT8 i2c_reg, const UINT8 data) {
@@ -147,7 +148,7 @@ ACCEL_RESULT AccelWrite(accel_t *const accel, const UINT8 i2c_reg, const UINT8 d
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelRead(const I2C_MODULE i2c, const UINT8 i2c_reg, UINT8 *buffer)
+    ACCEL_RESULT AccelRead(accel_t *const accel, const UINT8 i2c_reg, UINT8 *buffer)
 
   Author(s):
     mkobit
@@ -162,7 +163,7 @@ ACCEL_RESULT AccelWrite(accel_t *const accel, const UINT8 i2c_reg, const UINT8 d
     I2C module previously enabled and running
 
   Parameters:
-    const I2C_MODULE i2c - I2C module to connect with
+    accel_t *const accel - accelerometer for this function to act on
     const UINT8 i2c_reg - register to read from
     UINT8 *buffer - buffer to place read byte into
 
@@ -173,7 +174,7 @@ ACCEL_RESULT AccelWrite(accel_t *const accel, const UINT8 i2c_reg, const UINT8 d
   Example:
     <code>
     char c;
-    AccelRead(i2c, ACCEL_DEVID, &c)
+    AccelRead(&accel, ACCEL_DEVID, &c)
     </code>
 
   Conditions at Exit:
@@ -193,6 +194,38 @@ ACCEL_RESULT AccelRead(accel_t *const accel, const UINT8 i2c_reg, UINT8 *buffer)
   }
 }
 
+/************************************************************************************************** 
+  Function: 
+    ACCEL_RESULT AccelUpdate(accel_t *const accel)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Updates the accelerometer
+  
+  Description: 
+    Calls AccelReadAllAxes with a pointer to this accelerometers raw readings
+  
+  Preconditions: 
+    Accelerometer initialized
+  
+  Parameters: 
+    accel_t *const accel - accelerometer to update
+  
+  Returns: 
+    ACCEL_SUCCESS - If successful
+    ACCEL_FAIL - If AccelReadAllAxes unsuccessful
+  
+  Example: 
+    <code>
+    AccelUpdate(&accel)
+    </code>
+  
+  Conditions at Exit: 
+    Accelerometer updated to most recent readings its set I2C
+  
+**************************************************************************************************/
 ACCEL_RESULT AccelUpdate(accel_t *const accel) {
   return AccelReadAllAxes(accel->i2c, &accel->raw);
 }
@@ -227,7 +260,7 @@ ACCEL_RESULT AccelUpdate(accel_t *const accel) {
     </code>
 
   Conditions at Exit:
-    I2C bus is in idle state, (raw) has most recent readings
+    I2C bus is in idle state, (raw) has readings from accelerometer
 
 **************************************************************************************************/
 ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, accel_raw_t *const raw) {
@@ -245,6 +278,40 @@ ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, accel_raw_t *const raw) {
   }
 }
 
+/************************************************************************************************** 
+  Function: 
+    void AccelSetGains(accel_t *const accel, float xGain, float yGain, float zGain)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Sets gains to be used when reading acceleration values
+  
+  Description: 
+    Same as summary
+  
+  Preconditions: 
+    Accelerometer initialized
+  
+  Parameters: 
+    accel_t *const accel - pointer to accelerometer to get data from
+    float xGain - gain to be applied to X
+    float yGain - gain to be applied to Y
+    float zGain - gain to be applied to Z
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    AccelSetGains(&accel, 1.0f, 1.0f, 1.0f)
+    </code>
+  
+  Conditions at Exit: 
+    Gains of this accelerometer are set
+  
+**************************************************************************************************/
 void AccelSetGains(accel_t *const accel, float xGain, float yGain, float zGain) {
   accel->xGain = xGain;
   accel->yGain = yGain;
@@ -253,7 +320,7 @@ void AccelSetGains(accel_t *const accel, float xGain, float yGain, float zGain) 
 
 /************************************************************************************************** 
   Function:
-    AccelGetX(const accel_raw_t *const raw)
+    float AccelGetX(accel_t *const accel)
 
   Author(s):
     mkobit
@@ -262,14 +329,14 @@ void AccelSetGains(accel_t *const accel, float xGain, float yGain, float zGain) 
     Returns 'g' value of X acceleration
 
   Description:
-    Multiplies the value in the (raw) data by its corresponding scale factor in (SCALES) and returns it
+    Calls AccelRawGetX
 
   Preconditions:
     AccelInit called prior to this on the (raw) value
     AccelReadAllAxes called to place data in raw
 
   Parameters:
-    const accel_raw_t *const raw - pointer to raw read data from accelerometer
+    accel_t *const accel - pointer to accelerometer to get data from
 
   Returns:
     float xf - value in X in terms of 'g's
@@ -277,8 +344,8 @@ void AccelSetGains(accel_t *const accel, float xGain, float yGain, float zGain) 
   Example:
     <code>
     float xg;
-    AccelReadAllAxes(I2C1, &accel_readings)
-    xg = AccelGetX(&accel_readings)
+    AccelReadAllAxes(I2C1, &accel)
+    xg = AccelGetX(&accel)
     </code>
 
   Conditions at Exit:
@@ -300,14 +367,14 @@ float AccelGetX(accel_t *const accel) {
     Returns 'g' value of Y acceleration
 
   Description:
-    Multiplies the value in the (raw) data by its corresponding scale factor in (SCALES) and returns it
+    Calls AccelRawGetY
 
   Preconditions:
     AccelInit called prior to this on the (raw) value
     AccelReadAllAxes called to place data in raw
 
   Parameters:
-    const accel_raw_t *const raw - pointer to raw read data from accelerometer
+    accel_t *const accel - pointer to accelerometer to get data from
 
   Returns:
     float xf - value in Y in terms of 'g's
@@ -315,8 +382,8 @@ float AccelGetX(accel_t *const accel) {
   Example:
     <code>
     float yg;
-    AccelReadAllAxes(I2C1, &accel_readings)
-    yg = AccelGetY(&accel_readings)
+    AccelReadAllAxes(I2C1, &accel)
+    yg = AccelGetY(&accel)
     </code>
 
   Conditions at Exit:
@@ -329,7 +396,7 @@ float AccelGetY(accel_t *const accel) {
 
 /************************************************************************************************** 
   Function:
-    AccelGetZ(const accel_raw_t *const raw)
+    float AccelGetZ(accel_t *const accel)
 
   Author(s):
     mkobit
@@ -338,6 +405,7 @@ float AccelGetY(accel_t *const accel) {
     Returns 'g' value of Z acceleration
 
   Description:
+    Calls AccelRawGetZ
     Multiplies the value in the (raw) data by its corresponding scale factor in (SCALES) and returns it
 
   Preconditions:
@@ -345,7 +413,7 @@ float AccelGetY(accel_t *const accel) {
     AccelReadAllAxes called to place data in raw
 
   Parameters:
-    const accel_raw_t *const raw - pointer to raw read data from accelerometer
+    accel_t *const accel - pointer to accelerometer to get data from
 
   Returns:
     float zf - value in Z in terms of 'g's
@@ -353,8 +421,8 @@ float AccelGetY(accel_t *const accel) {
   Example:
     <code>
     float zg;
-    AccelReadAllAxes(I2C1, &accel_readings)
-    zg = AccelGetZ(&accel_readings)
+    AccelReadAllAxes(I2C1, &accel)
+    zg = AccelGetZ(&accel)
     </code>
 
   Conditions at Exit:
@@ -365,18 +433,120 @@ float AccelGetZ(accel_t *const accel) {
   return AccelRawGetZ(&accel->raw, accel->xGain);
 }
 
+/************************************************************************************************** 
+  Function: 
+    static float AccelRawGetX(accel_raw_t *const raw, const float xGain)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Scales the X value read from the accelerometer and returns it
+  
+  Description: 
+    Multiplies the raw value by the scale and by the gain supplied to the function
+    Static function, used by internal library
+  
+  Preconditions: 
+    Accelerometer was initialized
+    (raw) has valid values in it
+  
+  Parameters: 
+    accel_raw_t *const raw - raw data to operate on
+    const float xGain - gain to be applied to the result
+  
+  Returns: 
+    float xf - Scaled value of X, in 'g's'
+  
+  Example: 
+    <code>
+    float x = AccelRawGetX(&accel->raw, accel->xGain)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 static float AccelRawGetX(accel_raw_t *const raw, const float xGain) {
   float xf;
   xf = (float) raw->x * SCALES[raw->scale_ind] * xGain;
   return xf;
 }
 
+/************************************************************************************************** 
+  Function: 
+    static float AccelRawGetY(accel_raw_t *const raw, const float yGain)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Scales the Y value read from the accelerometer and returns it
+  
+  Description: 
+    Multiplies the raw value by the scale and by the gain supplied to the function
+    Static function, used by internal library
+  
+  Preconditions: 
+    Accelerometer was initialized
+    (raw) has valid values in it
+  
+  Parameters: 
+    accel_raw_t *const raw - raw data to operate on
+    const float yGain - gain to be applied to the result
+  
+  Returns: 
+    float yf - Scaled value of Y, in 'g's'
+  
+  Example: 
+    <code>
+    float y = AccelRawGetY(&accel->raw, accel->yGain)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 static float AccelRawGetY(accel_raw_t *const raw, const float yGain) {
   float yf;
   yf = (float) raw->y * SCALES[raw->scale_ind] * yGain;
   return yf;
 }
 
+/************************************************************************************************** 
+  Function: 
+    static float AccelRawGetZ(accel_raw_t *const raw, const float zGain)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Scales the Z value read from the accelerometer and returns it
+  
+  Description: 
+    Multiplies the raw value by the scale and by the gain supplied to the function
+    Static function, used by internal library
+  
+  Preconditions: 
+    Accelerometer was initialized
+    (raw) has valid values in it
+  
+  Parameters: 
+    accel_raw_t *const raw - raw data to operate on
+    const float zGain - gain to be applied to the result
+  
+  Returns: 
+    float zf - Scaled value of Z, in 'g's'
+  
+  Example: 
+    <code>
+    float z = AccelRawGetZ(&accel->raw, accel->zGain)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 static float AccelRawGetZ(accel_raw_t *const raw, const float zGain) {
   float zf;
   zf = (float) raw->z * SCALES[raw->scale_ind] * zGain;

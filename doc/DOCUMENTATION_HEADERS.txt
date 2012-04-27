@@ -9,23 +9,44 @@
 // BEGINNING OF A PROGRAM - PUT THIS PART IN PROGRAMS AND FILL IT OUT
 /**************************************************************************************************
   Title: 
+    
+    
   Version: 
+    
+    
   Filename: 
+    
+    
   Author(s): 
+    
+    
   Purpose of Program: 
+    
+    
   How to build: 
+    
+    
   Update History: 
+    
+    
 **************************************************/
 
 // EXPLANATION OF THE BEGINNING IF A PROGRAM DETAILS
 /**************************************************************************************************
   Title: (descriptive title)
+  
   Version: m.n (version number, following specified guidelines)
+  
   Filename: (name of file)
+  
   Author(s): (person who wrote code)
+  
   Purpose of Program: (describe what is going on)
+  
   How to build:  (any specifics about compilation)
+  
   Update History: (list of changes made since first written, date of each change
+  
 **************************************************************************************************/
 
 
@@ -55,7 +76,8 @@
     
   
   Example: 
-    
+    <code>
+    </code>
   
   Conditions at Exit: 
     

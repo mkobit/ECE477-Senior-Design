@@ -470,11 +470,11 @@ void LcdInstrSetDDRAMAddress(const UINT8 address) {
   
   Description: 
     Does logical operations on each bit to determine which pins should be set/cleared
+    Static function, used by internal library
   
   Preconditions: 
     LcdInit called prior
     None of the pins have been reconfigured or used for anything else
-    Static function, used by internal library
   
   Parameters: 
     const UINT8 data - character data to be used to set/clear digital output pins

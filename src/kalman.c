@@ -5,13 +5,6 @@
 #include "math_helpers.h"
 #include "imu.h"
 
-// Used for Madgwick filtering
-volatile static float beta = BETADEF;       // 2 * proportional gain (Kp)
-
-// Used for Mahony filtering
-volatile static float twoKp = TWOKPDEF;     // 2 * proportional gain (Kp)
-volatile static float twoKi = TWOKIDEF;     // 2 * integral gain (Ki)
-
 /************************************************************************************************** 
   Function: 
     void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE_MADGWICK *const kmadg, const float sampleFreq)
@@ -125,10 +118,10 @@ void Kalman_MadgwickUpdate(imu_t *const p_imu, KALMAN_STATE_MADGWICK *const kmad
     s3 *= recipNorm;
     
     // Apply feedback step
-    qDot1 -= beta * s0;
-    qDot2 -= beta * s1;
-    qDot3 -= beta * s2;
-    qDot4 -= beta * s3;
+    qDot1 -= BETADEF * s0;
+    qDot2 -= BETADEF * s1;
+    qDot3 -= BETADEF * s2;
+    qDot4 -= BETADEF * s3;
   }
   
   // Integrate rate of change of quaternion to yield quaternion
@@ -285,10 +278,10 @@ void Kalman_MahonyUpdate(imu_t *const p_imu, KALMAN_STATE_MAHONY *const kmah, co
     halfez = (ax * halfvy - ay * halfvx);
 
     // Compute and apply integral feedback if enabled
-    if(twoKi > 0.0f) {
-      integralFBx += twoKi * halfex * (1.0f / sampleFreq);  // integral error scaled by Ki
-      integralFBy += twoKi * halfey * (1.0f / sampleFreq);
-      integralFBz += twoKi * halfez * (1.0f / sampleFreq);
+    if(halfex != 0.0f && halfey != 0.0f && halfez != 0.0f && TWOKIDEF > 0.0f) {
+      integralFBx += TWOKIDEF * halfex * (1.0f / sampleFreq);  // integral error scaled by Ki
+      integralFBy += TWOKIDEF * halfey * (1.0f / sampleFreq);
+      integralFBz += TWOKIDEF * halfez * (1.0f / sampleFreq);
       gx += integralFBx;  // apply integral feedback
       gy += integralFBy;
       gz += integralFBz;
@@ -300,9 +293,9 @@ void Kalman_MahonyUpdate(imu_t *const p_imu, KALMAN_STATE_MAHONY *const kmah, co
     }
 
     // Apply proportional feedback
-    gx += twoKp * halfex;
-    gy += twoKp * halfey;
-    gz += twoKp * halfez;
+    gx += TWOKPDEF * halfex;
+    gy += TWOKPDEF * halfey;
+    gz += TWOKPDEF * halfez;
   }
   
   // Integrate rate of change of quaternion

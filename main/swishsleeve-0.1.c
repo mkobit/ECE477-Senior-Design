@@ -43,9 +43,12 @@
 #define N_IMUS 2
 #endif
 
-/* KALMAN DEFINES AND CONSTANTS */
+/* KALMAN FILTER DEFINES AND CONSTANTS */
 // TODO need update rate
 #define SAMPLE_FREQ 100.0f  // 1 / 10 ms
+#define USE_MADGWICK 1
+#define USE_MAHONY 2
+#define FILTERING_ALG USE_MAHONY
 
 #define ID_UPPER_ARM 0
 #define I2C_UPPER_ARM I2C1
@@ -100,6 +103,7 @@ typedef struct LCD_PAIR {
 #define READY_MESSAGE "System Ready\nAcquiring data..."
 #define BATT_PRE "Battery: "
 #define RSSI_PRE "RSSI: "
+#define TEMP_PRE "Avg temp: "
 // Success messages
 #define SUCC_IMU_MESSAGE " IMUs were\nsuccessful"
 // Error display messages
@@ -131,6 +135,9 @@ LCD_PAIR lcd_pairs[LCD_INPUTS] = {  // TODO fix these for the actual project
 #define TIM1_PERIOD 3124  // Done by hand and tested for 10 ms, SYS_CLOCK / PBFREQ / TIM1_PS / 1000 / (1 / 10 ms)
 volatile BOOL UPDATE = FALSE;     // flag for update that timer will change
 
+ // Percentage readings from RSSI of Xbee and battery monitor *NOT CONFIGED*
+volatile int rssiPercentage = -1;
+volatile int batteryPercentage = -1;
 
 // Utility functions used in here
 void ButtonConfig(IoPortId b1a, unsigned int bit1a, IoPortId b1b, unsigned int bit1b);
@@ -139,10 +146,16 @@ BOOL Button1Check();
 void ConfigTimer1Intrs();
 #define SetTimer1Intrs(on) mT1IntEnable(on) // simple macro expansion to the mT1IntEnable
 // Interrupt handler for Timer1 is called 'Timer1IntrHandler'
+#if (FILTERING_ALG == USE_MADGWICK)
+void TransmitFilterData(KALMAN_STATE_MADGWICK **madgs);
+#elif (FILTERING_ALG == USE_MAHONY)
+void TransmitFilterData(KALMAN_STATE_MAHONY **mahs);
+#endif
 void DetectIMUErrorTrap(IMU_RESULT *imu_results);
 void Send2LineDisplay(char *line_1, char *line_2, const unsigned char bottomLineStartOffset);
 void UpdateLCDStatus(const int signalPercent, const int batteryPercent);
 void RecalibrateIMUs(imu_t **const imus);
+
 
 /*** MAIN SWISH SLEEVE PROGRAM ***/
 int main() {
@@ -160,10 +173,6 @@ int main() {
   KALMAN_STATE_MADGWICK k_upper_arm;
   KALMAN_STATE_MADGWICK k_fore_arm;
   KALMAN_STATE_MADGWICK k_hand;
-
-  // Percentage readings from RSSI of Xbee and battery monitor *NOT CONFIGED*
-  int rssiPercentage = -1;
-  int batteryPercentage = -1;
   
   // Result variables to keep track of statuses from libraries
   IMU_RESULT imu_res[N_IMUS];
@@ -183,10 +192,19 @@ int main() {
 #endif
 
   // Const pointers assigned to each Kalman filter state
+  // Handle various chips as well as our different filtering algorithms
 #ifdef I2C3
+  #if (FILTERING_ALG == USE_MADGWICK)
   KALMAN_STATE_MADGWICK *const pKs[N_IMUS] = {&k_upper_arm, &k_fore_arm, &k_hand};
+  #elif (FILTERING_ALG == USE_MAHONY)
+  KALMAN_STATE_MAHONY *const pKs[N_IMUS] = {&k_upper_arm, &k_fore_arm, &k_hand};
+  #endif
 #else
+  #if (FILTERING_ALG == USE_MADGWICK)
   KALMAN_STATE_MADGWICK *const pKs[N_IMUS] = {&k_upper_arm, &k_fore_arm};
+  #elif (FILTERING_ALG == USE_MAHONY)
+  KALMAN_STATE_MAHONY *const pKs[N_IMUS] = {&k_upper_arm, &k_fore_arm};
+  #endif
 #endif
   
   // Initialize components needed
@@ -235,7 +253,11 @@ int main() {
   // Initialize Kalman state - USING MADGWICK FOR NOW
   Send2LineDisplay(INIT_MESSAGE, FILTER_INIT_MESSAGE, 0);
   for (i = 0; i < N_IMUS; i++) {
+#if (FILTERING_ALG == USE_MADGWICK)
     Kalman_MadgwickInit(pKs[i]);
+#elif (FILTERING_ALG == USE_MAHONY)
+    Kalman_MahonyInit(pKs[i]);
+#endif
   }
   
   // Configure settings for XBee TODO
@@ -295,7 +317,11 @@ int main() {
     // Kalman filter the data
     for (i = 0; i < N_IMUS; i++) {
       // Order does not matter here
+#if (FILTERING_ALG == USE_MADGWICK)
       Kalman_MadgwickUpdate(p_imus[i], pKs[i], SAMPLE_FREQ);
+#elif (FILTERING_ALG == USE_MAHONY)
+      Kalman_MahonyUpdate(p_imus[i], pKs[i], SAMPLE_FREQ);
+#endif
     }
 
     // Update RSSI if at threshhold
@@ -305,6 +331,7 @@ int main() {
     // *NOT BEING USED RIGHT NOW*
 
     // Output data via XBee
+    TransmitFilterData(pKs);
     
     // Display data to LCD, if at threshhold
     if (lcd_update_counter++ == LCD_DISP_THRESH) {
@@ -360,10 +387,13 @@ void __ISR(_TIMER_1_VECTOR, ipl1) Timer1IntrHandler() {
 }
 
 // DONE doc this
-void UpdateLCDStatus(const int signalPercent, const int batteryPercent) {
+void UpdateLCDStatus(const int signalPercent, const int paramPercent) {
   char line1[40];
   char line2[40];
   char percentageval[5];
+#ifndef DISPLAY_BATTERY_PERCENTAGE
+  static int imuTemp = -1;
+#endif
 
   // Display signal message
   if (signalPercent <= 0) {
@@ -375,28 +405,41 @@ void UpdateLCDStatus(const int signalPercent, const int batteryPercent) {
     // Format battery string
     itoa(percentageval, signalPercent, 10);
     strcat(line1, percentageval);
-    strcat(line1, percentageval);
     strcat(line1, "%");
   }
 
+#ifdef DISPLAY_BATTERY_PERCENTAGE
   // Display battery message
-  if (batteryPercent <= 0) {
+  if (paramPercent <= 0) {
     // Concat RSSI error message
-    strcat(line2, RSS_INVAL);
+    strcpy(line2, RSS_INVAL);
   } else {
-    strcat(line2, RSSI_PRE);
+    strcpy(line2, RSSI_PRE);
     // Format battery string
-    itoa(percentageval, batteryPercent, 10);
-    strcat(line2, percentageval);
+    itoa(percentageval, paramPercent, 10);
     strcat(line2, percentageval);
     strcat(line2, "%");
   }
+#else
+  //Display temperature message
+  if (imuTemp <= 0) {
+    // Use first reading
+    imuTemp = paramPercent;
+  } else {
+    // Use average
+    imuTemp = (imuTemp + paramPercent) / 2;
+    strcpy(line2, TEMP_PRE);
+    itoa(percentageval, paramPercent, 10);
+    strcat(line2, percentageval);
+    strcat(line2, "%");
+  }
+#endif
 
   // Clear and display this 2 line message
   Send2LineDisplay(line1, line2, 0);
 }
 
-void Send2LineDisplay(char *line_1, char *line_2, unsigned char bottomLineStartOffset) {
+void Send2LineDisplay(char *line_1, char *line_2, const unsigned char bottomLineStartOffset) {
   LcdInstrClearDisplay();
   LcdDisplayData(line_1);
   LcdInstrSetDDRAMAddress(LCD_LINES_2 + bottomLineStartOffset);
@@ -423,6 +466,7 @@ void RecalibrateIMUs(imu_t **const imus) {
   int i;
   IMU_RESULT res[N_IMUS];
   UINT intrs;
+  int temp = 0;
 
   // Turn off timer interrupts and recalibrate
   intrs = INTDisableInterrupts();
@@ -432,12 +476,36 @@ void RecalibrateIMUs(imu_t **const imus) {
 
   for (i = 0; i < N_IMUS; i++) {
     res[i] = ImuCalibrate(imus[i], TRUE, TRUE, CALIBRATE_SAMPLES, CALIBRATE_DELAY);
+    temp += (int) ImuGetGyroTemp(imus[i]);
   }
 
   // Trap here if an error occurs during calibration
   DetectIMUErrorTrap(res);
 
+  // Display a new message
+#ifdef DISPLAY_BATTERY_PERCENTAGE
+  // Battery if available
+  UpdateLCDStatus(rssiPercentage, batteryPercentage);
+#else
+  // Otherwise, average IMU temperature
+  UpdateLCDStatus(rssiPercentage, temp / N_IMUS);
+#endif
+  
   // Clear Timer1 and enable interrupts
   WriteTimer1(0);
   INTRestoreInterrupts(intrs);
 }
+
+#if (FILTERING_ALG == USE_MADGWICK)
+void TransmitFilterData(KALMAN_STATE_MADGWICK **madgs) {
+  // TODO
+}
+
+#elif (FILTERING_ALG == USE_MAHONY)
+void TransmitFilterData(KALMAN_STATE_MAHONY **mahs) {
+// TODO
+  int i;
+
+}
+
+#endif

@@ -6,7 +6,7 @@
 
 // Used for Mahony filtering
 #define TWOKPDEF	(2.0f * 0.5f)	// 2 * proportional gain
-#define TWOKIDEF	(2.0f * 0.0f)	// 2 * integral gain
+#define TWOKIDEF	(2.0f * 0.3f)	// 2 * integral gain
 
 // Structure of euler angles that could possibly be used
 typedef struct EULER_ANGLES {

@@ -1,6 +1,6 @@
 #include <plib.h>
 #include <p32xxxx.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include "imu.h"
 #include "delay.h"
 #include "i2c_shared.h"
@@ -41,7 +41,7 @@ typedef struct TRANSMIT_PACKAGE {
 #define GetSystemClock()            (SYS_CLOCK)
 #define GetInstructionClock()       (SYS_CLOCK)
 
-#define TEST_I2C_BUS_ID              I2C1
+#define TEST_I2C_BUS_ID              I2C2
 #define TEST_I2C_BUS_SPEED           (400000)
 #define BAUDRATE 57600
 
@@ -58,13 +58,14 @@ typedef struct TRANSMIT_PACKAGE {
     0.2
     
   Filename: 
-    kalmantest-0.1.c
+    kalmantest-0.2.c
     
   Author(s): 
     mkobit
+    ahong
     
   Purpose of Program: 
-    Test the kalman filter and transmission of the packets
+    Test the kalman filter with transmission of the packets
     
   How to build: 
     delay.c
@@ -72,9 +73,10 @@ typedef struct TRANSMIT_PACKAGE {
     i2c_shared.c
     math_helpers.
     kalman.c
-   xbee.c
+    xbee.c
     
-  Update History: 
+  Update History:
+    4/27/12: Changed to test I2C2
     
     
 **************************************************/
@@ -93,6 +95,8 @@ int main() {
   unsigned int reInitKalman = 0;
   TRANSMIT_PACKAGE package;
 
+  package.n_bytes = sizeof(TRANSMIT_PACKAGE);
+
 #ifdef FILE_SAVE_TEST
   int i = 0;
 #endif
@@ -100,10 +104,10 @@ int main() {
 
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
   //OPENDEBUG();
-  OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
-            (pbFreq/16/BAUDRATE) - 1);
+  //OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
+            //(pbFreq/16/BAUDRATE) - 1);
   DelayInit(pbFreq);
-  putsUART2(CLEAR_VT);
+  //putsUART2(CLEAR_VT);
   p_imu = &imu;
   imu_res = ImuInit(p_imu,
       TEST_I2C_BUS_ID,
@@ -115,22 +119,26 @@ int main() {
       9,
       GYRO_PWR_MGM_CLK_SEL_X);
 
+  ImuSetID(p_imu, 0x1);
+
   if (imu_res == IMU_FAIL) {
-      printf("IMU fail\n");
+      //printf("IMU fail\n");
       while(1);
   }
 
   Kalman_MahonyInit(&kmah);
   Kalman_MadgwickInit(&kmad);
-  printf("PB speed = %u\n", pbFreq);
-  printf("Kalmans initialized\n");
+  //printf("PB speed = %u\n", pbFreq);
+  //printf("Kalmans initialized\n");
+  XBeeConfigure(TEST_XBEE, pbFreq, XBEE_BAUDRATE);
+  //printf("XBee UART initialized\n");
   DelayS(2);
   ImuCalibrate(p_imu, TRUE, TRUE, 128, TEST_UPDATE_FREQ);
-  printf("Finished IMU calibration.\n\n");
-  printf("Update rate = %d ms\n", TEST_UPDATE_FREQ);
-  //printf("Size of TRANSMIT PACKAGE: %u\n", sizeof(TRANSMIT_PACKAGE)); // debug
+  //printf("Finished IMU calibration.\n\n");
+  //printf("Update rate = %d ms\n", TEST_UPDATE_FREQ);
+  ////printf("Size of TRANSMIT PACKAGE: %u\n", sizeof(TRANSMIT_PACKAGE)); // debug
   DelayS(3);
-  printf("Clearing VT in 2, then wait 1 for acquisition and filtering...\n");
+  //printf("Clearing VT in 2, then wait 1 for acquisition and filtering...\n");
   DelayS(2);
   putsUART2(CLEAR_VT);
   DelayS(1);
@@ -143,7 +151,7 @@ int main() {
     t1 = DelayUtilGetUs();
     imu_res = ImuUpdate(p_imu);
     if (imu_res == IMU_FAIL) {
-        printf("IMU update failure\n");
+        //printf("IMU update failure\n");
         ImuResetI2CBus(p_imu);
         DelayMs(50);
         imu_res = ImuUpdate(p_imu);
@@ -161,29 +169,29 @@ int main() {
     //t4 = DelayUtilGetUs();
 #ifndef FILE_SAVE_TEST
     
-    //printf("Times follow (in us):\n");
-    //printf("IMU Update:  %u\n", DelayUtilElapsedUs(t2,t1));
-    //printf("Madg Update: %u\n", DelayUtilElapsedUs(t3,t2));
-    //printf("Mah Update:  %u\n\n", DelayUtilElapsedUs(t4,t3));
+    ////printf("Times follow (in us):\n");
+    ////printf("IMU Update:  %u\n", DelayUtilElapsedUs(t2,t1));
+    ////printf("Madg Update: %u\n", DelayUtilElapsedUs(t3,t2));
+    ////printf("Mah Update:  %u\n\n", DelayUtilElapsedUs(t4,t3));
 
-    //printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
-    //printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
+    ////printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
+    ////printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
 #if (KALMAN_SELECT == 1)
     q = &(kmad.q);
-    printf("\nMadg variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
+    //printf("\nMadg variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
     MHelpers_QuaternionToEuler(q, &e);
-    printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
+    //printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
     //MHelpers_QuaternionToYPR(q, &ypr);
-    //printf("In YPR        : yaw=%6.2f pitch=%6.2f roll=%6.2f\n", ypr.yaw, ypr.pitch, ypr.roll);
+    ////printf("In YPR        : yaw=%6.2f pitch=%6.2f roll=%6.2f\n", ypr.yaw, ypr.pitch, ypr.roll);
 #elif (KALMAN_SELECT == 2)
     q = &(kmah.q);
-    printf("\nMah  variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
+    //printf("\nMah  variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
     MHelpers_QuaternionToEuler(q, &e);
-    printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
+    //printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
 #endif
 #else
     q = &(kmad.q);
-    printf("%f,%f,%f,%f\n", q->q0, q->q1, q->q2, q->q3);
+    //printf("%f,%f,%f,%f\n", q->q0, q->q1, q->q2, q->q3);
     if (i++ == FILE_SAVE_LINES) {
       break;
     }
@@ -193,7 +201,7 @@ int main() {
       Kalman_MahonyInit(&kmah);
       Kalman_MadgwickInit(&kmad);
       reInitKalman = 0;
-      printf("\nREINITIALIZED\n");
+      //printf("\nREINITIALIZED\n");
       DelayMs(TEST_UPDATE_FREQ);
     }*/
     // Test xbee sending

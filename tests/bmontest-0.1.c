@@ -16,6 +16,31 @@
 
 #define SYSTEM_FREQUENCY 80000000L
 
+
+/**************************************************************************************************
+  Title: 
+    Battery Monitor Test
+    
+  Version: 
+    0.1
+    
+  Filename: 
+    bmontest-0.1.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Test protocol of battery monitor
+    
+  How to build: 
+    delay.c
+    battery_monitor.c
+    
+  Update History: 
+    3/28/12: Attempted to test battery monitor with out prototype but could not even ge ta response on reset from it
+    
+**************************************************/
 int main(void)
 {
   int pbFreq;

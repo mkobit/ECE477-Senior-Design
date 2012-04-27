@@ -36,7 +36,30 @@ TEST_PAIR lcd_pairs[LCDS_IN] = {
         {BIT_4, IOPORT_C}};
 
 
-
+/**************************************************************************************************
+  Title: 
+    LCD test
+    
+  Version: 
+    0.1
+    
+  Filename: 
+    lcdtest-0.1.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Test basic initialization and displaying of data with the LCD
+    
+  How to build: 
+    delay.c
+    lcd_16x2.c
+    
+  Update History: 
+    
+    
+**************************************************/
 int main(void)
 {
   int pbFreq;

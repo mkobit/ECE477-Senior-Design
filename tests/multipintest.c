@@ -32,6 +32,30 @@ TEST_PAIR pin_pairs[TEST_SIZE] = {
         {BIT_13, IOPORT_G}, \
         {BIT_14, IOPORT_G}, \
         {BIT_4, IOPORT_C}};
+        
+/**************************************************************************************************
+  Title: 
+    Multiple Pin Test
+    
+  Version: 
+    1.0
+    
+  Filename: 
+    multpintest.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Tests multiple pins to see if they can be configured as digital outs and be toggled. It was used to determine if pins were burnt out on the microcontroller
+    
+  How to build: 
+    
+    
+  Update History: 
+    
+    
+**************************************************/
 int main(void)
 {
     int pbFreq;

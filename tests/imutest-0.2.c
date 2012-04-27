@@ -36,6 +36,33 @@
 
 void OPENDEBUG(unsigned int pbFreq);
 
+
+/**************************************************************************************************
+  Title: 
+    IMUTest
+    
+  Version: 
+    0.2
+    
+  Filename: 
+    imutest-0.2.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Tests major functionality of initializing, reading  from, writing to, calibrating, and other functionality. Through this, the accelerometer and gyroscope
+    were also tested
+    
+  How to build: 
+    delay.c
+    imu.c
+    i2c_shared.c
+    
+  Update History: 
+    4/26/12: Added calibration
+    
+**************************************************/
 int main() {
   long int pbFreq;
   imu_t imu;

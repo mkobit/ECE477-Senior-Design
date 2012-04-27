@@ -16,6 +16,30 @@
 #define TEST_PIN BIT_0
 #define TEST_PORT IOPORT_F
 
+
+/**************************************************************************************************
+  Title: 
+    Single Pin Test
+    
+  Version: 
+    1.0
+    
+  Filename: 
+    singlepintest.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Test a single pin to see if it can be configured for digital output and be toggled. 
+    
+  How to build: 
+    
+    
+  Update History: 
+    
+    
+**************************************************/
 int main(void)
 {
     int pbFreq;

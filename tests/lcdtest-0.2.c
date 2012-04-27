@@ -38,6 +38,30 @@ TEST_PAIR lcd_pairs[LCDS_IN] = {
         {BIT_4, IOPORT_C}};
 
 
+/**************************************************************************************************
+  Title: 
+    LCD Test
+    
+  Version: 
+    0.2
+    
+  Filename: 
+    lcdtest-0.2.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Tests extended functionality of the program, such as shifting, cursor display, and other LCD instructions
+    
+  How to build: 
+    delay.c
+    lcd_16x2.c
+    
+  Update History: 
+    
+    
+**************************************************/
 int main(void)
 {
   int i;

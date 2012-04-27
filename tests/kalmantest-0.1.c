@@ -38,6 +38,34 @@
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
 
+
+/**************************************************************************************************
+  Title: 
+    Kalman Filter Test
+    
+  Version: 
+    0.1
+    
+  Filename: 
+    kalmantest-0.1.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Test both versions of the Kalman filters
+    
+  How to build: 
+    delay.c
+    imu.c
+    i2c_shared.c
+    math_helpers.
+    kalman.c
+    
+  Update History: 
+    4/25/12: Increased update rate and delay before output so I could capture with HyperTerminal and send it so Steve for debugging
+    
+**************************************************/
 int main() {
   imu_t imu;
   imu_t *p_imu;

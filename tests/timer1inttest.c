@@ -35,6 +35,29 @@ void SetTimer1Intrs(BOOL on);
 
 volatile us_t start;
 
+/**************************************************************************************************
+  Title: 
+    Timer1 Interrupt Test
+    
+  Version: 
+    1.0
+    
+  Filename: 
+    timer1inttest.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Test the configuration and interrupts of Timer1. Used 'delay' library to measure how many microseconds have gone by since last interrupt
+    
+  How to build: 
+    delay.c
+    
+  Update History: 
+    4/27/12: Configured to turn off timers after a certain number of iterations
+    
+**************************************************/
 int main() {
   unsigned int pbFreq;
   

@@ -36,6 +36,30 @@
 
 // Notes: works for SYSTEM_FREQUENCYs that are high, like 72-80 MHz, but I do not believe the
 // UART settings work when I drop the SYSTEM_FREQUENCY down a lot. It is worth looking into though.
+
+/**************************************************************************************************
+  Title: 
+    Delay Test
+    
+  Version: 
+    0.1
+    
+  Filename: 
+    delaytest-0.1.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Test delay protocol for each of the DelayS, DelayMs, and DelayUs
+    
+  How to build: 
+    delay.c
+    
+  Update History: 
+    
+    
+**************************************************/
 int main(void)
 {
 	int nc;

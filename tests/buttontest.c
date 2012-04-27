@@ -28,6 +28,30 @@ volatile int cnt = 0;
 void ButtonConfig();
 BOOL ButtonCheck();
 
+
+/**************************************************************************************************
+  Title: 
+    Button Test
+    
+  Version: 
+    0.1
+    
+  Filename: 
+    buttontest.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Figure out protocol for the button pressing to only react on button press and then liftup
+    
+  How to build: 
+    delay.c
+    
+  Update History: 
+    4/26/12: Figured out which values were static and which variables should be determined each button check
+    
+**************************************************/
 int main() {
   unsigned int pbFreq;
   us_t start;

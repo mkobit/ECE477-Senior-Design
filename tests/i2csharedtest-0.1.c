@@ -31,6 +31,30 @@ typedef short int int16_t;
 
 void OPENDEBUG(unsigned int pbFreq);
 
+/**************************************************************************************************
+  Title: 
+    I2C Test
+    
+  Version: 
+    mkobit
+    
+  Filename: 
+    i2csharedtest-0.1.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Test various functions of the I2CShared library that we built. Initializing, writing a byte, and reading a byte. Also tests Resetting if bus failure detected
+    
+  How to build: 
+    delay.c
+    i2c_shared.c
+    
+  Update History: 
+    4/23/12: Added testing to reset a bus after timeouts or errors
+    
+**************************************************/
 int main() {
   unsigned int pbFreq;
   long int delayed = 0;

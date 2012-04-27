@@ -118,7 +118,7 @@ int main() {
   ImuCalibrate(p_imu, TRUE, TRUE, 128, TEST_UPDATE_FREQ);
   printf("Finished IMU calibration.\n\n");
   printf("Update rate = %d ms\n", TEST_UPDATE_FREQ);
-  DelayS(2);
+  DelayS(3);
   printf("Clearing VT in 2, then wait 1 for acquisition and filtering...\n");
   DelayS(2);
   putsUART2(CLEAR_VT);

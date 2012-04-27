@@ -223,6 +223,10 @@ void MHelpers_QuaternionToEuler(const QUATERNION *const source, EULER_ANGLES *co
   psi = MHelpers_RadiansToDegrees(atan2f(2 * q1 * q2 - 2 * q0 * q3, 2 * q0*q0 + 2 * q1*q1 - 1)); // psi
   theta = MHelpers_RadiansToDegrees(-asinf(2 * q1 * q3 + 2 * q0 * q2)); // theta
   phi = MHelpers_RadiansToDegrees(atan2f(2 * q2 * q3 - 2 * q0 * q1, 2 * q0*q0 + 2 * q3*q3 - 1)); // phi
+  // TESTING CALC
+  //psi = MHelpers_RadiansToDegrees(atan2f(2 * (q0*q1 + q2*q3), 1 - 2*(q1*q1 + q2*q2)));
+  //theta = MHelpers_RadiansToDegrees(asinf(2 * (q0 * q2 - q3*q1)));
+  //phi = MHelpers_RadiansToDegrees(atan2f(2 * (q0*q3 + q1*q2), 1 - 2 * (q2*q2 +q3*q3)));
 
   MHelpers_FillInEuler(psi, theta, phi, dest);
 } 
@@ -321,9 +325,9 @@ float MHelpers_FastInvSqrt(const float x) {
   
 **************************************************************************************************/
 float MHelpers_DegreesToRadians(const float degrees) {
-  return degrees * (M_PI / 180.0f );
+  return degrees * M_PI / 180.0f;
 }
 
 float MHelpers_RadiansToDegrees(const float radians) {
-  return radians * (180.0f / M_PI);
+  return radians * 180.0f / M_PI;
 }

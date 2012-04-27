@@ -71,7 +71,8 @@ ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 r
     case ACCEL_RANGE_4G: raw->scale_ind = ACCEL_RANGE_4G; break;
     case ACCEL_RANGE_8G: raw->scale_ind = ACCEL_RANGE_8G; break;
     case ACCEL_RANGE_16G: raw->scale_ind = ACCEL_RANGE_16G; break;
-    default: printf("AccelInitI2C: Error, 0x%c not a valid range for data format for adxl345\n", range); return ACCEL_FAIL;
+    default: //printf("AccelInitI2C: Error, 0x%c not a valid range for data format for adxl345\n", range); 
+      return ACCEL_FAIL;
   }
 
   
@@ -79,19 +80,19 @@ ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 r
   // Write configurations to it
   // Put accel in MEASURE mode
   if (AccelWrite(accel, ACCEL_POWER_CTL, ACCEL_MEASURE) == ACCEL_FAIL) {
-    printf("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c);
+    //printf("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
   
   // Set Data Format
   if (AccelWrite(accel, ACCEL_DATA_FORMAT, range) == ACCEL_FAIL) {
-    printf("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c);
+    //printf("AccelInitI2C: Error, could not write to ACCEL_POWER_CTL to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
 
   // Set Bandwidth
   if (AccelWrite(accel, ACCEL_BW_RATE, bandwidth) == ACCEL_FAIL) {
-    printf("AccelInitI2C: Error, could not write to ACCEL_BW_RATE to I2C=%d\n", i2c);
+    //printf("AccelInitI2C: Error, could not write to ACCEL_BW_RATE to I2C=%d\n", i2c);
     return ACCEL_FAIL;
   }
   

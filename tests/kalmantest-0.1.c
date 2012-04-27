@@ -8,6 +8,10 @@
 #include "math_helpers.h"
 
 #define TEST_UPDATE_FREQ 10
+#define TEST_UPDATE_
+
+#define KALMAN_SELECT 2
+
 
 //#define FILE_SAVE_TEST
 #define FILE_SAVE_LINES 400
@@ -76,6 +80,9 @@ int main() {
   KALMAN_STATE_MAHONY kmah;
   EULER_ANGLES e;
   QUATERNION *q;
+  YPR ypr;
+  float updateRate;
+  unsigned int reInitKalman = 0;
 #ifdef FILE_SAVE_TEST
   int i = 0;
 #endif
@@ -92,9 +99,9 @@ int main() {
       TEST_I2C_BUS_ID,
       pbFreq,
       TEST_I2C_BUS_SPEED,
-      ACCEL_RANGE_4G,
+      ACCEL_RANGE_2G,
       ACCEL_BW_100,
-      GYRO_DLPF_LPF_42HZ,
+      GYRO_DLPF_LPF_20HZ,
       9,
       GYRO_PWR_MGM_CLK_SEL_X);
 
@@ -109,12 +116,13 @@ int main() {
   printf("Kalmans initialized\n");
   DelayS(2);
   ImuCalibrate(p_imu, TRUE, TRUE, 128, TEST_UPDATE_FREQ);
-  printf("Finished IMU calibration.\nBeginning acquisition and filtering...\n");
+  printf("Finished IMU calibration.\n\n");
+  printf("Update rate = %d ms\n", TEST_UPDATE_FREQ);
   DelayS(2);
-  printf("Clearing VT in 2, then wait 5 for output\n");
+  printf("Clearing VT in 2, then wait 1 for acquisition and filtering...\n");
   DelayS(2);
   putsUART2(CLEAR_VT);
-  DelayS(5);
+  DelayS(1);
   t5 = DelayUtilGetUs();
   while(1) {
     DelayMs(TEST_UPDATE_FREQ);
@@ -125,30 +133,43 @@ int main() {
     imu_res = ImuUpdate(p_imu);
     if (imu_res == IMU_FAIL) {
         printf("IMU update failure\n");
-        while(1);
+        ImuResetI2CBus(p_imu);
+        DelayMs(50);
+        imu_res = ImuUpdate(p_imu);
     }
+    updateRate = 1.0f / (float) TEST_UPDATE_FREQ * 1000.0f;
     t2 = DelayUtilGetUs();
-    Kalman_MadgwickUpdate(p_imu, &kmad, 1.0f / (float) TEST_UPDATE_FREQ * 1000.0f);
-    t3 = DelayUtilGetUs();
-    Kalman_MahonyUpdate(p_imu, &kmah, 1.0f / (float) TEST_UPDATE_FREQ * 1000.0f);
-    t4 = DelayUtilGetUs();
-#ifndef FILE_SAVE_TEST
-    printf("Update rate = %d ms\n", TEST_UPDATE_FREQ);
-    printf("Times follow (in us):\n");
-    printf("IMU Update:  %u\n", DelayUtilElapsedUs(t2,t1));
-    printf("Madg Update: %u\n", DelayUtilElapsedUs(t3,t2));
-    printf("Mah Update:  %u\n\n", DelayUtilElapsedUs(t4,t3));
+#if (KALMAN_SELECT == 1)
 
-    printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
-    printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
+    Kalman_MadgwickUpdate(p_imu, &kmad, updateRate);
+    //t3 = DelayUtilGetUs();
+#elif (KALMAN_SELECT == 2)
+
+    Kalman_MahonyUpdate(p_imu, &kmah, updateRate);
+#endif
+    //t4 = DelayUtilGetUs();
+#ifndef FILE_SAVE_TEST
+    
+    //printf("Times follow (in us):\n");
+    //printf("IMU Update:  %u\n", DelayUtilElapsedUs(t2,t1));
+    //printf("Madg Update: %u\n", DelayUtilElapsedUs(t3,t2));
+    //printf("Mah Update:  %u\n\n", DelayUtilElapsedUs(t4,t3));
+
+    //printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
+    //printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
+#if (KALMAN_SELECT == 1)
     q = &(kmad.q);
     printf("\nMadg variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
     MHelpers_QuaternionToEuler(q, &e);
     printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
+    //MHelpers_QuaternionToYPR(q, &ypr);
+    //printf("In YPR        : yaw=%6.2f pitch=%6.2f roll=%6.2f\n", ypr.yaw, ypr.pitch, ypr.roll);
+#elif (KALMAN_SELECT == 2)
     q = &(kmah.q);
     printf("\nMah  variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
     MHelpers_QuaternionToEuler(q, &e);
     printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
+#endif
 #else
     q = &(kmad.q);
     printf("%f,%f,%f,%f\n", q->q0, q->q1, q->q2, q->q3);
@@ -157,7 +178,13 @@ int main() {
     }
 
 #endif
-
+    if (reInitKalman++ == 25000) {
+      Kalman_MahonyInit(&kmah);
+      Kalman_MadgwickInit(&kmad);
+      reInitKalman = 0;
+      printf("\nREINITIALIZED\n");
+      DelayMs(TEST_UPDATE_FREQ);
+    }
   }
 
   // Never exit

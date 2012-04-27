@@ -56,11 +56,6 @@ BOOL I2CShared_Init(const I2C_MODULE i2c, const UINT peripheral_clock_speed, con
 
   I2CShared_ResetBus(i2c);
   
-  //Debug
-  //I2CShared_DebugStatus(i2c);
-
-  //I2CClearStatus(i2c, I2C_START | I2C_STOP | I2C_ARBITRATION_LOSS);
-  
   return TRUE;
 }
 
@@ -113,8 +108,7 @@ static BOOL I2CShared_StartTransfer(const I2C_MODULE i2c, const BOOL restart) {
     while(!I2CBusIsIdle(i2c)){
       if (fault_count++ == I2CSHARED_TIMEOUT) {
         printf("I2CShared_StartTransfer: Timeout waiting for bus to be idle\n");
-        //return FALSE;
-        break;
+        return FALSE;
       }
     }
 

@@ -10,7 +10,7 @@ static float GyroGetConvertedZ(gyro_raw_t *const raw, const INT16 zPol, const fl
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroInit(const I2C_MODULE i2c, const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel)
+    GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel)
 
   Author(s):
     mkobit
@@ -25,6 +25,7 @@ static float GyroGetConvertedZ(gyro_raw_t *const raw, const INT16 zPol, const fl
     I2C module previously enabled
 
   Parameters:
+    gyro_t *const gyro - gyro to initialized
     const I2C_MODULE i2c - I2C module to connect with
     const UINT8 dlpf_lpf - low pass filter configuration for sensor acquisition
         GYRO_DLPF_LPF_256HZ   - results in 8 kHz sample rate
@@ -96,7 +97,7 @@ GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 dlpf_
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroWrite(const I2C_MODULE i2c, const UINT8 i2c_reg, const UINT8 data)
+    GYRO_RESULT GyroWrite(gyro_t *const gyro, const UINT8 i2c_reg, const UINT8 data)
 
   Author(s):
     mkobit
@@ -111,7 +112,7 @@ GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 dlpf_
     I2C module previously enabled and running
 
   Parameters:
-    const I2C_MODULE i2c - I2C module to connect with
+    gyro_t *const gyro - gyro to be written to
     const UINT8 i2c_reg - register to write to
     const UINT8 data - data to be written
 
@@ -143,7 +144,7 @@ GYRO_RESULT GyroWrite(gyro_t *const gyro, const UINT8 i2c_reg, const UINT8 data)
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroRead(const I2C_MODULE i2c, const UINT8 i2c_reg, UINT8 *const buffer)
+    GYRO_RESULT GyroRead(gyro_t *const gyro, UINT8 i2c_reg, UINT8 *const buffer)
 
   Author(s):
     mkobit
@@ -158,7 +159,7 @@ GYRO_RESULT GyroWrite(gyro_t *const gyro, const UINT8 i2c_reg, const UINT8 data)
     I2C module previously enabled and running
 
   Parameters:
-    const I2C_MODULE i2c - I2C module to connect with
+    gyro_t *const gyro - gyro to be read from
     const UINT8 i2c_reg - register to read from
     UINT8 *const buffer - buffer to place read byte into
 
@@ -188,7 +189,40 @@ GYRO_RESULT GyroRead(gyro_t *const gyro, UINT8 i2c_reg, UINT8 *const buffer) {
   }
 }
 
-
+/************************************************************************************************** 
+  Function: 
+    GYRO_RESULT GyroCalibrate(gyro_t *const gyro, int samplesToTake, UINT ms_delay)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Calibrates the gyro by determining the offset for future reads and updates. The gyro should be held still during calibration
+  
+  Description: 
+    Reads a bunch of samples and averages them to determine the natural offset of the gyroscope
+  
+  Preconditions: 
+    Gyro initialized
+    I2C bus of this gyroscope is idle
+  
+  Parameters: 
+    gyro_t *const gyro - gyroto calibrate
+    int samplesToTake - number of samples to take before averaging
+    UINT ms_delay - delay before each sample should be taken
+  
+  Returns: 
+    GYRO_SUCCESS - If successful
+    GYRO_FAIL - If calibration times out or cannot be completed
+  
+  Example: 
+    <code>
+    </code>
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 GYRO_RESULT GyroCalibrate(gyro_t *const gyro, int samplesToTake, UINT ms_delay) {
   int samplesTaken = 0;
   float tempOffsets[3];
@@ -225,6 +259,41 @@ GYRO_RESULT GyroCalibrate(gyro_t *const gyro, int samplesToTake, UINT ms_delay) 
   return GYRO_SUCCESS;
 }
 
+/************************************************************************************************** 
+  Function: 
+    GYRO_RESULT GyroUpdate(gyro_t *const gyro, const BOOL readTemp)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Updates the gyro to the most recent values
+  
+  Description: 
+    Calls GyroReadAllAxes with this gyro's raw values
+  
+  Preconditions: 
+    Gyro initialized
+    I2C idle
+  
+  Parameters: 
+    gyro_t *const gyro - gyro to update the values of
+    const BOOL readTemp - if the gyroscope should also read the temperature
+  
+  Returns: 
+    GYRO_SUCCESS - If successful
+    GYRO_FAIL - If I2CShared library cannot complete its I2CShared_ReadMultipleBytes
+  
+  Example: 
+    <code>
+    GyroUpdate(&gyro, TRUe)
+    </code>
+  
+  Conditions at Exit: 
+    Gyro has the most recent values
+    I2C idle
+  
+**************************************************************************************************/
 GYRO_RESULT GyroUpdate(gyro_t *const gyro, const BOOL readTemp) {
   GYRO_RESULT res;
 
@@ -245,10 +314,10 @@ GYRO_RESULT GyroUpdate(gyro_t *const gyro, const BOOL readTemp) {
 
   Description:
     Passes control to the shared I2C library to read several bytes into the buffer starting from the X axis register or the temperature register depending
-    on whether or not readTemp is TRUE or FALSE
+    on whether or not readTemp is TRUE or FALSE. Then places the corresponding data into the gyro
 
   Preconditions:
-    I2C module previously enabled and running
+    I2C module previously enabled and idle
 
   Parameters:
     const I2C_MODULE i2c - I2C module to connect with
@@ -298,6 +367,39 @@ GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_raw_t *const raw, const B
   }
 }
 
+/************************************************************************************************** 
+  Function: 
+    void GyroAddOffsets(gyro_t *const gyro)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Adds the gyros offsets to its raw values
+  
+  Description: 
+    Same as summary
+  
+  Preconditions: 
+    Gyro initialized
+    Gyro update called
+    Typically gyro has been calibrated
+  
+  Parameters: 
+    gyro_t *const gyro - gyro to offset the raw values of
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    GyroAddOffsets(&gyro)
+    </code>
+  
+  Conditions at Exit: 
+    
+  
+**************************************************************************************************/
 void GyroAddOffsets(gyro_t *const gyro) {
   gyro_raw_t *raw = &gyro->raw;
 
@@ -463,24 +565,161 @@ float GyroGetZ(gyro_t *const gyro) {
   return GyroGetConvertedZ(&gyro->raw, gyro->zPolarity, gyro->zGain);
 }
 
+/************************************************************************************************** 
+  Function: 
+    void GyroSetRevPolarity(gyro_t *const gyro, const BOOL xPol, const BOOL yPol, const BOOL zPol)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Sets polarities of the axes to be read
+  
+  Description: 
+    If the parameters are TRUE, sets the polarities as reverse when they are read
+  
+  Preconditions: 
+    Gyro initialized
+  
+  Parameters: 
+    gyro_t *const gyro - gyroscope to set offsets of
+    const BOOL xPol - reverse polarity of X
+    const BOOL yPol - reverse polarity of Y
+    const BOOL zPol - reverse polarity of Z
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    GyroSetRevPolarity(&gyro, FALSE, FALSE, FALSE)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 void GyroSetRevPolarity(gyro_t *const gyro, const BOOL xPol, const BOOL yPol, const BOOL zPol) {
   gyro->xPolarity = xPol ? -1 : 1;
   gyro->yPolarity = yPol ? -1 : 1;
   gyro->zPolarity = zPol ? -1 : 1;
 }
 
+/************************************************************************************************** 
+  Function: 
+    void GyroSetOffsets(gyro_t *const gyro, INT16 xOff, INT16 yOff, INT16 zOff)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Sets gains of this gyro
+  
+  Description: 
+    Same as summary
+  
+  Preconditions: 
+    Gyro initialized
+  
+  Parameters: 
+    gyro_t *const gyro - gyroscope to set offsets of
+    INT16 xOff - offset to be added to X readings
+    INT16 yOff - offset to be added to X readings
+    INT16 zOff - offset to be added to X readings
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    GyroSetOffsets(&gyro, 5, -3, 16)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 void GyroSetOffsets(gyro_t *const gyro, INT16 xOff, INT16 yOff, INT16 zOff) {
   gyro->xOffset = xOff;
   gyro->yOffset = yOff;
   gyro->zOffset = zOff;
 }
 
+/************************************************************************************************** 
+  Function: 
+    void GyroSetGains(gyro_t *const gyro, const float xGain, const float yGain, const float zGain)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Sets gains of this gyro
+  
+  Description: 
+    Same as summary
+  
+  Preconditions: 
+    Gyro initialized
+  
+  Parameters: 
+    gyro_t *const gyro - gyroscope to set gains of
+    const float xGain - gain of X rotations
+    const float yGain - gain of Y rotations
+    const float zGain - gain of Z rotations
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    GyroSetGains(&gyro, 1.0f, 1.0f, 1.0f)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 void GyroSetGains(gyro_t *const gyro, const float xGain, const float yGain, const float zGain) {
   gyro->xGain = xGain;
   gyro->yGain = yGain;
   gyro->zGain = zGain;
 }
 
+/************************************************************************************************** 
+  Function: 
+    static float GyroGetConvertedX(gyro_raw_t *const raw, const INT16 xPol, const float xGain)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Returns raw X value in degrees/s
+  
+  Description: 
+    Multiplies the raw value by the polarity, gain, and the scale factor to convert the reading into degrees
+    Static function, used by internal library
+  
+  Preconditions: 
+    Gyro initialized
+    Gyro update called
+  
+  Parameters: 
+    gyro_t *const gyro - gyroscope to get raw value from
+    const INT16 xPol - polarity of X rotation
+    const float xGain - gain of X rotation
+  
+  Returns: 
+    float xd - angle of X rotation in degrees/s
+  
+  Example: 
+    <code>
+    GyroGetConvertedX(&gyro, 1, 1.0f)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 static float GyroGetConvertedX(gyro_raw_t *const raw, const INT16 xPol, const float xGain) { // X === Roll
   float xd;
   
@@ -488,6 +727,41 @@ static float GyroGetConvertedX(gyro_raw_t *const raw, const INT16 xPol, const fl
   return xd;
 }
 
+/************************************************************************************************** 
+  Function: 
+    static float GyroGetConvertedY(gyro_raw_t *const raw, const INT16 yPol, const float yGain)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Returns raw Y value in degrees/s
+  
+  Description: 
+    Multiplies the raw value by the polarity, gain, and the scale factor to convert the reading into degrees
+    Static function, used by internal library
+  
+  Preconditions: 
+    Gyro initialized
+    Gyro update called
+  
+  Parameters: 
+    gyro_t *const gyro - gyroscope to get raw value from
+    const INT16 yPol - polarity of Y rotation
+    const float yGain - gain of Y rotation
+  
+  Returns: 
+    float yd - angle of Y rotation in degrees/s
+  
+  Example: 
+    <code>
+    GyroGetConvertedY(&gyro, 1, 1.0f)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 static float GyroGetConvertedY(gyro_raw_t *const raw, const INT16 yPol, const float yGain) {   // Y === Pitch
   float yd;
   
@@ -495,6 +769,41 @@ static float GyroGetConvertedY(gyro_raw_t *const raw, const INT16 yPol, const fl
   return yd;
 }
 
+/************************************************************************************************** 
+  Function: 
+    static float GyroGetConvertedZ(gyro_raw_t *const raw, const INT16 zPol, const float zGain)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Returns raw Z value in degrees/s
+  
+  Description: 
+    Multiplies the raw value by the polarity, gain, and the scale factor to convert the reading into degrees
+    Static function, used by internal library
+  
+  Preconditions: 
+    Gyro initialized
+    Gyro update called
+  
+  Parameters: 
+    gyro_t *const gyro - gyroscope to get raw value from
+    const INT16 zPol - polarity of Z rotation
+    const float zGain - gain of Z rotation
+  
+  Returns: 
+    float zd - angle of Z rotation in degrees/s
+  
+  Example: 
+    <code>
+    GyroGetConvertedZ(&gyro, 1, 1.0f)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 static float GyroGetConvertedZ(gyro_raw_t *const raw, const INT16 zPol, const float zGain) {   // Z === Yaw
   float zd;
   
@@ -502,14 +811,110 @@ static float GyroGetConvertedZ(gyro_raw_t *const raw, const INT16 zPol, const fl
   return zd;
 }
 
+/************************************************************************************************** 
+  Function: 
+    INT16 GyroGetRawX(gyro_t *const gyro)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Returns raw X value multiplied by the polarity
+  
+  Description: 
+    Same as summary
+  
+  Preconditions: 
+    Gyro initialized
+    Gyro update called
+  
+  Parameters: 
+    gyro_t *const gyro - gyroscope to get raw value from
+  
+  Returns: 
+    INT16 rawX - raw value multiplied by polarity
+  
+  Example: 
+    <code>
+    GyroGetRawX(&gyro)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 INT16 GyroGetRawX(gyro_t *const gyro) {
   return gyro->raw.x * gyro->xPolarity;
 }
 
+/************************************************************************************************** 
+  Function: 
+    INT16 GyroGetRawY(gyro_t *const gyro)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Returns raw Y value multiplied by the polarity
+  
+  Description: 
+    Same as summary
+  
+  Preconditions: 
+    Gyro initialized
+    Gyro update called
+  
+  Parameters: 
+    gyro_t *const gyro - gyroscope to get raw value from
+  
+  Returns: 
+    INT16 rawY - raw value multiplied by polarity
+  
+  Example: 
+    <code>
+    GyroGetRawY(&gyro)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 INT16 GyroGetRawY(gyro_t *const gyro) {
   return gyro->raw.y * gyro->yPolarity;
 }
 
+/************************************************************************************************** 
+  Function: 
+    INT16 GyroGetRawZ(gyro_t *const gyro)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Returns raw Z value multiplied by the polarity
+  
+  Description: 
+    Same as summary
+  
+  Preconditions: 
+    Gyro initialized
+    Gyro update called
+  
+  Parameters: 
+    gyro_t *const gyro - gyroscope to get raw value from
+  
+  Returns: 
+    INT16 rawZ - raw value multiplied by polarity
+  
+  Example: 
+    <code>
+    GyroGetRawZ(&gyro)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 INT16 GyroGetRawZ(gyro_t *const gyro) {
   return gyro->raw.z * gyro->zPolarity;
 }

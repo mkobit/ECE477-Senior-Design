@@ -205,6 +205,42 @@ IMU_RESULT ImuUpdate(imu_t *const p_imu) {
   }
 }
 
+/************************************************************************************************** 
+  Function: 
+    IMU_RESULT ImuCalibrate(imu_t *const p_imu, BOOL calGyro, BOOL calAccel, int samplesToTake, UINT ms_delay)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Calibrates IMU for more accurate readings
+  
+  Description: 
+    Calibrates both the accelerometer and gyroscope by taking their offset they have
+  
+  Preconditions: 
+    IMU initialized successfully
+  
+  Parameters: 
+    imu_t *const p_imu - IMU being reference for this calibration
+    BOOL calGyro - if gyro should be calibrated
+    BOOL calAccel - if accel should be calibrated
+    int samplesToTake - amount of samples to calibrate with
+    UINT ms_delay - how long the delay should be before each sample is taken
+  
+  Returns: 
+    IMU_SUCCESS - IMU successfully calibrated
+    IMU_FAIL - IMU unsuccessfully calibrated
+  
+  Example: 
+    <code>
+    ImuCalibrate(&imu, TRUE, TRUE, 128, 10)
+    </code>
+  
+  Conditions at Exit: 
+    Gyro and accelerometer have calculated their offsets
+  
+**************************************************************************************************/
 IMU_RESULT ImuCalibrate(imu_t *const p_imu, BOOL calGyro, BOOL calAccel, int samplesToTake, UINT ms_delay) {
   // Default value for result
   GYRO_RESULT gRes = GYRO_SUCCESS;
@@ -221,28 +257,150 @@ IMU_RESULT ImuCalibrate(imu_t *const p_imu, BOOL calGyro, BOOL calAccel, int sam
   return (aRes == ACCEL_SUCCESS && gRes == GYRO_SUCCESS) ? IMU_SUCCESS : IMU_FAIL;
 }
 
-// TODO doc
+/************************************************************************************************** 
+  Function: 
+    void ImuSetID(imu_t *const p_imu, const imu_id id)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Assigns an ID to this IMU
+  
+  Description: 
+    Same as summary
+  
+  Preconditions: 
+    None
+  
+  Parameters: 
+    imu_t *const p_imu - IMU to operation
+    const imu_id id - id to 
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    ImuSetID(&imu, 0)
+    </code>
+  
+  Conditions at Exit: 
+    IMU assigned this ID
+  
+**************************************************************************************************/
 void ImuSetID(imu_t *const p_imu, const imu_id id) {
     p_imu->id = id;
 }
 
-//TODO doc
+/************************************************************************************************** 
+  Function: 
+    imu_id ImuGetId(const imu_t *const p_imu)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Gets ID of this IMU
+  
+  Description: 
+    Same as summary
+  
+  Preconditions: 
+    ImuSetID called
+  
+  Parameters: 
+    imu_t *const p_imu - IMU to get ID from
+  
+  Returns: 
+    imu_id id - ID of this IMU
+  
+  Example: 
+    <code>
+    ImuGetId(&imu)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 imu_id ImuGetId(const imu_t *const p_imu) {
   return (p_imu->id);
 }
 
-// TODO doc
+/************************************************************************************************** 
+  Function: 
+    void ImuResetI2CBus(const imu_t *p_imu)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Resets I2C bus that this IMU is using
+  
+  Description: 
+    Calls I2CShared_ResetBus to reset bus
+  
+  Preconditions: 
+    IMU initialized
+  
+  Parameters: 
+    imu_t *const p_imu - IMU who's I2C bus to reset
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    ImuResetI2CBus(&imu)
+    </code>
+  
+  Conditions at Exit: 
+    I2C bus reset
+  
+**************************************************************************************************/
 void ImuResetI2CBus(const imu_t *p_imu) {
   I2CShared_ResetBus(p_imu->i2c_module);
 }
 
+/************************************************************************************************** 
+  Function: 
+    accel_t *ImuGetAccel(imu_t *const p_imu)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Returns a pointer to the accelerometer associated with this IMU
+  
+  Description: 
+    Same as description
+  
+  Preconditions: 
+    IMU initialized
+  
+  Parameters: 
+    imu_t *const p_imu - IMU to get its accelerometer from
+  
+  Returns: 
+    accel_t *accel - pointer to accelerometer associated with this IMU
+  
+  Example: 
+    <code>
+    accel_t *p_accel = ImuGetAccel(&imu)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 accel_t *ImuGetAccel(imu_t *const p_imu) {
   return &p_imu->accel;
 }
 
 /************************************************************************************************** 
   Function:
-    accel_raw_t *p_imuGetRawAccel(imu_t *const p_imu)
+    accel_raw_t *ImuGetRawAccel(imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -258,15 +416,14 @@ accel_t *ImuGetAccel(imu_t *const p_imu) {
     ImuUpdate typically called
 
   Parameters:
-    imu_t *const p_imu - reference to the IMU being looked at
+    imu_t *const p_imu - IMU to get raw data from
 
   Returns:
     accel_raw_t * - reference to imu's raw accelerometer data
 
   Example:
     <code>
-    accel_raw_t *raw_a
-    raw_a = ImuGetRawGyro(&imu)
+    accel_raw_t *raw_a = ImuGetRawAccel(&imu)
     </code>
 
   Conditions at Exit:
@@ -277,13 +434,44 @@ accel_raw_t *ImuGetRawAccel(imu_t *const p_imu) {
   return &(p_imu->accel.raw);
 }
 
+/************************************************************************************************** 
+  Function: 
+    gyro_t *ImuGetGyro(imu_t *const p_imu)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Returns a pointer to the gyro associated with this IMU
+  
+  Description: 
+    Same as description
+  
+  Preconditions: 
+    IMU initialized
+  
+  Parameters: 
+    imu_t *const p_imu - IMU to get its gyro from
+  
+  Returns: 
+    gyro_t *gyro - pointer to gyro associated with this IMU
+  
+  Example: 
+    <code>
+    gyro_t *p_gyro = ImuGetGyro(&imu)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 gyro_t *ImuGetGyro(imu_t *const p_imu) {
   return &p_imu->gyro;
 }
 
 /************************************************************************************************** 
   Function:
-    gyro_raw_t *p_imuGetRawGyro(imu_t *const p_imu)
+    gyro_raw_t *ImuGetRawGyro(imu_t *const p_imu)
 
   Author(s):
     mkobit
@@ -299,15 +487,14 @@ gyro_t *ImuGetGyro(imu_t *const p_imu) {
     ImuUpdate typically called
     
   Parameters:
-    imu_t *const p_imu - reference to the IMU being looked at
+    imu_t *const p_imu - IMU to get raw data from
 
   Returns:
     gyro_raw_t * - reference to imu's raw gyro data
 
   Example:
     <code>
-    gyro_raw_t *raw_g
-    raw_g = ImuGetRawGyro(&imu)
+    gyro_raw_t *raw_g = ImuGetRawGyro(&imu)
     </code>
 
   Conditions at Exit:
@@ -404,7 +591,7 @@ float ImuGetGyroTemp(imu_t *const p_imu) {
     Gets angular momentum, roll, in terms of 'degrees / s'
 
   Description:
-    Calls ImuGetGyroX
+    Calls GyroGetX
 
   Preconditions:
     ImuInit called
@@ -443,7 +630,7 @@ float ImuGetGyroX(imu_t *const p_imu) {
     Gets angular momentum, pitch, in terms of 'degrees / s'
 
   Description:
-    Calls ImuGetGyroY
+    Calls GyroGetY
 
   Preconditions:
     ImuInit called
@@ -458,7 +645,7 @@ float ImuGetGyroX(imu_t *const p_imu) {
   Example:
     <code>
     float gz;
-    gz = ImuGetGyroZ(&imu)
+    gz = ImuGetGyroY(&imu)
     </code>
 
   Conditions at Exit:
@@ -482,7 +669,7 @@ float ImuGetGyroY(imu_t *const p_imu) {
     Gets angular momentum, yaw, in terms of 'degrees / s'
 
   Description:
-    Calls ImuGetGyroZ
+    Calls GyroGetZ
     
   Preconditions:
     ImuInit called
@@ -574,8 +761,8 @@ float ImuGetAccelX(imu_t *const p_imu) {
 
   Example:
     <code>
-    float az;
-    az = ImuGetAccelZ(&imu)
+    float ay;
+    ay = ImuGetAccelY(&imu)
     </code>
 
   Conditions at Exit:
@@ -639,6 +826,7 @@ float ImuGetAccelZ(imu_t *const p_imu) {
 
   Description:
     Toggled after every update. Accel readings will happen first every other time because of this
+    Static function, used by internal library
 
   Preconditions:
     ImuInit called

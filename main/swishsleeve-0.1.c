@@ -4,9 +4,9 @@
 
 #include <stdio.h>
 
+#include "delay.h"
 #include "imu.h"
 //#include "battery_monitor.h"  DOES NOT WORK CURRENTLY
-#include "delay.h"
 #include "i2c_shared.h"
 #include "kalman.h"
 #include "lcd_16x2.h"
@@ -165,6 +165,37 @@ void UpdateLCDStatus(const int signalPercent, const int batteryPercent);
 void RecalibrateIMUs(imu_t **const imus);
 
 
+
+/**************************************************************************************************
+  Title: 
+    Swish Sleeve Main Application
+    
+  Version: 
+    0.1
+    
+  Filename: 
+    swishsleeve-0.1.c
+    
+  Author(s): 
+    mkobit
+    
+  Purpose of Program: 
+    Main program for the Swish Sleeve application
+    
+  How to build: 
+    delay.c
+    imu.c
+    *battery_monitor.c  *NOT CURRENTLY SUPPORTED
+		i2c_shared.c
+		kalman.c
+		lcd_16x2.c
+		math_helpers.c
+		xbee.c
+    
+  Update History: 
+    4/28/12: Realized several problems when fixing code that make it very difficult to read and understand so rewriting as v0.2
+    
+**************************************************/
 /*** MAIN SWISH SLEEVE PROGRAM ***/
 int main() {
   // Loop variables

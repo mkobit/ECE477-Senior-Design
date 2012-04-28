@@ -8,7 +8,6 @@
 #include "math_helpers.h"
 
 #define TEST_UPDATE_FREQ 10
-#define TEST_UPDATE_
 
 #define KALMAN_SELECT 2
 
@@ -68,6 +67,7 @@
     
   Update History: 
     4/25/12: Increased update rate and delay before output so I could capture with HyperTerminal and send it so Steve for debugging
+    4/27/12: Updated IMU to reflect new IMU library
     
 **************************************************/
 int main() {
@@ -89,7 +89,6 @@ int main() {
 
 
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
-  //OPENDEBUG();
   OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
             (pbFreq/16/BAUDRATE) - 1);
   DelayInit(pbFreq);
@@ -98,9 +97,11 @@ int main() {
   imu_res = ImuInit(p_imu,
       TEST_I2C_BUS_ID,
       pbFreq,
+      ACCEL_DEFAULT_ADDR,
       TEST_I2C_BUS_SPEED,
       ACCEL_RANGE_2G,
       ACCEL_BW_100,
+      GYRO_DEFAULT_ADDR,
       GYRO_DLPF_LPF_20HZ,
       9,
       GYRO_PWR_MGM_CLK_SEL_X);

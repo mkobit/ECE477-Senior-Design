@@ -9,7 +9,6 @@
 #include "xbee.h"
 
 #define TEST_UPDATE_FREQ 10
-#define TEST_UPDATE_
 
 #define KALMAN_SELECT 2
 
@@ -41,7 +40,7 @@ typedef struct TRANSMIT_PACKAGE {
 #define GetSystemClock()            (SYS_CLOCK)
 #define GetInstructionClock()       (SYS_CLOCK)
 
-#define TEST_I2C_BUS_ID              I2C2
+#define TEST_I2C_BUS_ID              I2C1
 #define TEST_I2C_BUS_SPEED           (400000)
 #define BAUDRATE 57600
 
@@ -77,6 +76,7 @@ typedef struct TRANSMIT_PACKAGE {
     
   Update History:
     4/27/12: Changed to test I2C2
+    4/27/12: reverted back to I2C1 after bus errors. Changed IMU init to match new library
     
     
 **************************************************/
@@ -112,9 +112,11 @@ int main() {
   imu_res = ImuInit(p_imu,
       TEST_I2C_BUS_ID,
       pbFreq,
+      ACCEL_DEFAULT_ADDR,
       TEST_I2C_BUS_SPEED,
       ACCEL_RANGE_2G,
       ACCEL_BW_100,
+      GYRO_DEFAULT_ADDR,
       GYRO_DLPF_LPF_20HZ,
       9,
       GYRO_PWR_MGM_CLK_SEL_X);

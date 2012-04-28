@@ -27,9 +27,11 @@ typedef struct imu_t {
 IMU_RESULT ImuInit(imu_t *const p_imu,
           const I2C_MODULE i2c, 
           const UINT peripheral_clock_speed, 
-          const UINT i2c_speed, 
+          const UINT i2c_speed,
+          const UINT accel_addr,
           const UINT8 accel_range,
           const UINT8 accel_bandwidth,
+          const UINT gyro_addr,
           const UINT8 gyro_dlpf_lpf,
           const UINT8 gyro_sample_rate_div, 
           const UINT8 gyro_power_mgmt_sel);

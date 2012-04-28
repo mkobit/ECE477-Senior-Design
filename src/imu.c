@@ -6,14 +6,17 @@ static inline void ImuToggleSelector(imu_t* imu);
 
 /************************************************************************************************** 
   Function:
-    ImuInit(imu_t *const imu,
+    IMU_RESULT ImuInit(imu_t *const p_imu,
           const I2C_MODULE i2c,
-          const UINT peripheral_clock_speed, 
-          const UINT i2c_speed, 
+          const UINT peripheral_clock_speed,
+          const UINT i2c_speed,
+          const UINT accel_addr,
           const UINT8 accel_range,
           const UINT8 accel_bandwidth,
+          const UINT gyro_addr,
           const UINT8 gyro_dlpf_lpf,
           const UINT8 gyro_sample_rate_div,
+          const UINT8 gyro_power_mgmt_sel)
 
   Author(s):
     mkobit
@@ -33,6 +36,7 @@ static inline void ImuToggleSelector(imu_t* imu);
     const I2C_MODULE i2c - I2C module to associate with this IMU
     const UINT peripheral_clock_speed - peripheral bus speed
     const UINT i2c_speed - target I2C bus speed
+    const UINT accel_addr - I2C address of accelerometer
     const UINT8 accel_range - range of accelerometer
       ACCEL_SCALE_2G  - 2 G's (gravity)
       ACCEL_SCALE_4G  - 4 G's
@@ -46,6 +50,7 @@ static inline void ImuToggleSelector(imu_t* imu);
       ACCEL_BW_100    - 100 Hz
       ACCEL_BW_50     - 50 Hz
       ACCEL_BW_25     - 25 Hz
+    const UINT gyro_addr - I2C address of gyroscope
     const UINT8 dlpf_lpf - low pass filter configuration for sensor acquisition
       GYRO_DLPF_LPF_256HZ    - results in 8 kHz sample rate
       GYRO_DLPF_LPF_188HZ   - results in 1 kHz sample rate
@@ -88,15 +93,16 @@ static inline void ImuToggleSelector(imu_t* imu);
 **************************************************************************************************/
 IMU_RESULT ImuInit(imu_t *const p_imu,
           const I2C_MODULE i2c,
-          const UINT peripheral_clock_speed, 
-          const UINT i2c_speed, 
+          const UINT peripheral_clock_speed,
+          const UINT i2c_speed,
+          const UINT accel_addr,
           const UINT8 accel_range,
           const UINT8 accel_bandwidth,
+          const UINT gyro_addr,
           const UINT8 gyro_dlpf_lpf,
-          const UINT8 gyro_sample_rate_div, 
+          const UINT8 gyro_sample_rate_div,
           const UINT8 gyro_power_mgmt_sel) {
                                     
-  UINT actualClock;
   ACCEL_RESULT accel_init_result;
   GYRO_RESULT gyro_init_result;
   
@@ -109,14 +115,14 @@ IMU_RESULT ImuInit(imu_t *const p_imu,
     return IMU_FAIL;
   }
   // Init both modules of the imu
-  accel_init_result = AccelInit(&p_imu->accel, i2c, accel_range, accel_bandwidth);
+  accel_init_result = AccelInit(&p_imu->accel, i2c, accel_addr, accel_range, accel_bandwidth);
   if (accel_init_result != ACCEL_SUCCESS) {
       // accel failure, don't try to read line
     p_imu->isOn = FALSE;
     //printf("ImuInit: Error, could not complete initialization due to accel fail.\n");
     return IMU_FAIL;
   }
-  gyro_init_result = GyroInit(&p_imu->gyro, i2c, gyro_dlpf_lpf, gyro_sample_rate_div, gyro_power_mgmt_sel);
+  gyro_init_result = GyroInit(&p_imu->gyro, i2c, gyro_addr, gyro_dlpf_lpf, gyro_sample_rate_div, gyro_power_mgmt_sel);
   
   // Give a semi-random true/false to read accelerometer first  
   p_imu->updateAccelFirst = ReadCoreTimer() % 2 == 0;

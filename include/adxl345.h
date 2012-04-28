@@ -3,8 +3,9 @@
 
 // constants taken from https://github.com/a1ronzo/6DOF-Digital/
 /* Register map for the ACCEL345 */
-#define ACCEL_READ  0xA7
-#define ACCEL_WRITE  0xA6
+#define ACCEL_DEFAULT_ADDR 0xA6
+//#define ACCEL_DEFAULT_READ  0xA7
+//#define ACCEL_DEFAULT_WRITE  0xA6
 
 //ACCEL Register Map
 #define ACCEL_DEVID      0x00  //Device ID Register
@@ -94,16 +95,18 @@ typedef struct accel_raw_t {
 typedef struct accel_t {
     accel_raw_t raw;
     I2C_MODULE i2c;
+    UINT8 i2c_addr;
     float xGain;
     float yGain;
     float zGain;
 } accel_t;
 
-ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth);
+ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 i2c_address,
+        const UINT8 range, const UINT8 bandwidth);
 ACCEL_RESULT AccelWrite(accel_t *const accel, const UINT8 i2c_reg, const UINT8 data);
 ACCEL_RESULT AccelRead(accel_t *const accel, const UINT8 i2c_reg, UINT8 *buffer);
 ACCEL_RESULT AccelUpdate(accel_t *const accel);
-ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, accel_raw_t *const raw);
+ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, const UINT8 i2c_addr, accel_raw_t *const raw);
 void AccelSetGains(accel_t *const accel, float xGain, float yGain, float zGain);
 float AccelGetX(accel_t *const accel);
 float AccelGetY(accel_t *const accel);

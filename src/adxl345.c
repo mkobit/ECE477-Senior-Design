@@ -11,7 +11,8 @@ static float AccelRawGetZ(accel_raw_t *const raw, const float zGain);
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth)
+    ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 i2c_address,
+ * const UINT8 range, const UINT8 bandwidth)
     
   Author(s):
     mkobit
@@ -56,12 +57,14 @@ static float AccelRawGetZ(accel_raw_t *const raw, const float zGain);
     I2C bus is in idle state
 
 **************************************************************************************************/
-ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 range, const UINT8 bandwidth) {
+ACCEL_RESULT AccelInit(accel_t *const accel, const I2C_MODULE i2c, const UINT8 i2c_address, const UINT8 range, const UINT8 bandwidth) {
 
   accel_raw_t *const raw = &accel->raw;
   // I2C should already be enabled
 
+  // Store I2C and I2C address 
   accel->i2c = i2c;
+  accel->i2c_addr = i2c_address;
   
   AccelSetGains(accel, 1.0f, 1.0f, 1.0f);
 
@@ -140,7 +143,7 @@ ACCEL_RESULT AccelWrite(accel_t *const accel, const UINT8 i2c_reg, const UINT8 d
   // Get I2C module from accel
   i2c = accel->i2c;
   
-  if (I2CShared_WriteByte(i2c, ACCEL_WRITE, i2c_reg, data)) {
+  if (I2CShared_WriteByte(i2c, accel->i2c_addr, i2c_reg, data)) {
     return ACCEL_SUCCESS;
   } else {
     return ACCEL_FAIL;
@@ -188,7 +191,7 @@ ACCEL_RESULT AccelRead(accel_t *const accel, const UINT8 i2c_reg, UINT8 *buffer)
   // Get I2C module from accel
   i2c = accel->i2c;
 
-  if (I2CShared_ReadByte(i2c, ACCEL_WRITE, ACCEL_READ, i2c_reg, buffer)) {
+  if (I2CShared_ReadByte(i2c, accel->i2c_addr, i2c_reg, buffer)) {
     return ACCEL_SUCCESS;
   } else {
     return ACCEL_FAIL;
@@ -228,12 +231,12 @@ ACCEL_RESULT AccelRead(accel_t *const accel, const UINT8 i2c_reg, UINT8 *buffer)
   
 **************************************************************************************************/
 ACCEL_RESULT AccelUpdate(accel_t *const accel) {
-  return AccelReadAllAxes(accel->i2c, &accel->raw);
+  return AccelReadAllAxes(accel->i2c, accel->i2c_addr, &accel->raw);
 }
 
 /************************************************************************************************** 
   Function:
-    ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, accel_raw_t *const raw)
+    ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, accel_raw_t *const raw, const UINT8 i2c_addr)
 
   Author(s):
     mkobit
@@ -249,6 +252,7 @@ ACCEL_RESULT AccelUpdate(accel_t *const accel) {
 
   Parameters:
     const I2C_MODULE i2c -  I2C module to connect with
+    const UINT8 i2c_addr - i2c address of accelerometer
     accel_raw_t *const raw - reference to structure to place read data into
 
   Returns:
@@ -264,11 +268,11 @@ ACCEL_RESULT AccelUpdate(accel_t *const accel) {
     I2C bus is in idle state, (raw) has readings from accelerometer
 
 **************************************************************************************************/
-ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, accel_raw_t *const raw) {
+ACCEL_RESULT AccelReadAllAxes(const I2C_MODULE i2c, const UINT8 i2c_addr, accel_raw_t *const raw) {
   UINT8 reading_rainbow[6];  // placeholder for read data
   
   // read x,y, and z data into buffer
-  if (I2CShared_ReadMultipleBytes(i2c, ACCEL_WRITE, ACCEL_READ, ACCEL_DATAX0, 6, reading_rainbow)) {
+  if (I2CShared_ReadMultipleBytes(i2c, i2c_addr, ACCEL_DATAX0, 6, reading_rainbow)) {
     //expand data and place them into the accel_raw_t raw
     raw->x = ((INT16)reading_rainbow[1] << 8) | reading_rainbow[0];
     raw->y = ((INT16)reading_rainbow[3] << 8) | reading_rainbow[2];

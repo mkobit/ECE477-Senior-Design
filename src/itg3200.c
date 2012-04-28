@@ -10,7 +10,8 @@ static float GyroGetConvertedZ(gyro_raw_t *const raw, const INT16 zPol, const fl
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel)
+    GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 i2c_address,
+      const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel)
 
   Author(s):
     mkobit
@@ -27,6 +28,7 @@ static float GyroGetConvertedZ(gyro_raw_t *const raw, const INT16 zPol, const fl
   Parameters:
     gyro_t *const gyro - gyro to initialized
     const I2C_MODULE i2c - I2C module to connect with
+    const UINT8 i2c_address - I2C address of gyroscope
     const UINT8 dlpf_lpf - low pass filter configuration for sensor acquisition
         GYRO_DLPF_LPF_256HZ   - results in 8 kHz sample rate
         GYRO_DLPF_LPF_188HZ   - results in 1 kHz sample rate
@@ -57,7 +59,8 @@ static float GyroGetConvertedZ(gyro_raw_t *const raw, const INT16 zPol, const fl
     I2C bus is in idle state
 
 **************************************************************************************************/
-GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel) {
+GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 i2c_address,
+        const UINT8 dlpf_lpf, const UINT8 sample_rate_div, const UINT8 power_mgmt_sel) {
 
   // Set default polarities, offsets, and gains
   GyroSetOffsets(gyro, 0, 0, 0);
@@ -66,8 +69,9 @@ GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 dlpf_
 
   GyroSetGains(gyro, 1.0f, 1.0f, 1.0f);
 
-  // Assign it the i2c Module
+  // Assign it the I2C Module and address
   gyro->i2c = i2c;
+  gyro->i2c_addr = i2c_address;
 
   // OR the low pass frequency passed with dflp_config with full scale operation and write it to the gyro
   // Set internal clock and full scale operation
@@ -135,7 +139,7 @@ GYRO_RESULT GyroWrite(gyro_t *const gyro, const UINT8 i2c_reg, const UINT8 data)
   // Get I2C module from gyro
   i2c = gyro->i2c;
 
-  if (I2CShared_WriteByte(i2c, GYRO_WRITE, i2c_reg, data)) {
+  if (I2CShared_WriteByte(i2c, gyro->i2c_addr, i2c_reg, data)) {
     return GYRO_SUCCESS;
   } else {
     return GYRO_FAIL;
@@ -177,12 +181,12 @@ GYRO_RESULT GyroWrite(gyro_t *const gyro, const UINT8 i2c_reg, const UINT8 data)
     
 
 **************************************************************************************************/
-GYRO_RESULT GyroRead(gyro_t *const gyro, UINT8 i2c_reg, UINT8 *const buffer) {
+GYRO_RESULT GyroRead(gyro_t *const gyro, const UINT8 i2c_reg, UINT8 *const buffer) {
   I2C_MODULE i2c;
 
   // Get I2C module from gyro
   i2c = gyro->i2c;
-  if (I2CShared_ReadByte(i2c, GYRO_WRITE,GYRO_READ, i2c_reg, buffer)) {
+  if (I2CShared_ReadByte(i2c, gyro->i2c_addr, i2c_reg, buffer)) {
     return GYRO_SUCCESS;
   } else {
     return GYRO_FAIL;
@@ -236,7 +240,7 @@ GYRO_RESULT GyroCalibrate(gyro_t *const gyro, int samplesToTake, UINT ms_delay) 
 
   // Take samples and update the calibration
   do {
-    res = GyroReadAllAxes(gyro->i2c, &gyro->raw, FALSE);
+    res = GyroReadAllAxes(gyro->i2c, gyro->i2c_addr, &gyro->raw, FALSE);
     if (res == GYRO_SUCCESS) {
       tempOffsets[0] += GyroGetRawX(gyro);
       tempOffsets[1] += GyroGetRawY(gyro);
@@ -297,14 +301,15 @@ GYRO_RESULT GyroCalibrate(gyro_t *const gyro, int samplesToTake, UINT ms_delay) 
 GYRO_RESULT GyroUpdate(gyro_t *const gyro, const BOOL readTemp) {
   GYRO_RESULT res;
 
-  res = GyroReadAllAxes(gyro->i2c, &gyro->raw, readTemp);
+  res = GyroReadAllAxes(gyro->i2c, gyro->i2c_addr, &gyro->raw, readTemp);
   GyroAddOffsets(gyro);
   return res;
 }
 
 /************************************************************************************************** 
   Function:
-    GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_t *const gyro, const BOOL readTemp)
+    GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, const UINT8 i2c_address,
+        gyro_t *const gyro, const BOOL readTemp)
 
   Author(s):
     mkobit
@@ -321,7 +326,8 @@ GYRO_RESULT GyroUpdate(gyro_t *const gyro, const BOOL readTemp) {
 
   Parameters:
     const I2C_MODULE i2c - I2C module to connect with
-    gyro_t *const gyro - pointer to raw read data from gyro
+    const UINT8 i2c_address - i2c address of gyroscope
+    gyro_raw_t *const raw - pointer to raw read data from gyro
     const BOOL readTemp - if TRUE read temperature if FALSE do not read temperature
 
   Returns:
@@ -337,7 +343,8 @@ GYRO_RESULT GyroUpdate(gyro_t *const gyro, const BOOL readTemp) {
     I2C bus is in idle state, (raw) has most recent readings
 
 **************************************************************************************************/
-GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_raw_t *const raw, const BOOL readTemp) {
+GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, const UINT8 i2c_address,
+        gyro_raw_t *const raw, const BOOL readTemp) {
   UINT8 reading_rainbow[8];
   int nDataToRead;
   int offsetForTemp;
@@ -348,7 +355,7 @@ GYRO_RESULT GyroReadAllAxes(const I2C_MODULE i2c, gyro_raw_t *const raw, const B
   startReadI2CReg = readTemp ? GYRO_TEMP_OUT_H : GYRO_XOUT_H;
   
   // read x,y, and z data into buffer
-  if (I2CShared_ReadMultipleBytes(i2c, GYRO_WRITE, GYRO_READ, startReadI2CReg, nDataToRead, reading_rainbow)) {
+  if (I2CShared_ReadMultipleBytes(i2c, i2c_address, startReadI2CReg, nDataToRead, reading_rainbow)) {
     //expand data and place them into the accel_raw_t readings
     
     // if readTemp was true, update temperature

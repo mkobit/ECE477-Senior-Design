@@ -109,7 +109,7 @@ typedef struct LCD_PAIR {
 #define RSSI_PRE "RSSI: "
 #define TEMP_PRE "Avg temp: "
 // Success messages
-#define SUCC_IMU_MESSAGE " IMUs were\nsuccessful"
+#define SUCC_IMU_MESSAGE "IMUs were\nsuccessful"
 // Error display messages
 #define ERROR_IMU_MESSAGE "ERR: IMU Failure"
 #define BATT_INVAL "NO BATT. SIGNAL"

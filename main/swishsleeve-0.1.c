@@ -141,10 +141,14 @@ volatile BOOL UPDATE = FALSE;     // flag for update that timer will change
 
  // Percentage readings from RSSI of Xbee and battery monitor *NOT CONFIGED*
 volatile int rssiPercentage = -1;
+#ifdef DISPLAY_BATTERY_PERCENTAGE
 volatile int batteryPercentage = -1;
+#else
+volatile int temperature = 0;
+#endif
 
 // Utility functions used in here
-void ButtonConfig(IoPortId b1a, unsigned int bit1a, IoPortId b1b, unsigned int bit1b);
+inline void ButtonConfig(IoPortId b1a, unsigned int bit1a, IoPortId b1b, unsigned int bit1b);
 BOOL Button1Check();
 // Timer interrupt functions
 void ConfigTimer1Intrs();
@@ -297,7 +301,17 @@ int main() {
   // TODO
 
   // Display system status
+#ifdef DISPLAY_BATTERY_PERCENTAGE
   UpdateLCDStatus(rssiPercentage, batteryPercentage);
+#else
+  temperature = 0;
+  for (i = 0; i < N_IMUS; i++) {
+    // Need to update to get a valid temperature
+    ImuUpdate(p_imus[i]);
+    temperature += (int) ImuGetGyroTemp(p_imus[i]);
+  }
+  UpdateLCDStatus(rssiPercentage, temperature / N_IMUS);
+#endif
 
   // Enable interrupts
   INTEnableInterrupts();
@@ -352,11 +366,18 @@ int main() {
       }
     }
     
+
     // Display data to LCD, if at threshhold
     if (lcd_update_counter++ == LCD_DISP_THRESH) {
 #ifdef DISPLAY_BATTERY_PERCENTAGE
       UpdateLCDStatus(rssiPercentage, batteryPercentage);
 #else
+      temperature = 0;
+      for (i = 0; i < N_IMUS; i++) {
+    // Need to update to get a valid temperature
+        temperature += (int) ImuGetGyroTemp(p_imus[i]);
+      }
+  UpdateLCDStatus(rssiPercentage, temperature / N_IMUS);
 #endif
       // Reset counter
       lcd_update_counter = 0;
@@ -366,13 +387,82 @@ int main() {
   return 0;
 }
 
-// DONE doc this
-void ButtonConfig(IoPortId b1a, unsigned int bit1a, IoPortId b1b, unsigned int bit1b) {
+
+
+/**************************************************************************************************
+FUNCTIONS USED BY SWISH SLEEVE PROGRAM
+**************************************************************************************************/
+
+/************************************************************************************************** 
+  Function: 
+    inline void ButtonConfig(IoPortId b1a, unsigned int bit1a, IoPortId b1b, unsigned int bit1b)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Configures the two pins abd ports to be used as inputs for a button
+  
+  Description: 
+    Same as summary
+  
+  Preconditions: 
+    Pins/ports supplied are not being used for any other module
+  
+  Parameters: 
+    IoPortId b1a - IOPORT of the first input of the button
+    unsigned int bit1a - pin of the first input of the button
+    IoPortId b1b - IOPORT of the second input of the button
+    unsigned int bit1b - pin of the second input of the button
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    ButtonConfig(IOPORT_G, BIT_2, IOPORT_G, BUTTON1_B_PIN BIT_3)
+    </code>
+  
+  Conditions at Exit: 
+    Both pins and ports configured as digital inputs
+  
+**************************************************************************************************/
+inline void ButtonConfig(IoPortId b1a, unsigned int bit1a, IoPortId b1b, unsigned int bit1b) {
   PORTSetPinsDigitalIn(b1a, bit1a);
   PORTSetPinsDigitalIn(b1b, bit1b);
 }
 
-// DONE doc this
+/************************************************************************************************** 
+  Function: 
+    BOOL Button1Check()
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Determines if button was pressed and then released
+  
+  Description: 
+    Maintains a state of if the button was down, and determines if the button was released afterwards
+  
+  Preconditions: 
+    ButtonConfig
+  
+  Parameters: 
+    void
+  
+  Returns: 
+    BOOL result - TRUE if button pushed and released, FALSE if otherwords
+  
+  Example: 
+    <code>
+    BOOL buttonReleased = Button1Check()
+    </code>
+  
+  Conditions at Exit: 
+    Static variable (BOOL down) is TRUE if the state of the button is down, else FALSE
+  
+**************************************************************************************************/
 BOOL Button1Check() {
   static BOOL down = FALSE;
   BOOL b1, b2;
@@ -390,14 +480,72 @@ BOOL Button1Check() {
   return (res);
 }
 
-// DONE doc this
+/************************************************************************************************** 
+  Function: 
+    void ConfigTimer1Intrs()
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Configures the parameters of Timer 1 and opens it
+  
+  Description: 
+    Same as summary
+  
+  Preconditions: 
+    Timer 1 not being used
+  
+  Parameters: 
+    void
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    ConfigTimer1Intrs()
+    </code>
+  
+  Conditions at Exit: 
+    Timer 1 open and configured
+  
+**************************************************************************************************/
 void ConfigTimer1Intrs() {
   // Configure timers for our target update rate
   ConfigIntTimer1(T1_INT_OFF | T1_INT_PRIOR_1);
   OpenTimer1(TIM1_SETTINGS, TIM1_PERIOD);
 }
 
-// DONE doc this
+/************************************************************************************************** 
+  Function: 
+    void __ISR(_TIMER_1_VECTOR, ipl1) Timer1IntrHandler()
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Handler for timer 1 interrupts
+  
+  Description: 
+    Maps the interrupt vector to this handler and sets the volatile flag UPDATE that means the main loop should continue updating
+  
+  Preconditions: 
+    Timer 1 interrupts configured and enabled
+  
+  Parameters: 
+    void
+  
+  Returns: 
+    void
+  
+  Example: 
+    N/A
+  
+  Conditions at Exit: 
+    Timer 1 interrupts are cleared, UPDATE flag set to TRUE
+  
+**************************************************************************************************/
 void __ISR(_TIMER_1_VECTOR, ipl1) Timer1IntrHandler() {
   // Clear interrupt flag
   mT1ClearIntFlag();
@@ -408,7 +556,45 @@ void __ISR(_TIMER_1_VECTOR, ipl1) Timer1IntrHandler() {
   UPDATE = TRUE;
 }
 
-// DONE doc this
+/************************************************************************************************** 
+  Function: 
+    void UpdateLCDStatus(const int signalPercent, const int paramPercent)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Updates the LCD display screen
+  
+  Description: 
+    Displays a 2 line status message on the LCD, depending on which status is #define-d at the top. If battery messages are defined, will display that.
+    If they are not, the average temperature of the IMUs will be displayed
+  
+  Preconditions: 
+    LCD initialized
+  
+  Parameters: 
+    const int signalPercent - integer representing signal strength percentage of maximum strength
+    const int paramPercent - perecentage of either battery life or the average temperatures of the IMUs
+  
+  Returns: 
+    void
+  
+  Example: 
+  #ifdef DISPLAY_BATTERY_PERCENTAGE
+    <code>
+    UpdateLCDStatus(signalPercent, batteryPercent)
+    </code>
+  #else
+    <code>
+    UpdateLCDStatus(signalPercent, averageTemperature)
+    </code>
+  #endif
+  
+  Conditions at Exit: 
+    LCD has a new 2-line message on it
+  
+**************************************************************************************************/
 void UpdateLCDStatus(const int signalPercent, const int paramPercent) {
   char line1[40];
   char line2[40];
@@ -461,6 +647,39 @@ void UpdateLCDStatus(const int signalPercent, const int paramPercent) {
   Send2LineDisplay(line1, line2, 0);
 }
 
+/************************************************************************************************** 
+  Function: 
+    void Send2LineDisplay(char *line_1, char *line_2, const unsigned char bottomLineStartOffset)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Displays two lines on LCD with the offset on the second line 
+  
+  Description: 
+    Uses LCD library to clear and display two lines on it
+  
+  Preconditions: 
+    LCD configured
+  
+  Parameters: 
+    char *line_1 - string to display on first line
+    char *line_2 - string to display on second line
+    const unsigned char bottomLineStartOffset - offset to display the second string on
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    Send2LineDisplay("Hello!", "There!", 6)
+    </code>
+  
+  Conditions at Exit: 
+    LCD has the 2 lines displayed
+  
+**************************************************************************************************/
 void Send2LineDisplay(char *line_1, char *line_2, const unsigned char bottomLineStartOffset) {
   LcdInstrClearDisplay();
   LcdDisplayData(line_1);
@@ -468,6 +687,37 @@ void Send2LineDisplay(char *line_1, char *line_2, const unsigned char bottomLine
   LcdDisplayData(line_2);
 }
 
+/************************************************************************************************** 
+  Function: 
+    void DetectIMUErrorTrap(IMU_RESULT *imu_results)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    If any IMU function results in an error, will be held here forever
+  
+  Description: 
+    Checks IMU results and if there was a failure, simply stalls here and displays an error message to the user
+  
+  Preconditions: 
+    (imu_results) filled in with valid results
+  
+  Parameters: 
+    IMU_RESULT *imu_results - results of IMU functions
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    DetectIMUErrorTrap(imu_res)
+    </code>
+  
+  Conditions at Exit: 
+    None
+  
+**************************************************************************************************/
 void DetectIMUErrorTrap(IMU_RESULT *imu_results) {
   int i;
 
@@ -484,6 +734,37 @@ void DetectIMUErrorTrap(IMU_RESULT *imu_results) {
   DelayS(1);  
 }
 
+/************************************************************************************************** 
+  Function: 
+    void RecalibrateIMUs(imu_t **const imus)
+  
+  Author(s): 
+    mkobit
+  
+  Summary: 
+    Recalibrates IMUs, stall in loop if any recalibration fails
+  
+  Description: 
+    Loops through however many IMUs there are and calibrated
+  
+  Preconditions: 
+    IMUs initialized
+  
+  Parameters: 
+    imu_t **const imus - array of pointers to the IMUs that need to be calibrated
+  
+  Returns: 
+    void
+  
+  Example: 
+    <code>
+    RecalibrateIMUs(p_imus)
+    </code>
+  
+  Conditions at Exit: 
+    void
+  
+**************************************************************************************************/
 void RecalibrateIMUs(imu_t **const imus) {
   int i;
   IMU_RESULT res[N_IMUS];

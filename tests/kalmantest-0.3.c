@@ -45,6 +45,11 @@ typedef struct TRANSMIT_PACKAGE {
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
 
+#define ADDR_I2C_ACCEL1 ACCEL_DEFAULT_ADDR
+#define ADDR_I2C_ACCEL2 ACCEL_DEFAULT_ADDR
+#define ADDR_I2C_GYRO1 GYRO_DEFAULT_ADDR
+#define ADDR_I2C_GYRO2 GYRO_DEFAULT_ADDR
+
 #define TEST_XBEE UART1
 
 /**************************************************************************************************
@@ -73,7 +78,7 @@ typedef struct TRANSMIT_PACKAGE {
     xbee.c
     
   Update History: 
-    
+    4/27/12: Changed IMU library to use a specific address because I2C on Microchip is awful
     
 **************************************************/
 int main() {
@@ -111,8 +116,10 @@ int main() {
       TEST_I2C_BUS_ID1,
       pbFreq,
       TEST_I2C_BUS_SPEED,
+      ADDR_I2C_ACCEL1, 
       ACCEL_RANGE_2G,
       ACCEL_BW_100,
+      ADDR_I2C_GYRO1,
       GYRO_DLPF_LPF_20HZ,
       9,
       GYRO_PWR_MGM_CLK_SEL_X);
@@ -122,8 +129,10 @@ int main() {
       TEST_I2C_BUS_ID2,
       pbFreq,
       TEST_I2C_BUS_SPEED,
+      ADDR_I2C_ACCEL2,
       ACCEL_RANGE_2G,
       ACCEL_BW_100,
+      ADDR_I2C_GYRO2,
       GYRO_DLPF_LPF_20HZ,
       9,
       GYRO_PWR_MGM_CLK_SEL_X);

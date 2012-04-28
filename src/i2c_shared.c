@@ -227,7 +227,7 @@ static BOOL I2CShared_TransmitOneByte(const I2C_MODULE i2c, const UINT8 data) {
   
   Parameters: 
     const I2C_MODULE i2c - I2C module to be used for this transaction
-    const UINT8 i2c_addr - write address of I2C device
+    const UINT8 i2c_addr - address of I2C device
     const UINT8 i2c_register - I2C register to write to
     const UINT8 data - data to be written
   
@@ -242,11 +242,13 @@ static BOOL I2CShared_TransmitOneByte(const I2C_MODULE i2c, const UINT8 data) {
     </code>
   
   Conditions at Exit: 
-    
+    Byte written using I2C and bus is now idle
   
 **************************************************************************************************/
-BOOL I2CShared_WriteByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const UINT8 i2c_register, const UINT8 data) {
+BOOL I2CShared_WriteByte(const I2C_MODULE i2c, const UINT8 i2c_addr, const UINT8 i2c_register, const UINT8 data) {
 
+  UINT8 i2c_write_addr = i2c_addr | I2C_WRITE;
+  
   // START TRANSACTION
   if(!I2CShared_StartTransfer(i2c, FALSE)) {
     //printf("I2CShared_Write: Error, bus collision during transfer start to I2C=%d\n", i2c);
@@ -281,7 +283,7 @@ BOOL I2CShared_WriteByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const
 
 /************************************************************************************************** 
   Function:
-    BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const UINT8 i2c_read_addr, const UINT8 i2c_register, UINT8 *const buffer)
+    BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_addr, const UINT8 i2c_register, UINT8 *const buffer)
 
   Author(s): 
     mkobit
@@ -298,8 +300,7 @@ BOOL I2CShared_WriteByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const
   
   Parameters: 
     const I2C_MODULE i2c - I2C module to be used for this transaction
-    const UINT8 i2c_write_addr - write address of I2C device
-    const UINT8 i2c_read_addr - read address of I2C device
+    const UINT8 i2c_write_addr - address of I2C device
     const UINT8 i2c_register - I2C register to read from
     UINT8 *const buffer - buffer to place read byte into
   
@@ -318,8 +319,11 @@ BOOL I2CShared_WriteByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const
     I2C bus idle
   
 **************************************************************************************************/
-BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const UINT8 i2c_read_addr, const UINT8 i2c_register, UINT8 *const buffer) {
+BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_addr, const UINT8 i2c_register, UINT8 *const buffer) {
   int fault_count = 0;
+
+  UINT8 i2c_write_addr = i2c_addr | I2C_WRITE;
+  UINT8 i2c_read_addr = i2c_addr | I2C_READ;
   
   // START TRANSACTION
   if(!I2CShared_StartTransfer(i2c, FALSE)) {
@@ -384,8 +388,8 @@ BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const 
 
 /************************************************************************************************** 
   Function:
-    BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const UINT8 i2c_read_addr, 
-        const UINT8 i2c_register_start, const int nbytes, UINT8 *buffer)
+    BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_addr,
+      const UINT8 i2c_register_start, const int nbytes, UINT8 *buffer)
 
   Author(s):
     mkobit
@@ -402,8 +406,7 @@ BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const 
 
   Parameters:
     const I2C_MODULE i2c - I2C module to be used for this transaction
-    const UINT8 i2c_write_addr - write address of I2C device
-    const UINT8 i2c_read_addr - read address of I2C device
+    const UINT8 i2c_addr - address of I2C device
     const UINT8 i2c_register_start - I2C register to begin reading from
     const int nbytes - how many bytes to be read
     UINT8 *const buffer - buffer to place read bytes
@@ -423,11 +426,14 @@ BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const 
     I2C bus idle
 
 **************************************************************************************************/
-BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_write_addr, const UINT8 i2c_read_addr, 
+BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_addr, 
     const UINT8 i2c_register_start, const int nbytes, UINT8 *buffer) {
   int i;
   int fault_count = 0;
   UINT8 temp;
+  
+  UINT8 i2c_write_addr = i2c_addr | I2C_WRITE;
+  UINT8 i2c_read_addr = i2c_addr | I2C_READ;
 
   // Wait until bus is open
   //while(!I2CBusIsIdle(i2c));

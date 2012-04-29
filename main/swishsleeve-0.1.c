@@ -284,7 +284,7 @@ int main() {
   ImuSetID(p_imus[ID_UPPER_ARM], ID_UPPER_ARM);
   ImuSetID(p_imus[ID_FORE_ARM], ID_FORE_ARM);
   ImuSetID(p_imus[ID_HAND], ID_HAND);
-  // Initialize IMUs
+  // Initialize IMUs FIXME
   imu_res[ID_UPPER_ARM] = ImuInit(p_imus[ID_UPPER_ARM], I2C_UPPER_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
   imu_res[ID_FORE_ARM] = ImuInit(p_imus[ID_FORE_ARM], I2C_FORE_ARM, pbFreq, I2C_FREQ, ACC_RANG, ACC_BW, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
 #ifdef I2C3

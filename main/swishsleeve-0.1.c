@@ -99,8 +99,8 @@ typedef struct LCD_PAIR {
 // pins and ports to be used for testing
 #define INIT_MESSAGE "Initializing"
 #define START_MESSAGE "Swish Sleeve"
-#define XBEE_MESSAGE "XBee"
-#define IMU_MESSAGE "IMUs"
+#define XBEE_INIT_MESSAGE "XBee"
+#define IMU_INIT_MESSAGE "IMUs"
 #define FILTER_INIT_MESSAGE "Kalman Filters"
 #define CALIB_MESSAGE_A "Hold arms still"
 #define CALIB_MESSAGE_B "Calibrating"

@@ -73,12 +73,13 @@ typedef struct TRANSMIT_PACKAGE {
     delay.c
     imu.c
     i2c_shared.c
-    math_helpers.
+    math_helpers.c
     kalman.c
     xbee.c
     
   Update History: 
     4/27/12: Changed IMU library to use a specific address because I2C on Microchip is awful
+    *4/29/12: After several attempts at testing I2C, we have given up with this test, for now
     
 **************************************************/
 int main() {

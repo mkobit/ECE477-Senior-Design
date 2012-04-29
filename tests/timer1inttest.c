@@ -111,7 +111,7 @@ void __ISR(_TIMER_1_VECTOR, ipl1) Timer1IntrHandler() {
   printf("Last handler: %u us passed, total time = %u\n", DelayUtilElapsedUs(this, last), DelayUtilElapsedUs(this, start));
   last = this;
   i++;
-  if (i == 200) {
+  if (i == 1000) {
     SetTimer1Intrs(FALSE);
     printf("\nTurned off intrs\n");
   }

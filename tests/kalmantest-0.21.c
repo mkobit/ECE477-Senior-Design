@@ -12,7 +12,7 @@
 
 #define KALMAN_SELECT 2
 
-#define TEST_TIME_S 45
+#define TEST_TIME_S 5000
 
 // IDs that will be used in main program
 #define ID_UPPER_ARM 0
@@ -103,6 +103,7 @@ int main() {
   us_t start, end;
   EULER_ANGLES e;
   QUATERNION *q;
+  unsigned int secsPassed = 0;
   YPR ypr;
   float updateRate;
   unsigned int reInitKalman = 0;
@@ -218,15 +219,15 @@ int main() {
     // Test xbee sending
     SetPackageData(package.id, q, &package);
     //PrintOutPackage(&package);
-    
-    //XBeeSendDataBuffer(TEST_XBEE, (char *) &package, package.n_bytes);
+    XBeeSendDataBuffer(TEST_XBEE, (char *) &package, package.n_bytes);
 
     // Determine if the test has ended
     end = DelayUtilGetUs();
-    if (DelayUtilElapsedUs(end, start) / 1000000 >= TEST_TIME_S) {
+    if (secsPassed >= TEST_TIME_S) {
       break;
     }else if (DelayUtilElapsedUs(end, start) % 1000000  < 10000 ) {
-      printf ("%d seconds gone by, will stop at %d\n", DelayUtilElapsedUs(end, start) / 1000000, TEST_TIME_S);
+      ++secsPassed;
+      printf ("%d seconds gone by, will stop at %d\n", secsPassed, TEST_TIME_S);
     }
   }
 

@@ -15,9 +15,9 @@
 #define GetSystemClock()            (SYS_CLOCK)
 #define GetInstructionClock()       (SYS_CLOCK)
 
-#define BUTTONA_PORT IOPORT_A
+#define BUTTONA_PORT IOPORT_G
 #define BUTTONA_PIN BIT_1
-#define BUTTONB_PORT IOPORT_A
+#define BUTTONB_PORT IOPORT_G
 #define BUTTONB_PIN BIT_5
 
 #define BAUDRATE 57600
@@ -37,7 +37,7 @@ BOOL ButtonCheck();
     0.1
     
   Filename: 
-    buttontest.c
+    buttontest-0.1.c
     
   Author(s): 
     mkobit

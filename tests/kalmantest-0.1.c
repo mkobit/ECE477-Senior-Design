@@ -7,10 +7,7 @@
 #include "kalman.h"
 #include "math_helpers.h"
 
-#define TEST_UPDATE_FREQ 10
-
-#define KALMAN_SELECT 2
-
+#define TEST_UPDATE_FREQ 20
 
 //#define FILE_SAVE_TEST
 #define FILE_SAVE_LINES 400
@@ -68,6 +65,7 @@
   Update History: 
     4/25/12: Increased update rate and delay before output so I could capture with HyperTerminal and send it so Steve for debugging
     4/27/12: Updated IMU to reflect new IMU library
+    4/29/12: Changed code to use both Kalman filter types so that we can adjust for the gains
     
 **************************************************/
 int main() {
@@ -140,14 +138,11 @@ int main() {
     }
     updateRate = 1.0f / (float) TEST_UPDATE_FREQ * 1000.0f;
     t2 = DelayUtilGetUs();
-#if (KALMAN_SELECT == 1)
 
     Kalman_MadgwickUpdate(p_imu, &kmad, updateRate);
     //t3 = DelayUtilGetUs();
-#elif (KALMAN_SELECT == 2)
 
     Kalman_MahonyUpdate(p_imu, &kmah, updateRate);
-#endif
     //t4 = DelayUtilGetUs();
 #ifndef FILE_SAVE_TEST
     
@@ -158,19 +153,16 @@ int main() {
 
     printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
     printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
-#if (KALMAN_SELECT == 1)
     q = &(kmad.q);
     printf("\nMadg variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
     MHelpers_QuaternionToEuler(q, &e);
     printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
     //MHelpers_QuaternionToYPR(q, &ypr);
     //printf("In YPR        : yaw=%6.2f pitch=%6.2f roll=%6.2f\n", ypr.yaw, ypr.pitch, ypr.roll);
-#elif (KALMAN_SELECT == 2)
     q = &(kmah.q);
     printf("\nMah  variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
     MHelpers_QuaternionToEuler(q, &e);
     printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
-#endif
 #else
     q = &(kmad.q);
     printf("%f,%f,%f,%f\n", q->q0, q->q1, q->q2, q->q3);
@@ -179,13 +171,13 @@ int main() {
     }
 
 #endif
-    if (reInitKalman++ == 25000) {
+    /*if (reInitKalman++ == 25000) {
       Kalman_MahonyInit(&kmah);
       Kalman_MadgwickInit(&kmad);
       reInitKalman = 0;
       printf("\nREINITIALIZED\n");
       DelayMs(TEST_UPDATE_FREQ);
-    }
+    }*/
   }
 
   // Never exit

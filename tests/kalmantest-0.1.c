@@ -97,8 +97,8 @@ int main() {
   imu_res = ImuInit(p_imu,
       TEST_I2C_BUS_ID,
       pbFreq,
-      ACCEL_DEFAULT_ADDR,
       TEST_I2C_BUS_SPEED,
+      ACCEL_DEFAULT_ADDR,
       ACCEL_RANGE_2G,
       ACCEL_BW_100,
       GYRO_DEFAULT_ADDR,
@@ -107,8 +107,8 @@ int main() {
       GYRO_PWR_MGM_CLK_SEL_X);
 
   if (imu_res == IMU_FAIL) {
-      printf("IMU fail\n");
-      while(1);
+    printf("IMU fail\n");
+    while(1);
   }
 
   Kalman_MahonyInit(&kmah);
@@ -133,10 +133,10 @@ int main() {
     t1 = DelayUtilGetUs();
     imu_res = ImuUpdate(p_imu);
     if (imu_res == IMU_FAIL) {
-        printf("IMU update failure\n");
-        ImuResetI2CBus(p_imu);
-        DelayMs(50);
-        imu_res = ImuUpdate(p_imu);
+      printf("IMU update failure\n");
+      ImuResetI2CBus(p_imu);
+      DelayMs(50);
+      imu_res = ImuUpdate(p_imu);
     }
     updateRate = 1.0f / (float) TEST_UPDATE_FREQ * 1000.0f;
     t2 = DelayUtilGetUs();
@@ -156,8 +156,8 @@ int main() {
     //printf("Madg Update: %u\n", DelayUtilElapsedUs(t3,t2));
     //printf("Mah Update:  %u\n\n", DelayUtilElapsedUs(t4,t3));
 
-    //printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
-    //printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
+    printf("Ax = %7.3f, Ay = %7.3f, Az = %7.3f\n", ImuGetAccelX(p_imu), ImuGetAccelY(p_imu), ImuGetAccelZ(p_imu));
+    printf("Gx = %7.3f, Gy = %7.3f, Gz = %7.3f, Gt = %7.3f\n\n", ImuGetGyroX(p_imu), ImuGetGyroY(p_imu), ImuGetGyroZ(p_imu), ImuGetGyroTemp(p_imu));
 #if (KALMAN_SELECT == 1)
     q = &(kmad.q);
     printf("\nMadg variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);

@@ -20,7 +20,7 @@
 #define ID_HAND 2
 
 // This can be changed to determine which IMU will be used
-#define TESTING_BODYPART ID_UPPER_ARM
+#define TESTING_BODYPART ID_HAND
 
 typedef struct TRANSMIT_PACKAGE {
   UINT8 n_bytes;
@@ -133,7 +133,7 @@ int main() {
       9,
       GYRO_PWR_MGM_CLK_SEL_X);
 
-  ImuSetID(p_imu, 0x1);
+  ImuSetID(p_imu, TESTING_BODYPART);
 
   if (imu_res == IMU_FAIL) {
       printf("IMU fail\n");
@@ -149,28 +149,29 @@ int main() {
   printf("XBee UART initialized\n");
   DelayS(1);
   ImuCalibrate(p_imu, TRUE, TRUE, 128, TEST_UPDATE_FREQ);
-  printf("Finished IMU calibration.\n\n");
+  printf("Finished IMU calibration.\n");
   DelayS(1);
   printf("Update rate = %d ms\n", TEST_UPDATE_FREQ);
   DelayS(1);
   printf("Size of TRANSMIT PACKAGE: %u\n", sizeof(TRANSMIT_PACKAGE)); // debug
-  if (TESTING_BODYPART == ID_FORE_ARM) {
+  if (ImuGetId(p_imu) == ID_FORE_ARM) {
     printf("Testing fore arm (ID_FORE_ARM, %d) IMU\n", TESTING_BODYPART);
-  } else if(TESTING_BODYPART == ID_UPPER_ARM) {
+  } else if(ImuGetId(p_imu) == ID_UPPER_ARM) {
     printf("Testing upper arm, (ID_UPPER_ARM IMU, %d) IMU\n", TESTING_BODYPART);
-  } else if (TESTING_BODYPART == ID_HAND) {
+  } else if (ImuGetId(p_imu) == ID_HAND) {
     printf("Testing hand, (ID_HAND IMU, %d) IMU IMU\n", TESTING_BODYPART);
   }
   DelayS(1);
   printf("\nThis test will last for %d seconds\n", TEST_TIME_S);
   DelayS(1);
-  printf("Clearing VT in 3, then wait 5 for acquisition and filtering...\n");
-  DelayS(3);
+  printf("Clearing VT in 1, then wait 5 for acquisition and filtering...\n");
+  DelayS(1);
   putsUART2(CLEAR_VT);
   DelayS(5);
 
   // Initialize time for the test
   start = DelayUtilGetUs();
+  printf("Starting\n");
   while(1) {
     DelayMs(TEST_UPDATE_FREQ);
 #ifndef FILE_SAVE_TEST
@@ -217,7 +218,7 @@ int main() {
 
     
     // Test xbee sending
-    SetPackageData(package.id, q, &package);
+    SetPackageData(ImuGetId(p_imu), q, &package);
     //PrintOutPackage(&package);
     XBeeSendDataBuffer(TEST_XBEE, (char *) &package, package.n_bytes);
 

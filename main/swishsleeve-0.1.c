@@ -279,7 +279,7 @@ int main() {
   DelayS(2);
 
   // Initialize IMUs
-  Send2LineDisplay(INIT_MESSAGE, IMU_MESSAGE, 0);
+  Send2LineDisplay(INIT_MESSAGE, IMU_INIT_MESSAGE, 0);
   // Set IMU IDs
   ImuSetID(p_imus[ID_UPPER_ARM], ID_UPPER_ARM);
   ImuSetID(p_imus[ID_FORE_ARM], ID_FORE_ARM);
@@ -305,7 +305,7 @@ int main() {
   }
   
   // Configure settings for XBee TODO
-  Send2LineDisplay(INIT_MESSAGE, XBEE_MESSAGE, 0);
+  Send2LineDisplay(INIT_MESSAGE, XBEE_INIT_MESSAGE, 0);
   XBeeConfigure(UART_PORT_XBEE, pbFreq, XBEE_BAUDRATE);
 
   // Configure reset button

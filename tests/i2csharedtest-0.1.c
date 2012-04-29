@@ -29,8 +29,6 @@
 typedef short int int16_t;
 #endif
 
-void OPENDEBUG(unsigned int pbFreq);
-
 /**************************************************************************************************
   Title: 
     I2C Test
@@ -53,6 +51,7 @@ void OPENDEBUG(unsigned int pbFreq);
     
   Update History: 
     4/23/12: Added testing to reset a bus after timeouts or errors
+    4/29/12: Changed functions to match I2C library changes, as well as fixing how temperature and axes were being read in
     
 **************************************************/
 int main() {
@@ -68,7 +67,6 @@ int main() {
   SYSTEMConfig(GetSystemClock(), SYS_CFG_ALL);
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
   
-  //OPENDEBUG(pbFreq);
   OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
             (pbFreq/16/BAUDRATE) - 1);
 
@@ -80,7 +78,7 @@ int main() {
   
   printf("Starting -> init_res = %d\n", (int) init_res);
   // accelerometer ID
-  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x00, &data);
+  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0x00, &data);
   if (!result) {
       printf("Error in result: could not read accel ID\n");
       DelayUs(500);
@@ -88,7 +86,7 @@ int main() {
       printf("Result: accel ID = 0x%x\n", (unsigned char) data);
   }
   // gyroscope ID
-  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x00, &data);
+  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0x00, &data);
   if (!result) {
       printf("Error in result: could not read gyro ID\n");
       DelayUs(500);
@@ -96,7 +94,7 @@ int main() {
       printf("Result: gyro ID = 0x%x\n", (unsigned char) data);
   }
   // accelerometer default baud
-  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x2C, &data);
+  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0x2C, &data);
   if (!result) {
       printf("Error in result: could not read default accel baud\n");
       DelayUs(500);
@@ -115,7 +113,7 @@ int main() {
       printf("Success: put accel in measure mode\n");
   }
   // check measure register
-  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x31, &data);
+  result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0x31, &data);
   if (!result) {
       printf("Could not read accel ACCEL_DATA_FORMAT\n");
       DelayUs(500);
@@ -168,31 +166,31 @@ int main() {
       // clear terminal before reading and updating
       // accel
       t1 = DelayUtilGetUs();
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x33, &data);   // X MSB
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0x33, &data);   // X MSB
       t2 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
-      ax = ax | (data << 8);
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x32, &data);   // X LSB
+      ax = (data << 8);
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0x32, &data);   // X LSB
       t3 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
       ax = ax | data;
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x35, &data);   // Y MSB
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0x35, &data);   // Y MSB
       t4 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
-      ay = ay | (data << 8);
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x34, &data);   // Y LSB
+      ay = (data << 8);
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0x34, &data);   // Y LSB
       t5 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
       ay = ay | data;
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x37, &data);   // Z MSB
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0x37, &data);   // Z MSB
       t6 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
@@ -200,57 +198,57 @@ int main() {
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
-      az = az | (data << 8);
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0xA7, 0x36, &data);   // Z LSB
+      az = (data << 8);
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xA6, 0x36, &data);   // Z LSB
       t7 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
       az = az | data;
       // gyro
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1B, &data);   // T MSB
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0x1B, &data);   // T MSB
       t8 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
-      gx = gx | (data << 8);
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1C, &data);   // T LSB
+      gt = (data << 8);
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0x1C, &data);   // T LSB
       t9 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
-      gx = gx | data;
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1D, &data);   // X MSB
+      gt = gx | data;
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0x1D, &data);   // X MSB
       t10 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
-      gx = gx | (data << 8);
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1E, &data);   // X LSB
+      gx = (data << 8);
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0x1E, &data);   // X LSB
       t11 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
       gx = gx | data;
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x1F, &data);   // Y MSB
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0x1F, &data);   // Y MSB
       t11 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
-      gy = gy | (data << 8);
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x20, &data);   // Y LSB
+      gy = (data << 8);
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0x20, &data);   // Y LSB
       t12 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
       gy = gy | data;
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x21, &data);   // Z MSB
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0x21, &data);   // Z MSB
       t13 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
       }
-      gz = gz | (data << 8);
-      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0xD1, 0x22, &data);   // Z LSB
+      gz = (data << 8);
+      result = I2CShared_ReadByte(TEST_I2C_BUS_ID, 0xD0, 0x22, &data);   // Z LSB
       t14 = DelayUtilGetUs();
       if (!result) {
         I2CShared_ResetBus(TEST_I2C_BUS_ID);
@@ -268,11 +266,4 @@ int main() {
 
   while(1) {}
   return 0;
-}
-
-void OPENDEBUG(unsigned int pbFreq) {
-  UARTConfigure(UART2, UART_ENABLE_PINS_TX_RX_ONLY);
-  UARTSetLineControl(UART2, UART_DATA_SIZE_8_BITS | UART_PARITY_NONE | UART_STOP_BITS_1);
-  UARTSetDataRate(UART2, pbFreq, BAUDRATE);
-  UARTEnable(UART2, UART_ENABLE | UART_TX_ENABLE);
 }

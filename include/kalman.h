@@ -20,8 +20,8 @@ typedef struct KALMAN_STATE_MAHONY {
 }KALMAN_STATE_MAHONY;
 
 void Kalman_MadgwickInit(KALMAN_STATE_MADGWICK *const q);
-void Kalman_MadgwickUpdate(imu_t *const p_imu, KALMAN_STATE_MADGWICK *const q, const float sampleFreq);
-void Kalman_MahonyInit(KALMAN_STATE_MAHONY *const q);
-void Kalman_MahonyUpdate(imu_t *const p_imu, KALMAN_STATE_MAHONY *q, const float sampleFreq);
+void Kalman_MadgwickUpdate(imu_t *const p_imu, KALMAN_STATE_MADGWICK *const kmadg, const float sampleFreq);
+void Kalman_MahonyInit(KALMAN_STATE_MAHONY *const kmah);
+void Kalman_MahonyUpdate(imu_t *const p_imu, KALMAN_STATE_MAHONY *kmah, const float sampleFreq);
 
 #endif

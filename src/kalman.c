@@ -181,7 +181,7 @@ void Kalman_MadgwickInit(KALMAN_STATE_MADGWICK *const kmadg) {
 
 /************************************************************************************************** 
   Function: 
-    void Kalman_MahonyUpdate(const imu_t *const p_imu, KALMAN_STATE *q, const float sampleFreq
+    void Kalman_MahonyUpdate(const imu_t *const p_imu, KALMAN_STATE_MAHONY *const kmah, const float sampleFreq
   
   Author(s): 
     mkobit, taken from Source: http://www.x-io.co.uk/node/8#open_source_imu_and_ahrs_algorithms

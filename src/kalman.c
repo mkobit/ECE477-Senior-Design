@@ -5,6 +5,10 @@
 #include "math_helpers.h"
 #include "imu.h"
 
+static float BETADEF = DEFAULT_BETADEF;
+static float TWOKPDEF = DEFAULT_TWOKPDEF;
+static float TWOKIDEF = DEFAULT_TWOKIDEF;
+
 /************************************************************************************************** 
   Function: 
     void Kalman_MadgwickUpdate(const imu_t *const p_imu, KALMAN_STATE_MADGWICK *const kmadg, const float sampleFreq)
@@ -177,6 +181,11 @@ void Kalman_MadgwickUpdate(imu_t *const p_imu, KALMAN_STATE_MADGWICK *const kmad
 void Kalman_MadgwickInit(KALMAN_STATE_MADGWICK *const kmadg) {
   // Initilization taken from http://www.x-io.co.uk/node/8#open_source_imu_and_ahrs_algorithms
   MHelpers_FillInQuat(1.0f, 0.0f, 0.0f, 0.0f, &kmadg->q);
+}
+
+// TODO doc
+void Kalman_MadgwickSetGains(float beta_def) {
+  BETADEF = beta_def;
 }
 
 /************************************************************************************************** 
@@ -365,4 +374,10 @@ void Kalman_MahonyInit(KALMAN_STATE_MAHONY *const kmah) {
   kmah->integralFBx = 0.0f;
   kmah->integralFBy = 0.0f;
   kmah->integralFBz = 0.0f;
+}
+
+// TODO doc
+void Kalman_MahonySetGains(float twokpdef, float twokidef) {
+  TWOKPDEF = twokpdef;
+  TWOKIDEF = twokidef;
 }

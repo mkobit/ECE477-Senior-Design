@@ -17,6 +17,3 @@
 #pragma config FCKSM = CSDCMD // Clock Switching and Monitor Selection disabled
 // Disable USB clock
 #pragma config UPLLEN = OFF
-
-#pragma config DEBUG = ON
-#pragma config ICESEL = ICS_PGx1

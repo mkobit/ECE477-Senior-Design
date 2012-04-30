@@ -18,7 +18,7 @@
 
 void XBeeSendDataBuffer(UART_MODULE,const char *buffer, UINT32 size);
 void XBeeConfigure(UART_MODULE , UINT32 freq, UINT32 baudrate);
-int XBeeCaptureSignalStrenth(void);
-void XBeeCaptureSignalStrenth2(void);
+int XBeeCaptureSignalStrength(void);
+void XBeeCaptureSignalStrength2(void);
 
 #endif

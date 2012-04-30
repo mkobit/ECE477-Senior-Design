@@ -3,6 +3,9 @@
 
 #include "configs.h"
 
+#pragma config DEBUG = ON
+#pragma config ICESEL = ICS_PGx1
+
 #include "imu.h"
 #include "delay.h"
 #include "i2c_shared.h"
@@ -121,8 +124,7 @@ int main() {
 
   Kalman_MahonyInit(&kmah);
   Kalman_MadgwickInit(&kmad);
-  DelayS(1);
-  DelayS(1);
+  DelayS(2);
   Kalman_MadgwickSetGains(TEST_BETA_DEF);
   Kalman_MahonySetGains(TEST_TWOKPDEF, TEST_TWOKIDEF);
   XBeeConfigure(TEST_XBEE, pbFreq, XBEE_BAUDRATE);

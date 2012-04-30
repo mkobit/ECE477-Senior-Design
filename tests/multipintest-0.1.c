@@ -38,10 +38,10 @@ TEST_PAIR pin_pairs[TEST_SIZE] = {
     Multiple Pin Test
     
   Version: 
-    1.0
+    0.1
     
   Filename: 
-    multpintest.c
+    multpintest-0.1.c
     
   Author(s): 
     mkobit

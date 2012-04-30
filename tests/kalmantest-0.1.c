@@ -36,9 +36,9 @@
 #define BAUDRATE 57600
 
 // Gains that will be tested on Kalman Filter
-#define TEST_BETA_DEF (KALMAN_DEFAULT_BETADEF / 2)
-#define TEST_TWOKPDEF (KALMAN_DEFAULT_TWOKPDEF / 2)
-#define TEST_TWOKIDEF (KALMAN_DEFAULT_TWOKIDEF / 2)
+#define TEST_BETA_DEF (KALMAN_DEFAULT_BETADEF * 32)
+#define TEST_TWOKPDEF (KALMAN_DEFAULT_TWOKPDEF * 32)
+#define TEST_TWOKIDEF (KALMAN_DEFAULT_TWOKIDEF * 32)
 
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
@@ -103,10 +103,10 @@ int main() {
       TEST_I2C_BUS_SPEED,
       ACCEL_DEFAULT_ADDR,
       ACCEL_RANGE_2G,
-      ACCEL_BW_100,
+      ACCEL_BW_200,
       GYRO_DEFAULT_ADDR,
-      GYRO_DLPF_LPF_20HZ,
-      9,
+      GYRO_DLPF_LPF_10HZ,
+      4,
       GYRO_PWR_MGM_CLK_SEL_X);
 
   if (imu_res == IMU_FAIL) {
@@ -150,15 +150,15 @@ int main() {
       printf("IMU update failure\n");
       ImuResetI2CBus(p_imu);
       DelayMs(50);
-      imu_res = ImuUpdate(p_imu);
+      continue;
     }
     updateRate = 1.0f / (float) TEST_UPDATE_FREQ * 1000.0f;
     t2 = DelayUtilGetUs();
 
-    Kalman_MadgwickUpdate(p_imu, &kmad, updateRate);
-    //t3 = DelayUtilGetUs();
-
-    Kalman_MahonyUpdate(p_imu, &kmah, updateRate);
+    if (imu_res == IMU_SUCCESS) {
+      Kalman_MadgwickUpdate(p_imu, &kmad, updateRate);
+      Kalman_MahonyUpdate(p_imu, &kmah, updateRate);
+    }
     //t4 = DelayUtilGetUs();
 #ifndef FILE_SAVE_TEST
     

@@ -76,7 +76,7 @@ GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 i2c_a
   // OR the low pass frequency passed with dflp_config with full scale operation and write it to the gyro
   // Set internal clock and full scale operation
   if (GyroWrite(gyro, GYRO_DLPF_FS, dlpf_lpf | GYRO_DLPF_FS_ON) == GYRO_FAIL) {
-    printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (UINT8) dlpf_lpf | GYRO_DLPF_FS_ON, (UINT8) GYRO_DLPF_FS);
+    //printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (UINT8) dlpf_lpf | GYRO_DLPF_FS_ON, (UINT8) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
   
@@ -84,13 +84,13 @@ GYRO_RESULT GyroInit(gyro_t *const gyro, const I2C_MODULE i2c, const UINT8 i2c_a
   // If dlpf_lpf == GYRO_DLPF_LPF_256HZ, sample rate = 8 kHz / sample_rate_div
   // Else, sample rate = 1 kHz / (sample_rate_div + 1)
   if (GyroWrite(gyro, GYRO_SMPLRT_DIV, sample_rate_div) == GYRO_FAIL) {
-    printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (UINT8) dlpf_lpf | GYRO_DLPF_FS_ON, (UINT8) GYRO_DLPF_FS);
+    //printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (UINT8) dlpf_lpf | GYRO_DLPF_FS_ON, (UINT8) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
   
   // Select a gyro PLL for clock source (more stable)
   if (GyroWrite(gyro, GYRO_PWR_MGM, power_mgmt_sel) == GYRO_FAIL) {
-    printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (UINT8) dlpf_lpf | GYRO_DLPF_FS_ON, (UINT8) GYRO_DLPF_FS);
+    //printf("GyroInit: Error, could not write 0x%x to register GYRO_DLPF_FS 0x%x\n", (UINT8) dlpf_lpf | GYRO_DLPF_FS_ON, (UINT8) GYRO_DLPF_FS);
     return GYRO_FAIL;
   }
   
@@ -246,12 +246,12 @@ GYRO_RESULT GyroCalibrate(gyro_t *const gyro, int samplesToTake, UINT ms_delay) 
       tempOffsets[1] += GyroGetRawY(gyro);
       tempOffsets[2] += GyroGetRawZ(gyro);
       samplesTaken++;
-      //printf("Sample %d: tX = %4.2f, tY = %4.2f, tZ = %4.2f\n", samplesTaken, tempOffsets[0], tempOffsets[1], tempOffsets[2]);
+      ////printf("Sample %d: tX = %4.2f, tY = %4.2f, tZ = %4.2f\n", samplesTaken, tempOffsets[0], tempOffsets[1], tempOffsets[2]);
     } else {
       // If this many read fails, just exit with failure to calibrate
       if (timeout++ == 5000) {
         // Switch back in old values
-        printf("error in calibrate, error %d\n", timeout);
+        //printf("error in calibrate, error %d\n", timeout);
         return GYRO_FAIL;
       }
     }

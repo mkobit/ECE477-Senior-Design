@@ -52,7 +52,7 @@ BOOL I2CShared_Init(const I2C_MODULE i2c, const UINT peripheral_clock_speed, con
   // Check clock rate for peripheral bus
   actualClock = I2CSetFrequency(i2c, peripheral_clock_speed, i2c_speed);
   if (actualClock - i2c_speed > i2c_speed / 10) {
-    printf("I2CShared_Init: Error, I2C clock frequency (%u) error exceeds 10%%n\n", actualClock);
+    ////printf("I2CShared_Init: Error, I2C clock frequency (%u) error exceeds 10%%n\n", actualClock);
     return FALSE;
   }
   TIMEOUT = peripheral_clock_speed / 10;
@@ -110,14 +110,14 @@ static BOOL I2CShared_StartTransfer(const I2C_MODULE i2c, const BOOL restart) {
     // Wait for the bus to be idle, then start the transfer
     while(!I2CBusIsIdle(i2c)){
       if (fault_count++ == TIMEOUT) {
-        printf("I2CShared_StartTransfer: Timeout waiting for bus to be idle\n");
+        //printf("I2CShared_StartTransfer: Timeout waiting for bus to be idle\n");
         return FALSE;
       }
     }
 
     if(I2CStart(i2c) == I2C_ARBITRATION_LOSS)
     {
-      printf("I2CShared_StartTransfer: I2CStart experienced I2C_ARBITRATION_LOSS\n");
+      //printf("I2CShared_StartTransfer: I2CStart experienced I2C_ARBITRATION_LOSS\n");
       //I2CShared_DebugStatus(i2c);
       return FALSE;
     }
@@ -128,11 +128,11 @@ static BOOL I2CShared_StartTransfer(const I2C_MODULE i2c, const BOOL restart) {
   do {
     status = I2CGetStatus(i2c);
     if (status & I2C_ARBITRATION_LOSS) {
-      printf("I2CShared_StartTransfer: lost arbitration on i2c bus\n");
+      //printf("I2CShared_StartTransfer: lost arbitration on i2c bus\n");
       return FALSE;
     }
     if (fault_count++ == TIMEOUT) {
-      printf("I2CShared_StartTransfer: Timeout waiting for bus to start\n");
+      //printf("I2CShared_StartTransfer: Timeout waiting for bus to start\n");
       return FALSE;
     }
   } while (!(status & I2C_START));
@@ -182,7 +182,7 @@ static BOOL I2CShared_TransmitOneByte(const I2C_MODULE i2c, const UINT8 data) {
   // Wait for the transmitter to be ready
   while(!I2CTransmitterIsReady(i2c)) {
     if (fault_count++ == TIMEOUT) {
-      printf("I2CShared_TransmitOneByte: Timeout waiting for I2CTransmitterIsReady\n");
+      //printf("I2CShared_TransmitOneByte: Timeout waiting for I2CTransmitterIsReady\n");
       return FALSE;
     }
   }
@@ -190,7 +190,7 @@ static BOOL I2CShared_TransmitOneByte(const I2C_MODULE i2c, const UINT8 data) {
   // Transmit the byte
   if(I2CSendByte(i2c, data) == I2C_MASTER_BUS_COLLISION)
   {
-    printf("I2CShared_TransmitOneByte: Error, I2C Master Bus Collision , status = 0x%x\n", I2CGetStatus(i2c));
+    //printf("I2CShared_TransmitOneByte: Error, I2C Master Bus Collision , status = 0x%x\n", I2CGetStatus(i2c));
     return FALSE;
   }
 
@@ -198,14 +198,14 @@ static BOOL I2CShared_TransmitOneByte(const I2C_MODULE i2c, const UINT8 data) {
   // Wait for the transmission to finish
   while(!I2CTransmissionHasCompleted(i2c)) {
     if (fault_count++ == TIMEOUT) {
-      printf("I2CShared_TransmitOneByte: Timeout waiting for I2CTransmissionHasCompleted\n");
+      //printf("I2CShared_TransmitOneByte: Timeout waiting for I2CTransmissionHasCompleted\n");
       return FALSE;
     }
   }
 
   if(!I2CByteWasAcknowledged(i2c))
   {
-    printf("I2CShared_TransmitOneByte: Error, sent byte was not acknowledged, status = 0x%x\n", I2CGetStatus(i2c));
+    //printf("I2CShared_TransmitOneByte: Error, sent byte was not acknowledged, status = 0x%x\n", I2CGetStatus(i2c));
     //I2CShared_DebugStatus(i2c);
       return FALSE;
   }
@@ -254,26 +254,26 @@ BOOL I2CShared_WriteByte(const I2C_MODULE i2c, const UINT8 i2c_addr, const UINT8
   
   // START TRANSACTION
   if(!I2CShared_StartTransfer(i2c, FALSE)) {
-    printf("I2CShared_Write: Error, bus collision during transfer start to I2C=%d\n", i2c);
+    //printf("I2CShared_Write: Error, bus collision during transfer start to I2C=%d\n", i2c);
     return FALSE;
   }
 
   // SEND ADDRESS
   // Send address for transaction, address is expected to already be formatted
   if (!I2CShared_TransmitOneByte(i2c, i2c_write_addr)) {
-    printf("I2CShared_Write: Error, could not send address 0x%x to I2C=%d\n", (unsigned char) i2c_write_addr, i2c);
+    //printf("I2CShared_Write: Error, could not send address 0x%x to I2C=%d\n", (unsigned char) i2c_write_addr, i2c);
     return FALSE;
   }
   
   // SEND INTERNAL REGISTER
   if (!I2CShared_TransmitOneByte(i2c, i2c_register)) {
-    printf("I2CShared_Write: Error, could not send i2c_register 0x%x to I2C=%d\n", (unsigned char) i2c_register, i2c);
+    //printf("I2CShared_Write: Error, could not send i2c_register 0x%x to I2C=%d\n", (unsigned char) i2c_register, i2c);
     return FALSE;
   }
     
   // WRITE DATA BYTE
   if (!I2CShared_TransmitOneByte(i2c, data)) {
-    printf("I2CShared_Write: Error, could not send data byte 0x%x to I2C=%d\n", (unsigned char) data, i2c);
+    //printf("I2CShared_Write: Error, could not send data byte 0x%x to I2C=%d\n", (unsigned char) data, i2c);
     return FALSE;
   }
     
@@ -330,32 +330,32 @@ BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_addr, const UINT8 
   
   // START TRANSACTION
   if(!I2CShared_StartTransfer(i2c, FALSE)) {
-    printf("I2CShared_Read: Error, bus collision during transfer start to I2C=%d\n", i2c);
+    //printf("I2CShared_Read: Error, bus collision during transfer start to I2C=%d\n", i2c);
     return FALSE;
   }
     
   // SEND ADDRESS
   // Send write address for transaction, address is expected to already be formatted
   if (!I2CShared_TransmitOneByte(i2c, i2c_write_addr)) {
-    printf("I2CShared_Read: Error, could not send write address 0x%x to I2C=%d\n", (UINT8) i2c_write_addr, i2c);
+    //printf("I2CShared_Read: Error, could not send write address 0x%x to I2C=%d\n", (UINT8) i2c_write_addr, i2c);
     return FALSE;
   }
   
   // SEND INTERNAL REGISTER
   if (!I2CShared_TransmitOneByte(i2c, i2c_register)) {
-    printf("I2CShared_Read: Error, could not send i2c_register 0x%x to I2C=%d\n", (UINT8) i2c_register, i2c);
+    //printf("I2CShared_Read: Error, could not send i2c_register 0x%x to I2C=%d\n", (UINT8) i2c_register, i2c);
     return FALSE;
   }
   
   // SEND START AGAIN FOR READ
   // Send read address
   if(!I2CShared_StartTransfer(i2c, TRUE)) {
-    printf("I2CShared_Read: Error, bus collision during transfer start to I2C=%d\n", i2c);
+    //printf("I2CShared_Read: Error, bus collision during transfer start to I2C=%d\n", i2c);
     return FALSE;
   }
 
   if (!I2CShared_TransmitOneByte(i2c, i2c_read_addr)) {
-    printf("I2CShared_Read: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_read_addr, i2c);
+    //printf("I2CShared_Read: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_read_addr, i2c);
     //I2CShared_StopTransfer(i2c);
     return FALSE;
   }
@@ -363,14 +363,14 @@ BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_addr, const UINT8 
   // READ DATA BYTE
   // configure i2c module to receive
   if (I2CReceiverEnable(i2c, TRUE) != I2C_SUCCESS) {
-    printf("I2CShared_Read: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    //printf("I2CShared_Read: Error, could not configure I2C=%d to be a receiver\n", i2c);
     return FALSE;
   }
 
 
   while (!I2CReceivedDataIsAvailable(i2c)) {// loop until data is ready to be read
     if (fault_count++ == TIMEOUT) {
-      printf("I2CShared_ReadByte: Timeout waiting for I2CReceivedDataIsAvailable\n");
+      //printf("I2CShared_ReadByte: Timeout waiting for I2CReceivedDataIsAvailable\n");
       return FALSE;
     }
   }
@@ -380,7 +380,7 @@ BOOL I2CShared_ReadByte(const I2C_MODULE i2c, const UINT8 i2c_addr, const UINT8 
   fault_count = 0;
   while(!I2CAcknowledgeHasCompleted(i2c)) {
     if (fault_count++ == TIMEOUT) {
-      printf("I2CShared_ReadByte: Timeout waiting for I2CReceivedDataIsAvailable\n");
+      //printf("I2CShared_ReadByte: Timeout waiting for I2CReceivedDataIsAvailable\n");
       return FALSE;
     }
   }
@@ -440,31 +440,31 @@ BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_addr,
 
   // START TRANSACTION
   if(!I2CShared_StartTransfer(i2c, FALSE)) {
-    printf("I2CShared_ReadMultipleBytes: Error, bus collision during transfer start to I2C=%d\n", i2c);
+    //printf("I2CShared_ReadMultipleBytes: Error, bus collision during transfer start to I2C=%d\n", i2c);
     return FALSE;
   }
     
   // SEND ADDRESS
   if (!I2CShared_TransmitOneByte(i2c, i2c_write_addr)) {
-    printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_write_addr, i2c);
+    //printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%x to I2C=%d\n", i2c_write_addr, i2c);
     return FALSE;
   }
   
   // SEND INTERNAL REGISTER
   if (!I2CShared_TransmitOneByte(i2c, i2c_register_start)) {
-    printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_register 0x%x to I2C=%d\n", (unsigned char) i2c_register_start, i2c);
+    //printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_register 0x%x to I2C=%d\n", (unsigned char) i2c_register_start, i2c);
     return FALSE;
   }
   
   // SEND START AGAIN FOR READ
   // Send read address
   if(!I2CShared_StartTransfer(i2c, TRUE)) {
-    printf("I2CShared_ReadMultipleBytes: Error, bus collision during transfer Restart to I2C=%d\n", i2c);
+    //printf("I2CShared_ReadMultipleBytes: Error, bus collision during transfer Restart to I2C=%d\n", i2c);
     return FALSE;
   }
 
   if (!I2CShared_TransmitOneByte(i2c, i2c_read_addr)) {
-    printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%x to I2C=%d\n", (unsigned char) i2c_read_addr, i2c);
+    //printf("I2CShared_ReadMultipleBytes: Error, could not send i2c_address 0x%x to I2C=%d\n", (unsigned char) i2c_read_addr, i2c);
     return FALSE;
   }
   
@@ -473,14 +473,14 @@ BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_addr,
   for (i = 0; i < nbytes - 1; i++) {
     // configure i2c module to receive
     if (I2CReceiverEnable(i2c, TRUE) != I2C_SUCCESS) {
-      printf("I2CShared_ReadMultipleBytes: Error, could not configure I2C=%d to be a receiver\n", i2c);
+      //printf("I2CShared_ReadMultipleBytes: Error, could not configure I2C=%d to be a receiver\n", i2c);
       return FALSE;
     }
 
     fault_count = 0;
     while (!I2CReceivedDataIsAvailable(i2c)) {  // loop until data is ready to be read
       if (fault_count++ == TIMEOUT) {
-        printf("I2CShared_ReadMultipleBytes: Timeout waiting for I2CReceivedDataIsAvailable\n");
+        //printf("I2CShared_ReadMultipleBytes: Timeout waiting for I2CReceivedDataIsAvailable\n");
         return FALSE;
       }
     }
@@ -493,7 +493,7 @@ BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_addr,
     fault_count = 0;
     while(!I2CAcknowledgeHasCompleted(i2c)) {
       if (fault_count++ == TIMEOUT) {
-        printf("I2CShared_ReadMultipleBytes: Timeout waiting for I2CAcknowledgeHasCompleted\n");
+        //printf("I2CShared_ReadMultipleBytes: Timeout waiting for I2CAcknowledgeHasCompleted\n");
         return FALSE;
       }
     }
@@ -504,7 +504,7 @@ BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_addr,
 
   // Read last byte and send NACK
   if (I2CReceiverEnable(i2c, TRUE) != I2C_SUCCESS) {
-    printf("I2CShared_ReadMultipleBytes: Error, could not configure I2C=%d to be a receiver\n", i2c);
+    //printf("I2CShared_ReadMultipleBytes: Error, could not configure I2C=%d to be a receiver\n", i2c);
     return FALSE;
   }
 
@@ -512,7 +512,7 @@ BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_addr,
   // Wait until data is ready to be read
   while (!I2CReceivedDataIsAvailable(i2c)) {
     if (fault_count++ == TIMEOUT) {
-      printf("I2CShared_ReadByte: Timeout waiting for I2CReceivedDataIsAvailable\n");
+      //printf("I2CShared_ReadByte: Timeout waiting for I2CReceivedDataIsAvailable\n");
       return FALSE;
     }
   }
@@ -526,7 +526,7 @@ BOOL I2CShared_ReadMultipleBytes(const I2C_MODULE i2c, const UINT8 i2c_addr,
   fault_count = 0;
   while(!I2CAcknowledgeHasCompleted(i2c)) {
     if (fault_count++ == TIMEOUT) {
-      printf("I2CShared_ReadByte: Timeout waiting for I2CAcknowledgeHasCompleted\n");
+      //printf("I2CShared_ReadByte: Timeout waiting for I2CAcknowledgeHasCompleted\n");
       return FALSE;
     }
   }
@@ -660,46 +660,46 @@ static void I2CShared_DebugStatus(const I2C_MODULE i2c) {
     status = I2CGetStatus(i2c);
     
     if (I2C_TRANSMITTER_FULL & status) {
-      printf("I2CShared_DebugStatus: I2C_TRANSMITTER_FULL, 0x%x\n", I2C_TRANSMITTER_FULL & status);
+      //printf("I2CShared_DebugStatus: I2C_TRANSMITTER_FULL, 0x%x\n", I2C_TRANSMITTER_FULL & status);
     }
     if (I2C_DATA_AVAILABLE & status) {
-      ("I2CShared_DebugStatus:) I2C_DATA_AVAILABLE, 0x%x\n", I2C_DATA_AVAILABLE & status);
+      //printf("I2CShared_DebugStatus:) I2C_DATA_AVAILABLE, 0x%x\n", I2C_DATA_AVAILABLE & status);
     }
     if (I2C_SLAVE_READ & status) {
-      ("I2CShared_DebugStatus:) I2C_SLAVE_READ, 0x%x\n", I2C_SLAVE_READ & status);
+      //printf("I2CShared_DebugStatus:) I2C_SLAVE_READ, 0x%x\n", I2C_SLAVE_READ & status);
     }
     if (I2C_START & status) {
-      ("I2CShared_DebugStatus: I2C_START, 0x%x\n", I2C_START & status);
+      //printf("I2CShared_DebugStatus: I2C_START, 0x%x\n", I2C_START & status);
     }
     if (I2C_STOP & status) {
-      ("I2CShared_DebugStatus: I2C_STOP, 0x%x\n", I2C_STOP & status);
+      //printf("I2CShared_DebugStatus: I2C_STOP, 0x%x\n", I2C_STOP & status);
     }
     if (I2C_SLAVE_DATA & status) {
-      ("I2CShared_DebugStatus: I2C_SLAVE_DATA, 0x%x\n", I2C_SLAVE_DATA & status);
+      //printf("I2CShared_DebugStatus: I2C_SLAVE_DATA, 0x%x\n", I2C_SLAVE_DATA & status);
     }
     if (I2C_RECEIVER_OVERFLOW & status) {
-      ("I2CShared_DebugStatus: I2C_RECEIVER_OVERFLOW, 0x%x\n", I2C_RECEIVER_OVERFLOW & status);
+      //printf("I2CShared_DebugStatus: I2C_RECEIVER_OVERFLOW, 0x%x\n", I2C_RECEIVER_OVERFLOW & status);
     }
     if (I2C_TRANSMITTER_OVERFLOW & status) {
-      ("I2CShared_DebugStatus: I2C_TRANSMITTER_OVERFLOW, 0x%x\n", I2C_TRANSMITTER_FULL & status);
+      //printf("I2CShared_DebugStatus: I2C_TRANSMITTER_OVERFLOW, 0x%x\n", I2C_TRANSMITTER_FULL & status);
     }
     if (I2C_10BIT_ADDRESS & status) {
-      ("I2CShared_DebugStatus: I2C_10BIT_ADDRESS, 0x%x\n", I2C_10BIT_ADDRESS & status);
+      //printf("I2CShared_DebugStatus: I2C_10BIT_ADDRESS, 0x%x\n", I2C_10BIT_ADDRESS & status);
     }
     if (I2C_GENERAL_CALL & status) {
-      ("I2CShared_DebugStatus: I2C_GENERAL_CALL, 0x%x\n", I2C_GENERAL_CALL & status);
+      //printf("I2CShared_DebugStatus: I2C_GENERAL_CALL, 0x%x\n", I2C_GENERAL_CALL & status);
     }
     if (I2C_ARBITRATION_LOSS & status) {
-      ("I2CShared_DebugStatus: I2C_ARBITRATION_LOSS, 0x%x\n", I2C_ARBITRATION_LOSS & status);
+      //printf("I2CShared_DebugStatus: I2C_ARBITRATION_LOSS, 0x%x\n", I2C_ARBITRATION_LOSS & status);
     }
     if (I2C_TRANSMITTER_BUSY & status) {
-      ("I2CShared_DebugStatus: I2C_TRANSMITTER_BUSY, 0x%x\n", I2C_TRANSMITTER_BUSY & status);
+      //printf("I2CShared_DebugStatus: I2C_TRANSMITTER_BUSY, 0x%x\n", I2C_TRANSMITTER_BUSY & status);
     }
     if (I2C_BYTE_ACKNOWLEDGED & status) {
-      ("I2CShared_DebugStatus: I2C_BYTE_ACKNOWLEDGE, 0x%x\n", I2C_BYTE_ACKNOWLEDGED & status);
+      //printf("I2CShared_DebugStatus: I2C_BYTE_ACKNOWLEDGE, 0x%x\n", I2C_BYTE_ACKNOWLEDGED & status);
     }
     if (status == 0) {
-      ("I2CShared_DebugStatus: no status\n");
+      //printf("I2CShared_DebugStatus: no status\n");
     }
 }
 

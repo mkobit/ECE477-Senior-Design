@@ -53,7 +53,7 @@ void BatteryMonitorInit(const UINT batt_mon_pin, const IoPortId batt_mon_port) {
   _bmon_port = batt_mon_port;
   _bmon_pin = batt_mon_pin;
   switch(_bmon_port) {
-    case IOPORT_A: mPORTAOpenDrainOpen(_bmon_pin); break;
+    //case IOPORT_A: mPORTAOpenDrainOpen(_bmon_pin); break;
     case IOPORT_B: mPORTBOpenDrainOpen(_bmon_pin); break;
     case IOPORT_C: mPORTCOpenDrainOpen(_bmon_pin); break;
     case IOPORT_D: mPORTDOpenDrainOpen(_bmon_pin); break;

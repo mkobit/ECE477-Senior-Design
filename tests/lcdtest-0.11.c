@@ -3,18 +3,13 @@
 #include "lcd_16x2.h"
 #include "delay.h"
 
-#pragma config FNOSC = PRIPLL	// Primary Osc w/PLL (XT+,HS+,EC+PLL)
-#pragma config POSCMOD = HS		// HS osc mode 
-#pragma config FPLLMUL = MUL_18	// PLL Multiplier
-#pragma config FPLLIDIV = DIV_2	// PLL Input Divider
-#pragma config FPBDIV = DIV_2
-#pragma config FPLLODIV = DIV_1
-#pragma config FWDTEN = OFF
+#include "configs.h"
+
 #pragma config DEBUG = ON
 #pragma config ICESEL = ICS_PGx1
 
 
-#define SYSTEM_FREQUENCY 72000000L
+#define SYSTEM_FREQUENCY 80000000L
 #define LCDS_IN 11
 
 
@@ -69,7 +64,7 @@ int main(void)
 
   pbFreq = SYSTEMConfigPerformance(SYSTEM_FREQUENCY);
   DelayInit(SYSTEM_FREQUENCY);
-  DelayS(1);  // simple delay to get ready for program
+  DelayMs(1000);  // simple delay to get ready for program
   LcdInit(lcd_pairs[0].bitnum, lcd_pairs[0].port_id,
         lcd_pairs[1].bitnum, lcd_pairs[1].port_id,
         lcd_pairs[2].bitnum, lcd_pairs[2].port_id,
@@ -88,7 +83,8 @@ int main(void)
   while(1) {
     LcdInstrReturnHome();
     LcdDisplayData("Hello\nThere!");
-    DelayS(3);
+
+    DelayMs(3000);
     LcdInstrClearDisplay();
     DelayS(2);
     LcdDisplayData("Just cleared it.\nYou see that?");

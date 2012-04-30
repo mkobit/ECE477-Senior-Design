@@ -21,8 +21,8 @@
 #pragma config FPLLMUL = MUL_20
 #pragma config FPLLIDIV = DIV_2
 #pragma config FPLLODIV = DIV_1
-#pragma config POSCMOD = HS
-#pragma config FNOSC = PRIPLL
+#pragma config POSCMOD = OFF
+#pragma config FNOSC = FRCPLL
 #pragma config FWDTEN = OFF // watchdog off
 #pragma config FPBDIV = DIV_1
 
@@ -94,7 +94,7 @@ int main() {
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
   OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE,
             (pbFreq/16/BAUDRATE) - 1);
-  DelayInit(pbFreq);
+  DelayInit(GetSystemClock());
   putsUART2(CLEAR_VT);
   p_imu = &imu;
   imu_res = ImuInit(p_imu,
@@ -117,6 +117,7 @@ int main() {
   Kalman_MahonyInit(&kmah);
   Kalman_MadgwickInit(&kmad);
   printf("PB speed = %u\n", pbFreq);
+  printf("Max PB speed = %u\n", PB_BUS_MAX_FREQ_HZ);
   printf("Kalmans initialized\n");
   DelayS(2);
   ImuCalibrate(p_imu, TRUE, TRUE, 128, TEST_UPDATE_FREQ);

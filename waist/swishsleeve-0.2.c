@@ -239,7 +239,7 @@ int main() {
   
 
   // Initialize Delay module first
-  DelayInit(pbFreq);
+  DelayInit(GetSystemClock());
   // Delay for components to boot up
   DelayS(1);
 

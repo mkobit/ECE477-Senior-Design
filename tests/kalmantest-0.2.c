@@ -113,10 +113,10 @@ int main() {
       TEST_I2C_BUS_SPEED,
       ACCEL_DEFAULT_ADDR,
       ACCEL_RANGE_2G,
-      ACCEL_BW_100,
+      ACCEL_BW_200,
       GYRO_DEFAULT_ADDR,
       GYRO_DLPF_LPF_20HZ,
-      9,
+      4,
       GYRO_PWR_MGM_CLK_SEL_X);
 
   ImuSetID(p_imu, 0x1);

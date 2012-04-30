@@ -57,6 +57,11 @@ typedef struct TRANSMIT_PACKAGE {
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
 
+// Gains that will be tested on Kalman Filter
+#define TEST_BETA_DEF (KALMAN_DEFAULT_BETADEF * 32)
+#define TEST_TWOKPDEF (KALMAN_DEFAULT_TWOKPDEF * 32)
+#define TEST_TWOKIDEF (KALMAN_DEFAULT_TWOKIDEF * 32)
+
 #define TEST_XBEE UART1
 
 void PrintOutPackage(TRANSMIT_PACKAGE *package);
@@ -145,6 +150,11 @@ int main() {
   Kalman_MadgwickInit(&kmad);
   DelayS(1);
   printf("Kalmans initialized\n");
+  DelayS(1);
+  Kalman_MadgwickSetGains(TEST_BETA_DEF);
+  Kalman_MahonySetGains(TEST_TWOKPDEF, TEST_TWOKIDEF);
+  printf("Madgwick BETA_DEF: %f\n", TEST_BETA_DEF);
+  printf("Mahony (TWOKPDEF, TWOKIDEF) (%f,%f)\n", TEST_TWOKPDEF, TEST_TWOKIDEF);
   XBeeConfigure(TEST_XBEE, pbFreq, XBEE_BAUDRATE);
   printf("XBee UART initialized\n");
   DelayS(1);
@@ -228,7 +238,11 @@ int main() {
       break;
     }else if (DelayUtilElapsedUs(end, start) % 1000000  < 10000 ) {
       ++secsPassed;
-      printf ("%d seconds gone by, will stop at %d\n", secsPassed, TEST_TIME_S);
+      q = &(kmad.q);
+      printf("\nMadg variables: q0=%6.2f q1=%6.2f q2=%6.2f q3=%6.2f\n", q->q0, q->q1, q->q2, q->q3);
+      MHelpers_QuaternionToEuler(q, &e);
+      printf("In Euler      : psi=%6.2f theta=%6.2f phi=%6.2f\n", e.psi, e.theta, e.phi);
+    printf ("%d seconds gone by, will stop at %d\n", secsPassed, TEST_TIME_S);
     }
   }
 

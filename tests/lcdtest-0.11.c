@@ -85,19 +85,19 @@ int main(void)
     LcdInstrReturnHome();
     LcdDisplayData("Hello\nThere!");
 
-    DelayMs(3000);
+    DelayMs(5000);
     LcdInstrClearDisplay();
-    DelayS(2);
+    DelayS(5);
     LcdDisplayData("Just cleared it.\nYou see that?");
-    DelayS(2);
+    DelayS(5);
     LcdInstrClearDisplay();
     LcdDisplayData("Cleared it again but now to test a long string to check lines");
-    DelayS(2);
+    DelayS(5);
     LcdInstrClearDisplay();
     LcdDisplayData("Return H");
     LcdInstrSetDDRAMAddress(14);
     LcdDisplayData("END!");
-    DelayS(2);
+    DelayS(5);
   }
 
   return 0;

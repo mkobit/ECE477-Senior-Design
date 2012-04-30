@@ -64,7 +64,7 @@ void XBeeConfigure(UART_MODULE id, UINT32 freq, UINT32 baudrate ){
 
 
 
-void XBeeCaptureSignalStrenth()
+int XBeeCaptureSignalStrenth()
 {
     unsigned int RiseEdge1, RiseEdge2, FallEdge1;
     float duty_cycle, duty_temp;
@@ -72,6 +72,7 @@ void XBeeCaptureSignalStrenth()
     count = 0;
     duty_cycle = 0;
     duty_temp = 0;
+    int i;
     //Clear interrupt flag
     mIC1ClearIntFlag();
 
@@ -86,10 +87,10 @@ void XBeeCaptureSignalStrenth()
     OpenCapture1( IC_EVERY_EDGE | IC_INT_1CAPTURE | IC_TIMER3_SRC | IC_FEDGE_RISE | IC_ON );
 
     // Wait for Capture events
-    
-//TODO Change Timer Period
+
+    //TODO Change Timer Period
     //Now Read the captured timer value
-    while( 1 )
+    for (i = 0; i < 100; i++)
     {
           OpenCapture1( IC_EVERY_EDGE | IC_INT_1CAPTURE | IC_TIMER3_SRC | IC_FEDGE_RISE | IC_ON );
           while(!mIC1CaptureReady());
@@ -109,18 +110,16 @@ void XBeeCaptureSignalStrenth()
 
 
           if ((FallEdge1 > RiseEdge1) && (RiseEdge2 > FallEdge1)){
-            
-            duty_cycle = (duty_cycle+duty_temp)/2;
-            printf("Duty Cycle: %f\n", 0.97*duty_cycle);
-
-            
-
-
+            //0.97 is the scale factor
+            duty_cycle = 0.97*(duty_cycle+duty_temp)/2;
+            //printf("Duty Cycle: %f\n", 0.97*duty_cycle);
           }
-          else if(duty_temp == 1.0){
-            printf("Duty Cycle: %d\n", duty_temp);
+          else{
+            //printf("Duty Cycle: %d\n", duty_temp);
+            //If there are no edges then it means 100% signal strength, RSSI output is always high
+            duty_cycle = 1.0;
           }
-          DelayMs(30);
+          DelayMs(0.1);
           CloseCapture1();
 
     }
@@ -128,6 +127,7 @@ void XBeeCaptureSignalStrenth()
     CloseCapture1();
     CloseTimer3();
 
+    return (int)(duty_cycle*100);
 
 
 }

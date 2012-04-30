@@ -7,7 +7,7 @@
 #include "kalman.h"
 #include "math_helpers.h"
 
-#define TEST_UPDATE_FREQ 20
+#define TEST_UPDATE_FREQ 10
 
 //#define FILE_SAVE_TEST
 #define FILE_SAVE_LINES 400
@@ -34,6 +34,11 @@
 #define TEST_I2C_BUS_ID              I2C1
 #define TEST_I2C_BUS_SPEED           (400000)
 #define BAUDRATE 57600
+
+// Gains that will be tested on Kalman Filter
+#define TEST_BETA_DEF (KALMAN_DEFAULT_BETADEF / 2)
+#define TEST_TWOKPDEF (KALMAN_DEFAULT_TWOKPDEF / 2)
+#define TEST_TWOKIDEF (KALMAN_DEFAULT_TWOKIDEF / 2)
 
 #define CLEAR_VT "\033[2J"
 #define NEW_LINE_MODE "\033[20h"
@@ -117,7 +122,18 @@ int main() {
   ImuCalibrate(p_imu, TRUE, TRUE, 128, TEST_UPDATE_FREQ);
   printf("Finished IMU calibration.\n\n");
   printf("Update rate = %d ms\n", TEST_UPDATE_FREQ);
+  DelayS(1);
+  printf("Default Kalman gains:\n");
+  printf("Madgwick BETA_DEF: %f\n", KALMAN_DEFAULT_BETADEF);
+  printf("Mahony (TWOKPDEF, TWOKIDEF) (%f,%f)\n", KALMAN_DEFAULT_TWOKPDEF, KALMAN_DEFAULT_TWOKIDEF);
   DelayS(3);
+  printf("\nSettings gains of each Kalman filter..\n");
+  DelayS(1);
+  Kalman_MadgwickSetGains(TEST_BETA_DEF);
+  Kalman_MahonySetGains(TEST_TWOKPDEF, TEST_TWOKIDEF);
+  printf("Madgwick BETA_DEF: %f\n", TEST_BETA_DEF);
+  printf("Mahony (TWOKPDEF, TWOKIDEF) (%f,%f)\n", TEST_TWOKPDEF, TEST_TWOKIDEF);
+  DelayS(4);
   printf("Clearing VT in 2, then wait 1 for acquisition and filtering...\n");
   DelayS(2);
   putsUART2(CLEAR_VT);

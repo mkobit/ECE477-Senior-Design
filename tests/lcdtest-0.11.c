@@ -46,6 +46,7 @@ TEST_PAIR lcd_pairs[LCDS_IN] = {
     
   Author(s): 
     mkobit
+    ahong
     
   Purpose of Program: 
     Test basic initialization and displaying of data with the LCD on the PCB

@@ -405,7 +405,7 @@ int main() {
 #else
       temperature = 0;
       for (i = 0; i < N_IMUS; i++) {
-    // Need to update to get a valid temperature
+        // Need to update to get a valid temperature
         temperature += (int) ImuGetGyroTemp(p_imus[i]);
       }
   UpdateLCDStatus(rssiPercentage, temperature / N_IMUS);

@@ -1,8 +1,8 @@
 #include <plib.h>
 #include <p32xxxx.h>
 #include <string.h>
-
-#include <stdio.h>
+// Configuration Bit settings
+#include "configs.h"
 
 #include "delay.h"
 #include "imu.h"
@@ -12,18 +12,7 @@
 #include "math_helpers.h"
 #include "xbee.h"
 
-// Configuration Bit settings
-//
-// SYSCLK = 80 MHz (8MHz Crystal/ FPLLIDIV * FPLLMUL / FPLLODIV)
-// PBCLK = 40 MHz
-// WDT OFF
-#pragma config FPLLMUL = MUL_20
-#pragma config FPLLIDIV = DIV_2
-#pragma config FPLLODIV = DIV_1
-#pragma config POSCMOD = HS
-#pragma config FNOSC = PRIPLL
-#pragma config FWDTEN = OFF // watchdog off
-#pragma config FPBDIV = DIV_1
+
 
 // Clock Constants
 #define SYS_CLOCK (80000000L)
@@ -859,7 +848,7 @@ void UpdateLCDStatus(const int signalPercent, const int avgTemperature) {
     </code>
 
   Conditions at Exit:
-    Package data sent via XBee
+    Package data and send it via XBee
 
 **************************************************************************************************/
 void UpdateAndSendPackages(imu_t *imus, K_state *states, IMU_RESULT *imu_res) {

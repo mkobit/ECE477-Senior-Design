@@ -69,7 +69,7 @@ typedef KALMAN_STATE_MAHONY K_state;
 #define GYR_SAMP_DIV 9                  // sample divider being used
 #define GYR_POW_SEL GYRO_PWR_MGM_CLK_SEL_X  // gyro clock selector
 // IMU: calibration settings
-#define CALIBRATE_SAMPLES 128
+#define CALIBRATE_SAMPLES 256
 #define CALIBRATE_DELAY ((UINT)((1 / SAMPLE_FREQ) * 1000))
 // IMU: I2C addresses of each device
 #define IMU0_ACC_ADDR ACCEL_DEFAULT_ADDR
@@ -86,22 +86,27 @@ typedef KALMAN_STATE_MAHONY K_state;
 
 
 /* XBEE DEFINES AND CONSTANTS */
-// TODO all xbee settings here
 #define UART_PORT_XBEE UART1
+#define UPDATE_XBEE_THRESH 500
 typedef struct TRANSMIT_PACKAGE {
   UINT8 n_bytes;
   imu_id id;
   QUATERNION q;
 } TRANSMIT_PACKAGE;
 
+// XBee transmission variable
+TRANSMIT_PACKAGE package;
+ 
+
 
 /* LCD DEFINES AND CONSTANTS */
-#define LCD_INPUTS 11
+#define N_INPUTS_LCD 11
 // LCD: various settings
 #define CURSOR_VAL LCD_CURSOR_OFF
 #define CURSOR_BLINK LCD_CURSOR_BLINK_OFF
 
-#define LCD_DISP_THRESH 1000
+#define DISP_THRESH_LCD 500
+#define TEMP_UPDATE_THRESH 500
 // LCD: Simple structure for organizing LCD_DATA
 typedef struct port_pin_pair {
     unsigned int bitnum;
@@ -109,18 +114,19 @@ typedef struct port_pin_pair {
 } PP_PAIR;
 // LCD: pins/ports
 // rs, rw,  en, d0-d7
-LCD_PAIR lcd_pairs[LCD_INPUTS] = {  // TODO fix these for the actual project
-    {BIT_7, IOPORT_F}, \
-    {BIT_6, IOPORT_F}, \
-    {BIT_9, IOPORT_E}, \
-    {BIT_14, IOPORT_D}, \
-    {BIT_8, IOPORT_E}, \
-    {BIT_15, IOPORT_D}, \
-    {BIT_2, IOPORT_A}, \
-    {BIT_3, IOPORT_A}, \
-    {BIT_13, IOPORT_G}, \
-    {BIT_14, IOPORT_G}, \
-    {BIT_4, IOPORT_C}};
+ // TODO fix these for the actual project
+PP_PAIR lcd_pairs[N_INPUTS_LCD] = {
+    {BIT_1, IOPORT_D}, \
+    {BIT_5, IOPORT_D}, \
+    {BIT_6, IOPORT_D}, \
+    {BIT_7, IOPORT_D}, \
+    {BIT_0, IOPORT_F}, \
+    {BIT_1, IOPORT_F}, \
+    {BIT_0, IOPORT_E}, \
+    {BIT_1, IOPORT_E}, \
+    {BIT_2, IOPORT_E}, \
+    {BIT_3, IOPORT_E}, \
+    {BIT_4, IOPORT_E}};
 // LCD: display messages
 #define START_MESSAGE "Swish Sleeve"
 #define INIT_MESSAGE "Initializing"
@@ -156,12 +162,13 @@ volatile BOOL UPDATE = FALSE;     // flag for update that timer will change
 
 
 // SwishSleeve and utility functions
+void UpdateAndSendPackages(imu_t *imus, K_state *states, IMU_RESULT *imu_res);
 inline void ButtonConfig();
-BOOL ButtonCheck();
+BOOL Button1Check();
 // Timer interrupt functions
 void ConfigTimer1Intrs();
 #define SetTimer1Intrs(on) mT1IntEnable(on) // simple macro expansion to the mT1IntEnable, {on} should be TRUE or FALSE
-void RecalibrateIMUs(imu_t **const imus);
+void RecalibrateIMUs(imu_t *const imus, const int rssiPercentage);
 // LCD utility functions
 void Send2LineDisplay(char *line_1, char *line_2, const unsigned char bottomLineStartOffset);
 void DetectIMUErrorTrap(IMU_RESULT *imu_results);
@@ -217,7 +224,29 @@ int main() {
   imu_t imus[N_IMUS];
   IMU_RESULT imu_res[N_IMUS];   // Result variables to keep track of statuses from libraries
   unsigned int pbFreq;          // Actual peripheral bus frequency
-  unsigned int lcd_update_counter = 0;  // Counters for updating IMUs in cyclic order, LCD, battery monitor, and possibly(?) FIXME the RSSI
+    // Counters for updating IMUs in cyclic order, LCD, battery monitor, and possibly(?) FIXME the RSSI
+  int signalPercent = 0;
+
+  // Counters for updating IMUs in cyclic order, LCD, battery monitor, and possibly(?) FIXME the RSSI
+  int lastUpdateImu = 0;        // Determine which IMU to update first, start with IMU 0
+  unsigned int lcd_update_counter = 0;
+  unsigned int signal_strength_update_counter = 0;
+#ifdef BATTERY_MONITOR_AVAILABLE
+  unsigned int bmon_update_counter = 0;
+  unsigned int bmonPercent = 0;
+#else
+  unsigned int temperature_update_counter = 0;
+  int temperature = 0;
+#endif
+
+#ifdef BATTERY_MONITOR_AVAILABLE
+  int batteryPercent = 0;
+#else
+  int avgTemperature = 0;
+#endif
+
+ // All packages are same size
+  package.n_bytes = (UINT8) sizeof(TRANSMIT_PACKAGE);
   
 
   // Initialize Delay module first
@@ -250,6 +279,8 @@ int main() {
   ImuSetID(&imus[0], 0);
   DelayS(1);
   
+  // Make sure initializations are correct
+  DetectIMUErrorTrap(imu_res);
 
   // Configure settings for XBee
   Send2LineDisplay(INIT_MESSAGE, XBEE_INIT_MESSAGE, 0);
@@ -259,15 +290,125 @@ int main() {
   // Configure reset button
   ButtonConfig();
 
+    // IMU calibrations and also a trap for IMUs that fail/succeed
+  Send2LineDisplay(CALIB_MESSAGE_A, CALIB_MESSAGE_B, 0);
+
+#if (N_IMUS == 3)
+  imu_res[2] = ImuCalibrate(&imus[2], TRUE, TRUE, CALIBRATE_SAMPLES, CALIBRATE_DELAY);
+#endif
+#if (N_IMUS == 2)
+  imu_res[1] = ImuCalibrate(&imus[0], TRUE, TRUE, CALIBRATE_SAMPLES, CALIBRATE_DELAY);
+#endif
+  imu_res[0] = ImuCalibrate(&imus[0], TRUE, TRUE, CALIBRATE_SAMPLES, CALIBRATE_DELAY);
+  DelayS(1);
+
+  // Make sure calibrations are correct
+  DetectIMUErrorTrap(imu_res);
+
   // Configure interrupts for the system as multi vector
   INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR);
 
   // Set timer for interrupts based on how often IMUUpdate and KalmanUpdate occur
   ConfigTimer1Intrs();
 
-  // IMU calibrations and also a trap for IMUs that fail/succeed
-  Send2LineDisplay(CALIB_MESSAGE_A, CALIB_MESSAGE_B, 0);
+  // System ready message
+  LcdClearAndDisplayData(READY_MESSAGE);
+  DelayS(3);
 
+  // Display system status
+#ifdef BATTERY_MONITOR_AVAILABLE
+  // Get signal strength and battery percentage
+  UpdateLCDStatus(signalPercent, batteryPercent);
+#else
+  // Get signal strength and average temperature
+  // TODO capture signal strength
+  for (i = 0; i < N_IMUS; i++) {
+    avgTemperature += (int) ImuGetGyroTemp(&imus[i]);
+  }
+  UpdateLCDStatus(signalPercent, avgTemperature / N_IMUS);
+#endif
+
+  // Enable interrupts
+  INTEnableInterrupts();
+
+  // Clear and enable Timer1 interrupts
+  WriteTimer1(0);
+  SetTimer1Intrs(TRUE);
+
+  while (1) {
+    while (!UPDATE) {}
+
+    if (Button1Check()) {
+      // Recalibrate if button was pressed and released
+      RecalibrateIMUs(imus, signalPercent);
+      lcd_update_counter = 0;
+      signal_strength_update_counter = 0;
+#ifdef BATTERY_MONITOR_AVAILABLE
+      bmon_update_counter = 0;
+#else
+      temperature_update_counter = 0;
+#endif
+      continue;
+    } else {
+      // Update counters for display
+      signal_strength_update_counter++;
+#ifdef BATTERY_MONITOR_AVAILABLE
+      bmon_update_counter++;
+#else
+      temperature_update_counter++;
+#endif
+    }
+
+    // Update the IMUs
+    for (i = 0; i < N_IMUS; i++) {
+      // Update in a different order each time for fairness
+      imu_res[i] = ImuUpdate(&imus[(i + lastUpdateImu) % N_IMUS]);
+    }
+    // Change which IMU gets updated first
+    lastUpdateImu = (lastUpdateImu + 1) % N_IMUS;
+
+    // Kalman filter the data
+    for (i = 0; i < N_IMUS; i++) {
+      mKUpdate(&imus[i], &states[i], SAMPLE_FREQ);
+    }
+
+    // Update RSSI if at threshhold
+    // TODO
+    if (signal_strength_update_counter == UPDATE_XBEE_THRESH) {
+      signal_strength_update_counter = 0;
+      //FIXME signalPercent = XBeeCaptureSignalStrenth();
+    }
+
+#ifdef BATTERY_MONITOR_AVAILABLE
+    // NOT SUPPORTED
+    if (bmon_update_counter == )
+#else
+    if (temperature_update_counter == TEMP_UPDATE_THRESH) {
+      temperature_update_counter = 0;
+      temperature = 0;
+      for (i = 0; i< N_IMUS; i++) {
+        temperature += ImuGetGyroTemp(&imus[i]);
+      }
+      temperature /= N_IMUS;
+    }
+#endif
+
+    // Update battery monitor at threshhold
+    // *NOT BEING USED RIGHT NOW*
+
+    // Output data via XBee{
+    UpdateAndSendPackages(imus, states, imu_res);
+
+    if (lcd_update_counter == DISP_THRESH_LCD) {
+      lcd_update_counter == 0;
+#ifdef BATTERY_MONITOR_AVAILABLE
+      UpdateLCDStatus(signalPercent, bmonPercent);
+#else
+      UpdateLCDStatus(signalPercent, temperature);
+#endif
+    }
+  }
+  
   
 
   return 0;
@@ -432,9 +573,6 @@ void __ISR(_TIMER_1_VECTOR, ipl1) Timer1IntrHandler() {
   // Clear interrupt flag
   mT1ClearIntFlag();
   // Handle timer 1 interrupt
-  if (UPDATE == TRUE) {
-    printf("\nERROR: TIMER1 Interrupt happened before last calculations were completed\n\n");
-  }
   UPDATE = TRUE;
 }
 
@@ -527,7 +665,7 @@ void DetectIMUErrorTrap(IMU_RESULT *imu_results) {
 
 /**************************************************************************************************
   Function:
-    void RecalibrateIMUs(imu_t **const imus)
+    void RecalibrateIMUs(imu_t *const imus)
 
   Author(s):
     mkobit
@@ -542,7 +680,7 @@ void DetectIMUErrorTrap(IMU_RESULT *imu_results) {
     IMUs initialized
 
   Parameters:
-    imu_t **const imus - array of pointers to the IMUs that need to be calibrated
+    imu_t *const imus - pointers to the IMUs that need to be calibrated
 
   Returns:
     void
@@ -556,7 +694,7 @@ void DetectIMUErrorTrap(IMU_RESULT *imu_results) {
     void
 
 **************************************************************************************************/
-void RecalibrateIMUs(imu_t **const imus) {
+void RecalibrateIMUs(imu_t *const imus, const int rssiPercentage) {
   int i;
   IMU_RESULT res[N_IMUS];
   UINT intrs;
@@ -569,8 +707,8 @@ void RecalibrateIMUs(imu_t **const imus) {
   Send2LineDisplay(CALIB_MESSAGE_A, CALIB_MESSAGE_B, 0);
 
   for (i = 0; i < N_IMUS; i++) {
-    res[i] = ImuCalibrate(imus[i], TRUE, TRUE, CALIBRATE_SAMPLES, CALIBRATE_DELAY);
-    temp += (int) ImuGetGyroTemp(imus[i]);
+    res[i] = ImuCalibrate(&imus[i], TRUE, TRUE, CALIBRATE_SAMPLES, CALIBRATE_DELAY);
+    temp += (int) ImuGetGyroTemp(&imus[i]);
   }
 
   // Trap here if an error occurs during calibration
@@ -588,53 +726,6 @@ void RecalibrateIMUs(imu_t **const imus) {
   // Clear Timer1 and enable interrupts
   WriteTimer1(0);
   INTRestoreInterrupts(intrs);
-}
-
-/**************************************************************************************************
-  Function:
-    void DetectIMUErrorTrap(IMU_RESULT *imu_results)
-
-  Author(s):
-    mkobit
-
-  Summary:
-    If any IMU function results in an error, will be held here forever
-
-  Description:
-    Checks IMU results and if there was a failure, simply stalls here and displays an error message to the user
-
-  Preconditions:
-    (imu_results) filled in with valid results
-
-  Parameters:
-    IMU_RESULT *imu_results - results of IMU functions
-
-  Returns:
-    void
-
-  Example:
-    <code>
-    DetectIMUErrorTrap(imu_res)
-    </code>
-
-  Conditions at Exit:
-    None
-
-**************************************************************************************************/
-void DetectIMUErrorTrap(IMU_RESULT *imu_results) {
-  int i;
-
-  for (i = 0; i < N_IMUS; i++) {
-    if (imu_results[i] == IMU_FAIL) {
-      Send2LineDisplay(ERROR_IMU_MESSAGE, "Device: ", 0);
-      LcdDisplayChar(i + 60); // This assumes an IMU ID less that 10
-      while (1);  // LOCKS HERE FOR ERRORS
-    }
-  }
-  LcdInstrClearDisplay();
-  LcdDisplayChar(N_IMUS + 60);
-  LcdDisplayData(SUCC_IMU_MESSAGE);
-  DelayS(1);
 }
 
 /**************************************************************************************************
@@ -736,4 +827,55 @@ void UpdateLCDStatus(const int signalPercent, const int avgTemperature) {
 
   // Clear and display this 2 line message
   Send2LineDisplay(line1, line2, 0);
+}
+
+/**************************************************************************************************
+  Function:
+    void UpdateAndSendPackages(imu_t *imus, K_state *states, IMU_RESULT *imu_res)
+
+  Author(s):
+    mkobit
+
+  Summary:
+    Sends the data of each IMU via XBee using the global PACKAGE variable
+
+  Description:
+    Same as summary
+
+  Preconditions:
+    IMUs updated
+    XBee configured
+
+  Parameters:
+    imu_t *imus - IMUs in the system
+    K_state *states - Kalman filter states
+    IMU_RESULT *imu_res - results of IMU updates
+
+  Returns:
+    void
+
+  Example:
+    <code>
+    </code>
+
+  Conditions at Exit:
+    Package data sent via XBee
+
+**************************************************************************************************/
+void UpdateAndSendPackages(imu_t *imus, K_state *states, IMU_RESULT *imu_res) {
+  // Use the global package variable
+  int i;
+  static QUATERNION *const package_qp = &package.q;
+  QUATERNION *thisqp;
+  for (i = 0; i < N_IMUS; i++) {
+    if (imu_res[i] == IMU_SUCCESS) {
+      thisqp = &states[i].q;
+      package.id = ImuGetId(&imus[i]);
+      package_qp->q0 = thisqp->q0;
+      package_qp->q1 = thisqp->q1;
+      package_qp->q2 = thisqp->q2;
+      package_qp->q3 = thisqp->q3;
+      XBeeSendDataBuffer(UART_PORT_XBEE, (char *) &package, package.n_bytes);
+    }
+  }
 }

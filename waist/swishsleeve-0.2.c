@@ -75,7 +75,8 @@ typedef KALMAN_STATE_MAHONY K_state;
 
 
 /* XBEE DEFINES AND CONSTANTS */
-#define UART_PORT_XBEE UART1
+#define UART_PORT_XBEE UART3
+#define XBEE_BAUDRATE 57600
 #define UPDATE_XBEE_THRESH 500
 typedef struct TRANSMIT_PACKAGE {
   UINT8 n_bytes;
@@ -132,7 +133,7 @@ PP_PAIR lcd_pairs[N_INPUTS_LCD] = {
 // LCD: Error or invalid display messages
 #define ERROR_IMU_MESSAGE "ERR: IMU Failure"
 #define BATT_INVAL "NO BATT. SIGNAL"
-#define RSS_INVAL "NO RSSI. SIGNAL"
+#define RSSI_INVAL "NO RSSI. SIGNAL"
 
 
 /* BUTTON DEFINES AND CONSTANTS */    
@@ -777,7 +778,7 @@ void UpdateLCDStatus(const int signalPercent, const int avgTemperature) {
   // Display signal message
   if (signalPercent <= 0) {
     // invalid signal strength, copy to buffer
-    strcpy(line1, RSS_INVAL);
+    strcpy(line1, RSSI_INVAL);
     // Append newline to data for battery message
   } else {
     strcpy(line1, RSSI_PRE);

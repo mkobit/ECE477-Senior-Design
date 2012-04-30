@@ -2,11 +2,11 @@
 #define KALMAN_SHARED_H
 
 // Used for Madgwick filtering
-#define DEFAULT_BETADEF		0.1f		// 2 * proportional gain
+#define KALMAN_DEFAULT_BETADEF		0.1f		// 2 * proportional gain
 
 // Used for Mahony filtering
-#define DEFAULT_TWOKPDEF	(2.0f * 0.5f)	// 2 * proportional gain
-#define DEFAULT_TWOKIDEF	(2.0f * 0.1f)	// 2 * integral gain
+#define KALMAN_DEFAULT_TWOKPDEF	(2.0f * 0.5f)	// 2 * proportional gain
+#define KALMAN_DEFAULT_TWOKIDEF	(2.0f * 0.1f)	// 2 * integral gain
 
 // Structure of euler angles that could possibly be used
 typedef struct EULER_ANGLES {

@@ -5,9 +5,9 @@
 #include "math_helpers.h"
 #include "imu.h"
 
-static float BETADEF = DEFAULT_BETADEF;
-static float TWOKPDEF = DEFAULT_TWOKPDEF;
-static float TWOKIDEF = DEFAULT_TWOKIDEF;
+static float BETADEF = KALMAN_DEFAULT_BETADEF;
+static float TWOKPDEF = KALMAN_DEFAULT_TWOKPDEF;
+static float TWOKIDEF = KALMAN_DEFAULT_TWOKIDEF;
 
 /************************************************************************************************** 
   Function: 

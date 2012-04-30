@@ -8,7 +8,7 @@ static UINT _core_ticks_in_ms;
 
 /************************************************************************************************** 
   Function: 
-    void DelayInit(const UINT pbFreq)
+    void DelayInit(const UINT systemClock)
   
   Author(s): 
     mkobit
@@ -23,7 +23,7 @@ static UINT _core_ticks_in_ms;
     Core timer configured
   
   Parameters: 
-    const UINT pbFreq - peripheral bus speed of microcontroller
+    const UINT systemClock - microcontroller system clock
   
   Returns: 
     void
@@ -37,8 +37,8 @@ static UINT _core_ticks_in_ms;
     Core timer reset, internal static variables set
   
 **************************************************************************************************/
-void DelayInit(const UINT pbFreq) {
-  _core_hz = pbFreq / 2;  // runs at half-speed of system clock
+void DelayInit(const UINT systemClock) {
+  _core_hz = systemClock / 2;  // runs at half-speed of system clock
   _core_ticks_in_us = DELAY_US_TO_CT_TICKS(_core_hz);
   _core_ticks_in_ms = DELAY_MS_TO_CT_TICKS(_core_hz);
   WriteCoreTimer(0);

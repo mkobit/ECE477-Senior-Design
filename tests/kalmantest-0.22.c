@@ -51,7 +51,7 @@ typedef struct TRANSMIT_PACKAGE {
 #define TEST_TWOKPDEF (KALMAN_DEFAULT_TWOKPDEF * 32)
 #define TEST_TWOKIDEF (KALMAN_DEFAULT_TWOKIDEF * 32)
 
-#define TEST_XBEE UART1
+#define TEST_XBEE UART3
 
 void PrintOutPackage(TRANSMIT_PACKAGE *package);
 void SetPackageData(const imu_id id, QUATERNION *q, TRANSMIT_PACKAGE *package);
@@ -100,9 +100,7 @@ int main() {
 
 
   pbFreq = SYSTEMConfigPerformance(GetSystemClock());
-  OpenUART2(UART_EN | UART_NO_PAR_8BIT | UART_1STOPBIT, UART_RX_ENABLE | UART_TX_ENABLE, (pbFreq/16/BAUDRATE) - 1);
   DelayInit(pbFreq);
-  putsUART2(CLEAR_VT);
   p_imu = &imu;
   imu_res = ImuInit(p_imu,
       TEST_I2C_BUS_ID,
@@ -127,9 +125,9 @@ int main() {
   DelayS(2);
   Kalman_MadgwickSetGains(TEST_BETA_DEF);
   Kalman_MahonySetGains(TEST_TWOKPDEF, TEST_TWOKIDEF);
-  XBeeConfigure(TEST_XBEE, pbFreq, XBEE_BAUDRATE);
+  XBeeConfigure(TEST_XBEE, pbFreq, BAUDRATE);
   DelayS(1);
-  ImuCalibrate(p_imu, TRUE, TRUE, 256, TEST_UPDATE_FREQ);
+  imu_res = ImuCalibrate(p_imu, TRUE, TRUE, 256, TEST_UPDATE_FREQ);
   DelayS(2);
 
   while(1) {

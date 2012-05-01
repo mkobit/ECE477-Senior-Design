@@ -776,6 +776,15 @@ void UpdateLCDStatus(const int signalPercent, const int avgTemperature) {
   static int imuTemp = -5000;
   const static char tempEnd[3] = {176, 'C', '\0'}; // \degrees C
 #endif
+  static avgPercent = -1;
+  
+  if (avg == -1) {
+    avgPercent = signalPercent;
+  } else if (signalPercent == 100) {
+    avgPercent = 100;
+  } else {
+    avgPercent = (avgPercent + signalPercent) / 2
+  }
 
   // Display signal message
   if (signalPercent < 0) {
@@ -792,13 +801,13 @@ void UpdateLCDStatus(const int signalPercent, const int avgTemperature) {
 
 #ifdef BATTERY_MONITOR_AVAILABLE
   // Display battery message
-  if (paramPercent <= 0) {
+  if (batteryPercent <= 0) {
     // Concat RSSI error message
     strcpy(line2, RSS_INVAL);
   } else {
     strcpy(line2, RSSI_PRE);
     // Format battery string
-    itoa(percentageval, paramPercent, 10);
+    itoa(percentageval, batteryPercent, 10);
     strcat(line2, percentageval);
     strcat(line2, "%");
   }

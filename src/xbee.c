@@ -87,7 +87,7 @@ int XBeeCaptureSignalStrength()
     XbeeOpenCapture(XBEE_IC_RISE_SETTINGS);
     while(!XbeeCaptureReady()) {
       timeout++;
-      if (timeout == 3000) {
+      if (timeout == XBEE_TIMEOUT) {
         XbeeCaptureClose();
         PORTSetPinsDigitalIn(XBEE_IOPORT_IC, XBEE_IOPIN_IC);
         RiseEdge1 = PORTReadBits(XBEE_IOPORT_IC, XBEE_IOPIN_IC);
@@ -108,7 +108,7 @@ int XBeeCaptureSignalStrength()
     timeout = 0;
     while(!XbeeCaptureReady()) {
       timeout++;
-      if (timeout == 3000) {
+      if (timeout == XBEE_TIMEOUT) {
         XbeeCaptureClose();
         PORTSetPinsDigitalIn(XBEE_IOPORT_IC, XBEE_IOPIN_IC);
         RiseEdge1 = PORTReadBits(XBEE_IOPORT_IC, XBEE_IOPIN_IC);
@@ -129,33 +129,37 @@ int XBeeCaptureSignalStrength()
     timeout = 0;
     while(!XbeeCaptureReady()) {
       timeout++;
-      if (timeout == 3000) {
+      if (timeout == XBEE_TIMEOUT) {
         XbeeCaptureClose();
         PORTSetPinsDigitalIn(XBEE_IOPORT_IC, XBEE_IOPIN_IC);
         RiseEdge1 = PORTReadBits(XBEE_IOPORT_IC, XBEE_IOPIN_IC);
         PORTResetPins(XBEE_IOPORT_IC, XBEE_IOPIN_IC);
         if (RiseEdge1) {
           // high value, 100%
-          return 100;
+          duty_cycle += 100;
         } else {
-          return 0;
+          duty_cycle += 0;
         }
       }
     }
     
     RiseEdge2 = XbeeReadCapture();
     XbeeCaptureClose();
-    
-    duty_temp = (float)(FallEdge1 - RiseEdge1) / (float)(RiseEdge2 - RiseEdge1);
+    if (RiseEdge2 - RiseEdge1 != 0) {
+      duty_temp = (float)(FallEdge1 - RiseEdge1) / (float)(RiseEdge2 - RiseEdge1);
+    } else {
+      i--;
+      continue;
+    }
 
 
-    if ((FallEdge1 > RiseEdge1) && (RiseEdge2 > FallEdge1) && duty_temp <= 1.0f){
+    if ((FallEdge1 > RiseEdge1) && (RiseEdge2 > FallEdge1) && duty_temp <= 1.0f && duty_temp >= 0.0f){
       //0.97 is the scale factor
       duty_cycle += duty_temp;
       //printf("Duty Cycle: %f\n", 0.97*duty_cycle);
     }
-    else if (duty_temp < .05f) {
-      duty_cycle += duty_temp;
+    else if (duty_temp < .005f) {
+      duty_cycle += 0.0f;
     }
   }
 
@@ -211,10 +215,10 @@ void XBeeCaptureSignalStrength2()
     if ((FallEdge1 > RiseEdge1) && (RiseEdge2 > FallEdge1)){
 
       duty_cycle = (duty_cycle+duty_temp)/2;
-      printf("Duty Cycle: %f\n", duty_cycle);
+      //printf("Duty Cycle: %f\n", duty_cycle);
     }
     else if(duty_temp == 1.0){
-      printf("Duty Cycle: %d\n", duty_temp);
+      //printf("Duty Cycle: %d\n", duty_temp);
     }
     DelayMs(30);
   }

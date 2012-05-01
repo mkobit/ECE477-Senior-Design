@@ -301,9 +301,6 @@ int main() {
   // Configure interrupts for the system as multi vector
   INTConfigureSystem(INT_SYSTEM_CONFIG_MULT_VECTOR);
 
-  // Set timer for interrupts based on how often IMUUpdate and KalmanUpdate occur
-  ConfigTimer1Intrs();
-
   // System ready message
   LcdClearAndDisplayData(READY_MESSAGE);
   DelayS(3);
@@ -324,8 +321,8 @@ int main() {
   // Enable interrupts
   INTEnableInterrupts();
 
-  // Clear and enable Timer1 interrupts
-  WriteTimer1(0);
+  // Configure and turn on Timer1
+  ConfigTimer1Intrs();
   SetTimer1Intrs(TRUE);
 
   while (1) {
@@ -532,6 +529,7 @@ void ConfigTimer1Intrs() {
   // Configure timers for our target update rate
   ConfigIntTimer1(T1_INT_OFF | T1_INT_PRIOR_1);
   OpenTimer1(TIM1_SETTINGS, TIM1_PERIOD);
+  WriteTimer1(0);
 }
 
 /**************************************************************************************************

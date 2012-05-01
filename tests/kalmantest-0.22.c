@@ -29,7 +29,7 @@
 #define ID_HAND 2
 
 // This can be changed to determine which IMU will be used
-#define TESTING_BODYPART ID_HAND
+#define TESTING_BODYPART ID_FORE_ARM
 
 typedef struct TRANSMIT_PACKAGE {
   UINT8 n_bytes;

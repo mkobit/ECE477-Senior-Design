@@ -18,6 +18,9 @@
 #define RSSI_PRE "RSSI: "
 #define RSSI_INVAL "NO RSSI. SIGNAL"
 
+#define TEST_UART_XBEE UART3
+#define TEST_UART_BAUDRATE 57600
+
 typedef struct TEST_PAIR {
     unsigned int bitnum;
     IoPortId port_id;
@@ -70,7 +73,8 @@ void UpdateLCDStatus(const int signalPercent);
 int main(void)
 {
   int pbFreq;
-  int signalPercent = 0;
+  int signalPercent = -1;
+  int updatePercent = 0;
 
   pbFreq = SYSTEMConfigPerformance(SYSTEM_FREQUENCY);
   DelayInit(SYSTEM_FREQUENCY);
@@ -88,13 +92,22 @@ int main(void)
         lcd_pairs[10].bitnum, lcd_pairs[10].port_id,
         LCD_DOTS_5x8);   // Using a wide selection of pins in lab with these ports connected
   // this test will just test writing to the LCD
-  LcdInstrSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_OFF, LCD_CURSOR_BLINK_OFF);
+  LcdInstrSetDisplayMode(LCD_DISPLAY_ON, LCD_CURSOR_OFF, LCD_CURSOR_BLINK_ON);
+  XBeeConfigure(TEST_UART_XBEE, pbFreq, TEST_UART_BAUDRATE);
   
   while(1) {
     LcdInstrReturnHome();
-    signalPercent = XBeeCaptureSignalStrength();
+    if (signalPercent == -1) {
+      signalPercent = XBeeCaptureSignalStrength();
+    } else {
+      updatePercent = XBeeCaptureSignalStrength();
+      if (updatePercent == 100) {
+        signalPercent = 100;
+      }
+      signalPercent = (signalPercent + updatePercent) / 2;
+    }
     UpdateLCDStatus(signalPercent);
-    DelayS(5);
+    DelayMs(500);
   }
 
   return 0;
@@ -103,16 +116,16 @@ int main(void)
 void Send2LineDisplay(char *line_1, char *line_2, const unsigned char bottomLineStartOffset) {
   LcdInstrClearDisplay();
   LcdDisplayData(line_1);
-  LcdInstrSetDDRAMAddress(LCD_LINES_2 + bottomLineStartOffset);
+  LcdInstrSetDDRAMAddress(LINE_2 + bottomLineStartOffset);
   LcdDisplayData(line_2);
 }
 
-void UpdateLCDStatus(const int signalPercent, const int avgTemperature) {
+void UpdateLCDStatus(const int signalPercent) {
   char line1[40];
   char percentageval[5];
 
   // Display signal message
-  if (signalPercent <= 0) {
+  if (signalPercent < 0) {
     // invalid signal strength, copy to buffer
     strcpy(line1, RSSI_INVAL);
     // Append newline to data for battery message
@@ -123,5 +136,5 @@ void UpdateLCDStatus(const int signalPercent, const int avgTemperature) {
     strcat(line1, percentageval);
     strcat(line1, "%");
   }
-  Send2LineDisplay(line1, "NOPE", 4);
+  Send2LineDisplay(line1, "N/A here", 4);
 }

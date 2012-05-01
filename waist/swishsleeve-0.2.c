@@ -41,9 +41,9 @@ typedef KALMAN_STATE_MAHONY K_state;
 #define mKUpdate(p_imu, p_k, samp) Kalman_MahonyUpdate(p_imu, p_k, samp)
 #endif
 // KALMAN: Gain constants
-#define K_BETA_DEF (KALMAN_DEFAULT_BETADEF)
-#define K_TWOKPDEF (KALMAN_DEFAULT_TWOKPDEF)
-#define K_TWOKIDEF (KALMAN_DEFAULT_TWOKIDEF)
+#define K_BETA_DEF (KALMAN_DEFAULT_BETADEF * 32)
+#define K_TWOKPDEF (KALMAN_DEFAULT_TWOKPDEF * 32)
+#define K_TWOKIDEF (KALMAN_DEFAULT_TWOKIDEF * 32)
 
 
 /* IMU DEFINES AND CONSTANTS */
@@ -267,7 +267,10 @@ int main() {
   imu_res[0] = ImuInit(&imus[0], i2cs[0], pbFreq, I2C_CLOCK, IMU0_ACC_ADDR, ACC_RANG, ACC_BW, IMU0_GYRO_ADDR, GYR_DLPF, GYR_SAMP_DIV, GYR_POW_SEL);
   mKInit(&states[0]);
   ImuSetID(&imus[0], 0);
+  Kalman_MadgwickSetGains(K_BETA_DEF);
+  Kalman_MahonySetGains(K_TWOKPDEF, K_TWOKIDEF);
   DelayS(1);
+  
   
   // Make sure initializations are correct
   DetectIMUErrorTrap(imu_res);
@@ -347,6 +350,7 @@ int main() {
 #else
       temperature_update_counter++;
 #endif
+      lcd_update_counter++;
     }
 
     // Update the IMUs
@@ -602,7 +606,7 @@ void __ISR(_TIMER_1_VECTOR, ipl1) Timer1IntrHandler() {
 void Send2LineDisplay(char *line_1, char *line_2, const unsigned char bottomLineStartOffset) {
   LcdInstrClearDisplay();
   LcdDisplayData(line_1);
-  LcdInstrSetDDRAMAddress(LCD_LINES_2 + bottomLineStartOffset);
+  LcdInstrSetDDRAMAddress(LINE_2 + bottomLineStartOffset);
   LcdDisplayData(line_2);
 }
 
@@ -771,12 +775,12 @@ void UpdateLCDStatus(const int signalPercent, const int avgTemperature) {
   char line2[40];
   char percentageval[5];
 #ifndef BATTERY_MONITOR_AVAILABLE
-  static int imuTemp = -1;
+  static int imuTemp = -5000;
   const static char tempEnd[3] = {176, 'C', '\0'}; // \degrees C
 #endif
 
   // Display signal message
-  if (signalPercent <= 0) {
+  if (signalPercent < 0) {
     // invalid signal strength, copy to buffer
     strcpy(line1, RSSI_INVAL);
     // Append newline to data for battery message
@@ -802,9 +806,9 @@ void UpdateLCDStatus(const int signalPercent, const int avgTemperature) {
   }
 #else
   //Display temperature message
-  if (imuTemp <= 0) {
-    // Use first reading, double to avoid average reducing it
-    imuTemp = avgTemperature * 2;
+  if (imuTemp == -5000) {
+    // Use first reading
+    imuTemp = avgTemperature;
   }
   
   // Use average
